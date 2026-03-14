@@ -11065,6 +11065,3379 @@
           ]
         }
       ]
+    },
+    {
+      "name": "11218 Califia",
+      "address": "11218 Califia",
+      "lot_size": 14000.0,
+      "gba": 43683.0,
+      "gba_concrete": 0.0,
+      "gba_wood": 43683.0,
+      "total_units": 76,
+      "unit_mix": {
+        "Studio": 0,
+        "1BR": 46,
+        "2BR": 30
+      },
+      "floor_areas": {
+        "1st Floor": 8752.0,
+        "2nd Floor": 8755.0,
+        "3rd Floor": 8755.0,
+        "4th Floor": 8755.0,
+        "5th Floor": 8666.0
+      },
+      "num_floors": 5,
+      "project_total": 12857374.0,
+      "project_subtotal": 11851145.0,
+      "admin_total": 1006229.0,
+      "gc_fee_pct": 6.0,
+      "bonding_pct": 1.0,
+      "admin_pct": 2.0,
+      "cost_per_sf": 294.33358514754025,
+      "cost_per_unit": 169175.97368421053,
+      "source_file": "Califa Estimator",
+      "source_file_id": "1954903405342",
+      "divisions": [
+        {
+          "number": 1,
+          "name": "GENERAL REQUIREMENTS",
+          "total_cost": 1280698.0,
+          "cost_per_sf": 29.32,
+          "cost_per_unit": 16851.0,
+          "line_items": [
+            {
+              "cost_code": "20-1000-1000",
+              "description": "Field Supervision",
+              "total_cost": 670820.0,
+              "cost_per_sf": 15.36,
+              "cost_per_unit": 8827.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 6.0
+            },
+            {
+              "cost_code": "20-2000-1000",
+              "description": "Temporary Power Pole",
+              "total_cost": 7030.0,
+              "cost_per_sf": 0.16,
+              "cost_per_unit": 92.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-2000",
+              "description": "Temporary Toilets",
+              "total_cost": 33185.0,
+              "cost_per_sf": 0.76,
+              "cost_per_unit": 437.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-3000",
+              "description": "Temporary Office Supplies",
+              "total_cost": 3457.0,
+              "cost_per_sf": 0.08,
+              "cost_per_unit": 45.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-4000",
+              "description": "Temporary Job Trailer",
+              "total_cost": 4388.0,
+              "cost_per_sf": 0.1,
+              "cost_per_unit": 58.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-5000",
+              "description": "Temporary Water",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-6000",
+              "description": "Temporary Gas",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2500-1000",
+              "description": "GC Miscellaneous",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-3000-1000",
+              "description": "Reproduction and Printing",
+              "total_cost": 2535.0,
+              "cost_per_sf": 0.06,
+              "cost_per_unit": 33.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-1000",
+              "description": "Scaffolding",
+              "total_cost": 31526.0,
+              "cost_per_sf": 0.72,
+              "cost_per_unit": 415.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-2000",
+              "description": "Equipment Rental and Maint.",
+              "total_cost": 30065.0,
+              "cost_per_sf": 0.69,
+              "cost_per_unit": 396.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-3000",
+              "description": "Safety Supplies and Signage",
+              "total_cost": 7835.0,
+              "cost_per_sf": 0.18,
+              "cost_per_unit": 103.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-4000",
+              "description": "Trash Hauling - Dumpsters",
+              "total_cost": 51621.0,
+              "cost_per_sf": 1.18,
+              "cost_per_unit": 679.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-5000",
+              "description": "Construction Entrance",
+              "total_cost": 2305.0,
+              "cost_per_sf": 0.05,
+              "cost_per_unit": 30.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-6000",
+              "description": "Protection Materials",
+              "total_cost": 6914.0,
+              "cost_per_sf": 0.16,
+              "cost_per_unit": 91.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-7000",
+              "description": "Construction Fencing",
+              "total_cost": 3779.0,
+              "cost_per_sf": 0.09,
+              "cost_per_unit": 50.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-8000",
+              "description": "Job Site Storage",
+              "total_cost": 4240.0,
+              "cost_per_sf": 0.1,
+              "cost_per_unit": 56.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-9000",
+              "description": "Material Storage",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-5000-1000",
+              "description": "Special Inspection",
+              "total_cost": 39499.0,
+              "cost_per_sf": 0.9,
+              "cost_per_unit": 520.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-6000-1000",
+              "description": "Construction Cleaning",
+              "total_cost": 16132.0,
+              "cost_per_sf": 0.37,
+              "cost_per_unit": 212.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-8000-1000",
+              "description": "Final Cleaning",
+              "total_cost": 29959.0,
+              "cost_per_sf": 0.69,
+              "cost_per_unit": 394.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-9000-1000",
+              "description": "GR - Contractor Contingency",
+              "total_cost": 335410.0,
+              "cost_per_sf": 7.68,
+              "cost_per_unit": 4413.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 3.0
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "name": "OFF-SITE CONSTRUCTION",
+          "total_cost": 36872.0,
+          "cost_per_sf": 0.84,
+          "cost_per_unit": 485.0,
+          "line_items": [
+            {
+              "cost_code": "30-1000-1000",
+              "description": "Curbs - Gutters - Sidewalks",
+              "total_cost": 36872.0,
+              "cost_per_sf": 0.84,
+              "cost_per_unit": 485.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-2000",
+              "description": "Fire Hydrants",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-3000",
+              "description": "Gutter and Drive Approaches",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-4000",
+              "description": "Off-Site Paving",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-5000",
+              "description": "Demolition",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-6000",
+              "description": "Utility Offisite",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "name": "ON-SITE CONSTRUCTION",
+          "total_cost": 256082.0,
+          "cost_per_sf": 5.86,
+          "cost_per_unit": 3370.0,
+          "line_items": [
+            {
+              "cost_code": "40-1000-1000",
+              "description": "Structural Demo",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-2000",
+              "description": "Interior Demo",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-3000",
+              "description": "Mics. Demo and Patching",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-4000",
+              "description": "Demo Patching",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-5000",
+              "description": "Protection Scaffold",
+              "total_cost": 9218.0,
+              "cost_per_sf": 0.21,
+              "cost_per_unit": 121.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-6000",
+              "description": "Mics. Mechanical Demo",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-1000",
+              "description": "Earthwork",
+              "total_cost": 80011.0,
+              "cost_per_sf": 1.83,
+              "cost_per_unit": 1053.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-2000",
+              "description": "Layout and surverying",
+              "total_cost": 8536.0,
+              "cost_per_sf": 0.2,
+              "cost_per_unit": 112.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-3000",
+              "description": "Footing spoil removal",
+              "total_cost": 9218.0,
+              "cost_per_sf": 0.21,
+              "cost_per_unit": 121.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-4000",
+              "description": "Rough Grading",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-5000",
+              "description": "Site Drainage / Drywell",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-6000",
+              "description": "SWPPP",
+              "total_cost": 2996.0,
+              "cost_per_sf": 0.07,
+              "cost_per_unit": 39.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-7000",
+              "description": "Utility Trench and Backfill",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-7100",
+              "description": "Utility Connections",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-8000",
+              "description": "Temporary Shoring",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-9000",
+              "description": "Soil Compaction",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-9100",
+              "description": "Steel Structure",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-1000",
+              "description": "Water Service",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-2000",
+              "description": "Water Service - Fire Sprinkler",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-3000",
+              "description": "Cable and Phone",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-4000",
+              "description": "Gas Service",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-5000",
+              "description": "Striping - bumpers - signage",
+              "total_cost": 2293.0,
+              "cost_per_sf": 0.05,
+              "cost_per_unit": 30.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-6000",
+              "description": "Electrical Service",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-4000-1000",
+              "description": "BBQ and outdoor utilities",
+              "total_cost": 16132.0,
+              "cost_per_sf": 0.37,
+              "cost_per_unit": 212.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-4000-2000",
+              "description": "Trellis - Shades - Patio",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-5000-1000",
+              "description": "Landscaping and irrigation",
+              "total_cost": 111086.0,
+              "cost_per_sf": 2.54,
+              "cost_per_unit": 1462.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-7000-1000",
+              "description": "Sewer - Septic",
+              "total_cost": 16593.0,
+              "cost_per_sf": 0.38,
+              "cost_per_unit": 218.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "name": "CONCRETE",
+          "total_cost": 380531.0,
+          "cost_per_sf": 8.71,
+          "cost_per_unit": 5007.0,
+          "line_items": [
+            {
+              "cost_code": "50-1000-1000",
+              "description": "Structural Concrete",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "50-1000-2000",
+              "description": "Site Concrete- walkways,retaining walls for walks",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "50-1000-3000",
+              "description": "Concrete Slab",
+              "total_cost": 297568.0,
+              "cost_per_sf": 6.81,
+              "cost_per_unit": 3915.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "50-1000-4000",
+              "description": "Concrete Finishing",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "50-1000-5000",
+              "description": "Gypcrete",
+              "total_cost": 82963.0,
+              "cost_per_sf": 1.9,
+              "cost_per_unit": 1092.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "name": "MASONRY",
+          "total_cost": 15726.0,
+          "cost_per_sf": 0.36,
+          "cost_per_unit": 207.0,
+          "line_items": [
+            {
+              "cost_code": "51-1000-1000",
+              "description": "Structural Masonry",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "51-1000-2000",
+              "description": "Site Masonry",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "51-1000-3000",
+              "description": "Pavers",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "51-1000-4000",
+              "description": "Veneer Exterior - Material",
+              "total_cost": 15726.0,
+              "cost_per_sf": 0.36,
+              "cost_per_unit": 207.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "51-1000-5000",
+              "description": "Veneer Exterior - Labor",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "name": "METALS",
+          "total_cost": 166822.0,
+          "cost_per_sf": 3.82,
+          "cost_per_unit": 2195.0,
+          "line_items": [
+            {
+              "cost_code": "52-1000-1000",
+              "description": "Structural Steel",
+              "total_cost": 67650.0,
+              "cost_per_sf": 1.55,
+              "cost_per_unit": 890.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-2000",
+              "description": "Roof Access Ladder",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-3000",
+              "description": "Garange Entrance Gating",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-4000",
+              "description": "Side Entrance Gating",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-5000",
+              "description": "Miscellaneous Gating",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-6000",
+              "description": "Sheetmetal",
+              "total_cost": 99172.0,
+              "cost_per_sf": 2.27,
+              "cost_per_unit": 1305.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "name": "WOOD AND PLASTICS",
+          "total_cost": 2411998.0,
+          "cost_per_sf": 55.22,
+          "cost_per_unit": 31737.0,
+          "line_items": [
+            {
+              "cost_code": "53-1000-1000",
+              "description": "Framing",
+              "total_cost": 1608626.0,
+              "cost_per_sf": 36.83,
+              "cost_per_unit": 21166.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-2000",
+              "description": "Kitchen and Bath Cabinets",
+              "total_cost": 266000.0,
+              "cost_per_sf": 6.09,
+              "cost_per_unit": 3500.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-3000",
+              "description": "Kitchen and Bath Countertops",
+              "total_cost": 102600.0,
+              "cost_per_sf": 2.35,
+              "cost_per_unit": 1350.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-4000",
+              "description": "Closets and Shelving",
+              "total_cost": 23045.0,
+              "cost_per_sf": 0.53,
+              "cost_per_unit": 303.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-5000",
+              "description": "Lobby Woodwork",
+              "total_cost": 2305.0,
+              "cost_per_sf": 0.05,
+              "cost_per_unit": 30.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6000",
+              "description": "Tieback",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6100",
+              "description": "Vinyl Flooring",
+              "total_cost": 171599.0,
+              "cost_per_sf": 3.93,
+              "cost_per_unit": 2258.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6200",
+              "description": "Ceramic - ALL TILE",
+              "total_cost": 179057.0,
+              "cost_per_sf": 4.1,
+              "cost_per_unit": 2356.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6300",
+              "description": "Stone Flooring",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6400",
+              "description": "Epoxy Flooring",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6500",
+              "description": "Floor Sealing",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-7000",
+              "description": "Finished Carpentry",
+              "total_cost": 58765.0,
+              "cost_per_sf": 1.35,
+              "cost_per_unit": 773.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-8000",
+              "description": "Siding",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-9000",
+              "description": "Cabinets - Common Area",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-9500",
+              "description": "Siding",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 7,
+          "name": "THERMAL & MOISTURE PROTECTION",
+          "total_cost": 224389.0,
+          "cost_per_sf": 5.14,
+          "cost_per_unit": 2952.0,
+          "line_items": [
+            {
+              "cost_code": "54-1000-1000",
+              "description": "Insulation",
+              "total_cost": 81051.0,
+              "cost_per_sf": 1.86,
+              "cost_per_unit": 1066.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-2000",
+              "description": "Waterproofing",
+              "total_cost": 23503.0,
+              "cost_per_sf": 0.54,
+              "cost_per_unit": 309.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-3000",
+              "description": "Gutters and Downspouts",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-4000",
+              "description": "Roofing",
+              "total_cost": 66831.0,
+              "cost_per_sf": 1.53,
+              "cost_per_unit": 879.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-5000",
+              "description": "Fireproofing",
+              "total_cost": 29959.0,
+              "cost_per_sf": 0.69,
+              "cost_per_unit": 394.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-6000",
+              "description": "Expansion Joints",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-7000",
+              "description": "Stair Coating",
+              "total_cost": 23045.0,
+              "cost_per_sf": 0.53,
+              "cost_per_unit": 303.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 8,
+          "name": "DOORS, WINDOWS & GLAZING",
+          "total_cost": 667621.0,
+          "cost_per_sf": 15.28,
+          "cost_per_unit": 8784.0,
+          "line_items": [
+            {
+              "cost_code": "55-1000-1000",
+              "description": "Doors and Hardware labor / materials",
+              "total_cost": 376558.0,
+              "cost_per_sf": 8.62,
+              "cost_per_unit": 4955.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-2000",
+              "description": "Unit Entry Hardware",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-3000",
+              "description": "Door Hardware",
+              "total_cost": 11523.0,
+              "cost_per_sf": 0.26,
+              "cost_per_unit": 152.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-4000",
+              "description": "Windows",
+              "total_cost": 238481.0,
+              "cost_per_sf": 5.46,
+              "cost_per_unit": 3138.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-5000",
+              "description": "Storefront",
+              "total_cost": 20741.0,
+              "cost_per_sf": 0.47,
+              "cost_per_unit": 273.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-6000",
+              "description": "Sliding Door Labor",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-7000",
+              "description": "Bathroom Mirrors",
+              "total_cost": 9027.0,
+              "cost_per_sf": 0.21,
+              "cost_per_unit": 119.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-8000",
+              "description": "Doors - Trash",
+              "total_cost": 4609.0,
+              "cost_per_sf": 0.11,
+              "cost_per_unit": 61.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-9000",
+              "description": "Doors - Elevator Smoke Door",
+              "total_cost": 6683.0,
+              "cost_per_sf": 0.15,
+              "cost_per_unit": 88.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-9100",
+              "description": "Skylights",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-9200",
+              "description": "Skylights - Labor",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 9,
+          "name": "FINISHES",
+          "total_cost": 1447168.0,
+          "cost_per_sf": 33.13,
+          "cost_per_unit": 19042.0,
+          "line_items": [
+            {
+              "cost_code": "56-1000-1000",
+              "description": "Lath and Plaster",
+              "total_cost": 298312.0,
+              "cost_per_sf": 6.83,
+              "cost_per_unit": 3925.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-2000",
+              "description": "Drywall",
+              "total_cost": 841148.0,
+              "cost_per_sf": 19.26,
+              "cost_per_unit": 11068.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-3000",
+              "description": "Metal Studs",
+              "total_cost": 96790.0,
+              "cost_per_sf": 2.22,
+              "cost_per_unit": 1274.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-4000",
+              "description": "Paint and Wallcovering",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-5000",
+              "description": "Painting",
+              "total_cost": 210918.0,
+              "cost_per_sf": 4.83,
+              "cost_per_unit": 2775.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-5100",
+              "description": "Exterior Siding",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-6000",
+              "description": "Flooring (vinyl)",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-7000",
+              "description": "Ceramic Tile at showers and tub surrounds",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 10,
+          "name": "SPECIALTIES",
+          "total_cost": 67667.0,
+          "cost_per_sf": 1.55,
+          "cost_per_unit": 890.0,
+          "line_items": [
+            {
+              "cost_code": "57-1000-1000",
+              "description": "Bathroom Accessories",
+              "total_cost": 17556.0,
+              "cost_per_sf": 0.4,
+              "cost_per_unit": 231.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-2000",
+              "description": "Fire Extinguishers",
+              "total_cost": 4425.0,
+              "cost_per_sf": 0.1,
+              "cost_per_unit": 58.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-3000",
+              "description": "Bicycle Racks",
+              "total_cost": 34844.0,
+              "cost_per_sf": 0.8,
+              "cost_per_unit": 458.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-4000",
+              "description": "Signage",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-5000",
+              "description": "Mailboxes",
+              "total_cost": 10071.0,
+              "cost_per_sf": 0.23,
+              "cost_per_unit": 133.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-6000",
+              "description": "Knox Box",
+              "total_cost": 772.0,
+              "cost_per_sf": 0.02,
+              "cost_per_unit": 10.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-7000",
+              "description": "Roof Tieback",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 11,
+          "name": "EQUIPMENT",
+          "total_cost": 190000.0,
+          "cost_per_sf": 4.35,
+          "cost_per_unit": 2500.0,
+          "line_items": [
+            {
+              "cost_code": "58-1000-1000",
+              "description": "Appliances",
+              "total_cost": 190000.0,
+              "cost_per_sf": 5.98,
+              "cost_per_unit": 2500.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 12,
+          "name": "FURNISHINGS",
+          "total_cost": 21980.0,
+          "cost_per_sf": 0.5,
+          "cost_per_unit": 289.0,
+          "line_items": [
+            {
+              "cost_code": "59-1000-2000",
+              "description": "Window Coverings - roller shades",
+              "total_cost": 21980.0,
+              "cost_per_sf": 0.5,
+              "cost_per_unit": 289.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 13,
+          "name": "SPECIAL CONSTRUCTION",
+          "total_cost": 0.0,
+          "cost_per_sf": 0.0,
+          "cost_per_unit": 0.0,
+          "line_items": [
+            {
+              "cost_code": "60-1000-1000",
+              "description": "Solar Systems",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 14,
+          "name": "CONVEYING SYSTEMS",
+          "total_cost": 620556.0,
+          "cost_per_sf": 14.21,
+          "cost_per_unit": 8165.0,
+          "line_items": [
+            {
+              "cost_code": "61-1000-2000",
+              "description": "Construction Elevator + labor and ancilary costs",
+              "total_cost": 350000.0,
+              "cost_per_sf": 8.01,
+              "cost_per_unit": 4605.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "61-1000-3000",
+              "description": "Generator",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "61-1000-4000",
+              "description": "Elevator",
+              "total_cost": 250000.0,
+              "cost_per_sf": 5.72,
+              "cost_per_unit": 3289.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "61-1000-5000",
+              "description": "Trash Chutes",
+              "total_cost": 20556.0,
+              "cost_per_sf": 0.47,
+              "cost_per_unit": 270.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 15,
+          "name": "MECHANICAL",
+          "total_cost": 2430845.0,
+          "cost_per_sf": 55.65,
+          "cost_per_unit": 31985.0,
+          "line_items": [
+            {
+              "cost_code": "62-1000-1000",
+              "description": "HVAC Equipment",
+              "total_cost": 646000.0,
+              "cost_per_sf": 14.79,
+              "cost_per_unit": 8500.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "62-1000-2000",
+              "description": "Rough Plumbing and finish plumbing",
+              "total_cost": 1292000.0,
+              "cost_per_sf": 29.58,
+              "cost_per_unit": 17000.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "62-1000-2050",
+              "description": "Water Heater",
+              "total_cost": 261241.0,
+              "cost_per_sf": 5.98,
+              "cost_per_unit": 3437.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "62-1000-3000",
+              "description": "Fire Sprinkler System sub bid design build to meet code",
+              "total_cost": 231604.0,
+              "cost_per_sf": 5.3,
+              "cost_per_unit": 3047.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 16,
+          "name": "ELECTRICAL",
+          "total_cost": 1632190.0,
+          "cost_per_sf": 37.36,
+          "cost_per_unit": 21476.0,
+          "line_items": [
+            {
+              "cost_code": "63-1000-1000",
+              "description": "Electrical",
+              "total_cost": 1292000.0,
+              "cost_per_sf": 29.58,
+              "cost_per_unit": 17000.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-1500",
+              "description": "Inverter",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-2000",
+              "description": "Fire Alarm System",
+              "total_cost": 77429.0,
+              "cost_per_sf": 1.77,
+              "cost_per_unit": 1019.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-3000",
+              "description": "Phone Data and TV Pre-Wire",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-4000",
+              "description": "Two Way radio",
+              "total_cost": 13781.0,
+              "cost_per_sf": 0.32,
+              "cost_per_unit": 181.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-4100",
+              "description": "CCTV Camera System",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-4200",
+              "description": "Telephone Entry System",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-5000",
+              "description": "Access Control",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-6000",
+              "description": "BDA System",
+              "total_cost": 43648.0,
+              "cost_per_sf": 1.0,
+              "cost_per_unit": 574.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-7000",
+              "description": "Cable - Satellite TV",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-8000",
+              "description": "Light Fixtures",
+              "total_cost": 115226.0,
+              "cost_per_sf": 2.64,
+              "cost_per_unit": 1516.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9000",
+              "description": "Combo Low Voltage Pre-Wire",
+              "total_cost": 44016.0,
+              "cost_per_sf": 1.01,
+              "cost_per_unit": 579.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9100",
+              "description": "Structure Pre-Wire",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9200",
+              "description": "Charging Stations",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9300",
+              "description": "Temporary Power",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9400",
+              "description": "Transformer Pad",
+              "total_cost": 46090.0,
+              "cost_per_sf": 1.06,
+              "cost_per_unit": 606.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 99,
+          "name": "PROJECT ADMINISTRATION",
+          "total_cost": 1006229.0,
+          "cost_per_sf": 23.03,
+          "cost_per_unit": 13240.0,
+          "line_items": [
+            {
+              "cost_code": "75-1000-1000",
+              "description": "GC Fee",
+              "total_cost": 670820.0,
+              "cost_per_sf": 15.36,
+              "cost_per_unit": 8827.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 6.0
+            },
+            {
+              "cost_code": "75-1000-2000",
+              "description": "Bonding",
+              "total_cost": 111803.0,
+              "cost_per_sf": 2.56,
+              "cost_per_unit": 1471.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 1.0
+            },
+            {
+              "cost_code": "75-1000-3000",
+              "description": "Administration",
+              "total_cost": 223607.0,
+              "cost_per_sf": 5.12,
+              "cost_per_unit": 2942.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 2.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10953 Whipple",
+      "address": "10953 Whipple",
+      "lot_size": 17982.0,
+      "gba": 54230.0,
+      "gba_concrete": 0.0,
+      "gba_wood": 54230.0,
+      "total_units": 91,
+      "unit_mix": {
+        "Studio": 0,
+        "1BR": 64,
+        "2BR": 27
+      },
+      "floor_areas": {
+        "1st Floor": 10768.0,
+        "2nd Floor": 10736.0,
+        "3rd Floor": 10736.0,
+        "4th Floor": 10729.0,
+        "5th Floor": 10729.0,
+        "6th Floor": 532.0
+      },
+      "num_floors": 6,
+      "project_total": 14426820.0,
+      "project_subtotal": 13240199.0,
+      "admin_total": 1186621.0,
+      "gc_fee_pct": 6.0,
+      "bonding_pct": 1.5,
+      "admin_pct": 2.0,
+      "cost_per_sf": 266.03024156371015,
+      "cost_per_unit": 158536.4835164835,
+      "source_file": "Whipple Estimator",
+      "source_file_id": "1954910334245",
+      "divisions": [
+        {
+          "number": 1,
+          "name": "GENERAL REQUIREMENTS",
+          "total_cost": 1440182.0,
+          "cost_per_sf": 26.56,
+          "cost_per_unit": 15826.0,
+          "line_items": [
+            {
+              "cost_code": "20-1000-1000",
+              "description": "Field Supervision",
+              "total_cost": 749445.0,
+              "cost_per_sf": 13.82,
+              "cost_per_unit": 8236.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 6.0
+            },
+            {
+              "cost_code": "20-2000-1000",
+              "description": "Temporary Power Pole",
+              "total_cost": 8727.0,
+              "cost_per_sf": 0.16,
+              "cost_per_unit": 96.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-2000",
+              "description": "Temporary Toilets",
+              "total_cost": 41197.0,
+              "cost_per_sf": 0.76,
+              "cost_per_unit": 453.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-3000",
+              "description": "Temporary Office Supplies",
+              "total_cost": 4291.0,
+              "cost_per_sf": 0.08,
+              "cost_per_unit": 47.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-4000",
+              "description": "Temporary Job Trailer",
+              "total_cost": 5447.0,
+              "cost_per_sf": 0.1,
+              "cost_per_unit": 60.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-5000",
+              "description": "Temporary Water",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2000-6000",
+              "description": "Temporary Gas",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-2500-1000",
+              "description": "GC Miscellaneous",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-3000-1000",
+              "description": "Reproduction and Printing",
+              "total_cost": 3147.0,
+              "cost_per_sf": 0.06,
+              "cost_per_unit": 35.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-1000",
+              "description": "Scaffolding",
+              "total_cost": 39137.0,
+              "cost_per_sf": 0.72,
+              "cost_per_unit": 430.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-2000",
+              "description": "Equipment Rental and Maint.",
+              "total_cost": 37324.0,
+              "cost_per_sf": 0.69,
+              "cost_per_unit": 410.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-3000",
+              "description": "Safety Supplies and Signage",
+              "total_cost": 9727.0,
+              "cost_per_sf": 0.18,
+              "cost_per_unit": 107.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-4000",
+              "description": "Trash Hauling - Dumpsters",
+              "total_cost": 64085.0,
+              "cost_per_sf": 1.18,
+              "cost_per_unit": 704.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-5000",
+              "description": "Construction Entrance",
+              "total_cost": 2861.0,
+              "cost_per_sf": 0.05,
+              "cost_per_unit": 31.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-6000",
+              "description": "Protection Materials",
+              "total_cost": 8583.0,
+              "cost_per_sf": 0.16,
+              "cost_per_unit": 94.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-7000",
+              "description": "Construction Fencing",
+              "total_cost": 4692.0,
+              "cost_per_sf": 0.09,
+              "cost_per_unit": 52.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-8000",
+              "description": "Job Site Storage",
+              "total_cost": 5264.0,
+              "cost_per_sf": 0.1,
+              "cost_per_unit": 58.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-4000-9000",
+              "description": "Material Storage",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-5000-1000",
+              "description": "Special Inspection",
+              "total_cost": 49036.0,
+              "cost_per_sf": 0.9,
+              "cost_per_unit": 539.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-6000-1000",
+              "description": "Construction Cleaning",
+              "total_cost": 20026.0,
+              "cost_per_sf": 0.37,
+              "cost_per_unit": 220.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-8000-1000",
+              "description": "Final Cleaning",
+              "total_cost": 37192.0,
+              "cost_per_sf": 0.69,
+              "cost_per_unit": 409.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "20-9000-1000",
+              "description": "GR - Contractor Contingency",
+              "total_cost": 350000.0,
+              "cost_per_sf": 6.45,
+              "cost_per_unit": 3846.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 3.0
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "name": "OFF-SITE CONSTRUCTION",
+          "total_cost": 45775.0,
+          "cost_per_sf": 0.84,
+          "cost_per_unit": 503.0,
+          "line_items": [
+            {
+              "cost_code": "30-1000-1000",
+              "description": "Curbs - Gutters - Sidewalks",
+              "total_cost": 45775.0,
+              "cost_per_sf": 0.84,
+              "cost_per_unit": 503.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-2000",
+              "description": "Fire Hydrants",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-3000",
+              "description": "Gutter and Drive Approaches",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-4000",
+              "description": "Off-Site Paving",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-5000",
+              "description": "Demolition",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "30-1000-6000",
+              "description": "Utility Offisite",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "name": "ON-SITE CONSTRUCTION",
+          "total_cost": 374273.0,
+          "cost_per_sf": 6.9,
+          "cost_per_unit": 4113.0,
+          "line_items": [
+            {
+              "cost_code": "40-1000-1000",
+              "description": "Structural Demo",
+              "total_cost": 114295.0,
+              "cost_per_sf": 0.84,
+              "cost_per_unit": 1256.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-2000",
+              "description": "Interior Demo",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-3000",
+              "description": "Mics. Demo and Patching",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-4000",
+              "description": "Demo Patching",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-5000",
+              "description": "Protection Scaffold",
+              "total_cost": 11444.0,
+              "cost_per_sf": 0.21,
+              "cost_per_unit": 126.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-1000-6000",
+              "description": "Mics. Mechanical Demo",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-1000",
+              "description": "Earthwork",
+              "total_cost": 99330.0,
+              "cost_per_sf": 1.83,
+              "cost_per_unit": 1092.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-2000",
+              "description": "Layout and surverying",
+              "total_cost": 10597.0,
+              "cost_per_sf": 0.2,
+              "cost_per_unit": 116.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-3000",
+              "description": "Footing spoil removal",
+              "total_cost": 11444.0,
+              "cost_per_sf": 0.21,
+              "cost_per_unit": 126.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-4000",
+              "description": "Rough Grading",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-5000",
+              "description": "Site Drainage / Drywell",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-6000",
+              "description": "SWPPP",
+              "total_cost": 3719.0,
+              "cost_per_sf": 0.07,
+              "cost_per_unit": 41.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-7000",
+              "description": "Utility Trench and Backfill",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-7100",
+              "description": "Utility Connections",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-8000",
+              "description": "Temporary Shoring",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-9000",
+              "description": "Soil Compaction",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-2000-9100",
+              "description": "Steel Structure",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-1000",
+              "description": "Water Service",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-2000",
+              "description": "Water Service - Fire Sprinkler",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-3000",
+              "description": "Cable and Phone",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-4000",
+              "description": "Gas Service",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-5000",
+              "description": "Striping - bumpers - signage",
+              "total_cost": 2847.0,
+              "cost_per_sf": 0.05,
+              "cost_per_unit": 31.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-3000-6000",
+              "description": "Electrical Service",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-4000-1000",
+              "description": "BBQ and outdoor utilities",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-4000-2000",
+              "description": "Trellis - Shades - Patio",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-5000-1000",
+              "description": "Landscaping and irrigation",
+              "total_cost": 100000.0,
+              "cost_per_sf": 2.54,
+              "cost_per_unit": 1099.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "40-7000-1000",
+              "description": "Sewer - Septic",
+              "total_cost": 20599.0,
+              "cost_per_sf": 0.38,
+              "cost_per_unit": 226.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "name": "CONCRETE",
+          "total_cost": 469105.0,
+          "cost_per_sf": 8.65,
+          "cost_per_unit": 5155.0,
+          "line_items": [
+            {
+              "cost_code": "50-1000-1000",
+              "description": "Structural Concrete",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "50-1000-2000",
+              "description": "Site Concrete- walkways,retaining walls for walks",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "50-1000-3000",
+              "description": "Concrete Slab",
+              "total_cost": 366112.0,
+              "cost_per_sf": 6.75,
+              "cost_per_unit": 4023.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "50-1000-4000",
+              "description": "Concrete Finishing",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "50-1000-5000",
+              "description": "Gypcrete",
+              "total_cost": 102993.0,
+              "cost_per_sf": 1.9,
+              "cost_per_unit": 1132.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "name": "MASONRY",
+          "total_cost": 19523.0,
+          "cost_per_sf": 0.36,
+          "cost_per_unit": 215.0,
+          "line_items": [
+            {
+              "cost_code": "51-1000-1000",
+              "description": "Structural Masonry",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "51-1000-2000",
+              "description": "Site Masonry",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "51-1000-3000",
+              "description": "Pavers",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "51-1000-4000",
+              "description": "Veneer Exterior - Material",
+              "total_cost": 19523.0,
+              "cost_per_sf": 0.36,
+              "cost_per_unit": 215.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "51-1000-5000",
+              "description": "Veneer Exterior - Labor",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "name": "METALS",
+          "total_cost": 207100.0,
+          "cost_per_sf": 3.82,
+          "cost_per_unit": 2276.0,
+          "line_items": [
+            {
+              "cost_code": "52-1000-1000",
+              "description": "Structural Steel",
+              "total_cost": 83984.0,
+              "cost_per_sf": 1.55,
+              "cost_per_unit": 923.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-2000",
+              "description": "Roof Access Ladder",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-3000",
+              "description": "Garange Entrance Gating",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-4000",
+              "description": "Side Entrance Gating",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-5000",
+              "description": "Miscellaneous Gating",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "52-1000-6000",
+              "description": "Sheetmetal",
+              "total_cost": 123117.0,
+              "cost_per_sf": 2.27,
+              "cost_per_unit": 1353.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "name": "WOOD AND PLASTICS",
+          "total_cost": 2755824.0,
+          "cost_per_sf": 50.82,
+          "cost_per_unit": 30284.0,
+          "line_items": [
+            {
+              "cost_code": "53-1000-1000",
+              "description": "Framing",
+              "total_cost": 1997020.0,
+              "cost_per_sf": 36.83,
+              "cost_per_unit": 21945.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-2000",
+              "description": "Kitchen and Bath Cabinets",
+              "total_cost": 318500.0,
+              "cost_per_sf": 5.87,
+              "cost_per_unit": 3500.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-3000",
+              "description": "Kitchen and Bath Countertops",
+              "total_cost": 122850.0,
+              "cost_per_sf": 2.27,
+              "cost_per_unit": 1350.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-4000",
+              "description": "Closets and Shelving",
+              "total_cost": 28609.0,
+              "cost_per_sf": 0.53,
+              "cost_per_unit": 314.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-5000",
+              "description": "Lobby Woodwork",
+              "total_cost": 2861.0,
+              "cost_per_sf": 0.05,
+              "cost_per_unit": 31.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6000",
+              "description": "Tieback",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6100",
+              "description": "Vinyl Flooring",
+              "total_cost": 213031.0,
+              "cost_per_sf": 3.93,
+              "cost_per_unit": 2341.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6200",
+              "description": "Ceramic - ALL TILE",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6300",
+              "description": "Stone Flooring",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6400",
+              "description": "Epoxy Flooring",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-6500",
+              "description": "Floor Sealing",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-7000",
+              "description": "Finished Carpentry",
+              "total_cost": 72954.0,
+              "cost_per_sf": 1.35,
+              "cost_per_unit": 802.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-8000",
+              "description": "Siding",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-9000",
+              "description": "Cabinets - Common Area",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "53-1000-9500",
+              "description": "Siding",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 7,
+          "name": "THERMAL & MOISTURE PROTECTION",
+          "total_cost": 278567.0,
+          "cost_per_sf": 5.14,
+          "cost_per_unit": 3061.0,
+          "line_items": [
+            {
+              "cost_code": "54-1000-1000",
+              "description": "Insulation",
+              "total_cost": 100620.0,
+              "cost_per_sf": 1.86,
+              "cost_per_unit": 1106.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-2000",
+              "description": "Waterproofing",
+              "total_cost": 29178.0,
+              "cost_per_sf": 0.54,
+              "cost_per_unit": 321.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-3000",
+              "description": "Gutters and Downspouts",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-4000",
+              "description": "Roofing",
+              "total_cost": 82967.0,
+              "cost_per_sf": 1.53,
+              "cost_per_unit": 912.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-5000",
+              "description": "Fireproofing",
+              "total_cost": 37192.0,
+              "cost_per_sf": 0.69,
+              "cost_per_unit": 409.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-6000",
+              "description": "Expansion Joints",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "54-1000-7000",
+              "description": "Stair Coating",
+              "total_cost": 28609.0,
+              "cost_per_sf": 0.53,
+              "cost_per_unit": 314.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 8,
+          "name": "DOORS, WINDOWS & GLAZING",
+          "total_cost": 828814.0,
+          "cost_per_sf": 15.28,
+          "cost_per_unit": 9108.0,
+          "line_items": [
+            {
+              "cost_code": "55-1000-1000",
+              "description": "Doors and Hardware labor / materials",
+              "total_cost": 467475.0,
+              "cost_per_sf": 8.62,
+              "cost_per_unit": 5137.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-2000",
+              "description": "Unit Entry Hardware",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-3000",
+              "description": "Door Hardware",
+              "total_cost": 14305.0,
+              "cost_per_sf": 0.26,
+              "cost_per_unit": 157.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-4000",
+              "description": "Windows",
+              "total_cost": 296061.0,
+              "cost_per_sf": 5.46,
+              "cost_per_unit": 3253.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-5000",
+              "description": "Storefront",
+              "total_cost": 25748.0,
+              "cost_per_sf": 0.47,
+              "cost_per_unit": 283.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-6000",
+              "description": "Sliding Door Labor",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-7000",
+              "description": "Bathroom Mirrors",
+              "total_cost": 11206.0,
+              "cost_per_sf": 0.21,
+              "cost_per_unit": 123.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-8000",
+              "description": "Doors - Trash",
+              "total_cost": 5722.0,
+              "cost_per_sf": 0.11,
+              "cost_per_unit": 63.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-9000",
+              "description": "Doors - Elevator Smoke Door",
+              "total_cost": 8297.0,
+              "cost_per_sf": 0.15,
+              "cost_per_unit": 91.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-9100",
+              "description": "Skylights",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "55-1000-9200",
+              "description": "Skylights - Labor",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 9,
+          "name": "FINISHES",
+          "total_cost": 1796578.0,
+          "cost_per_sf": 33.13,
+          "cost_per_unit": 19743.0,
+          "line_items": [
+            {
+              "cost_code": "56-1000-1000",
+              "description": "Lath and Plaster",
+              "total_cost": 370338.0,
+              "cost_per_sf": 6.83,
+              "cost_per_unit": 4070.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-2000",
+              "description": "Drywall",
+              "total_cost": 1044238.0,
+              "cost_per_sf": 19.26,
+              "cost_per_unit": 11475.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-3000",
+              "description": "Metal Studs",
+              "total_cost": 120159.0,
+              "cost_per_sf": 2.22,
+              "cost_per_unit": 1320.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-4000",
+              "description": "Paint and Wallcovering",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-5000",
+              "description": "Painting",
+              "total_cost": 261843.0,
+              "cost_per_sf": 4.83,
+              "cost_per_unit": 2877.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-5100",
+              "description": "Exterior Siding",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-6000",
+              "description": "Flooring (vinyl)",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "56-1000-7000",
+              "description": "Ceramic Tile at showers and tub surrounds",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 10,
+          "name": "SPECIALTIES",
+          "total_cost": 84005.0,
+          "cost_per_sf": 1.55,
+          "cost_per_unit": 923.0,
+          "line_items": [
+            {
+              "cost_code": "57-1000-1000",
+              "description": "Bathroom Accessories",
+              "total_cost": 21795.0,
+              "cost_per_sf": 0.4,
+              "cost_per_unit": 240.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-2000",
+              "description": "Fire Extinguishers",
+              "total_cost": 5493.0,
+              "cost_per_sf": 0.1,
+              "cost_per_unit": 60.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-3000",
+              "description": "Bicycle Racks",
+              "total_cost": 43257.0,
+              "cost_per_sf": 0.8,
+              "cost_per_unit": 475.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-4000",
+              "description": "Signage",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-5000",
+              "description": "Mailboxes",
+              "total_cost": 12502.0,
+              "cost_per_sf": 0.23,
+              "cost_per_unit": 137.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-6000",
+              "description": "Knox Box",
+              "total_cost": 958.0,
+              "cost_per_sf": 0.02,
+              "cost_per_unit": 11.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "57-1000-7000",
+              "description": "Roof Tieback",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 11,
+          "name": "EQUIPMENT",
+          "total_cost": 215820.0,
+          "cost_per_sf": 3.98,
+          "cost_per_unit": 2372.0,
+          "line_items": [
+            {
+              "cost_code": "58-1000-1000",
+              "description": "Appliances",
+              "total_cost": 215820.0,
+              "cost_per_sf": 3.98,
+              "cost_per_unit": 2372.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 12,
+          "name": "FURNISHINGS",
+          "total_cost": 27288.0,
+          "cost_per_sf": 0.5,
+          "cost_per_unit": 300.0,
+          "line_items": [
+            {
+              "cost_code": "59-1000-2000",
+              "description": "Window Coverings - roller shades",
+              "total_cost": 27288.0,
+              "cost_per_sf": 0.5,
+              "cost_per_unit": 300.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 13,
+          "name": "SPECIAL CONSTRUCTION",
+          "total_cost": 100000.0,
+          "cost_per_sf": 1.84,
+          "cost_per_unit": 1099.0,
+          "line_items": [
+            {
+              "cost_code": "60-1000-1000",
+              "description": "Solar Systems",
+              "total_cost": 100000.0,
+              "cost_per_sf": 1.84,
+              "cost_per_unit": 1099.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 14,
+          "name": "CONVEYING SYSTEMS",
+          "total_cost": 390519.0,
+          "cost_per_sf": 7.2,
+          "cost_per_unit": 4291.0,
+          "line_items": [
+            {
+              "cost_code": "61-1000-2000",
+              "description": "Construction Elevator",
+              "total_cost": 145000.0,
+              "cost_per_sf": 2.67,
+              "cost_per_unit": 1593.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "61-1000-3000",
+              "description": "Generator",
+              "total_cost": 60000.0,
+              "cost_per_sf": 1.11,
+              "cost_per_unit": 659.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "61-1000-4000",
+              "description": "Elevator",
+              "total_cost": 160000.0,
+              "cost_per_sf": 2.95,
+              "cost_per_unit": 1758.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "61-1000-5000",
+              "description": "Trash Chutes",
+              "total_cost": 25519.0,
+              "cost_per_sf": 0.47,
+              "cost_per_unit": 280.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 15,
+          "name": "MECHANICAL",
+          "total_cost": 2439500.0,
+          "cost_per_sf": 44.98,
+          "cost_per_unit": 26808.0,
+          "line_items": [
+            {
+              "cost_code": "62-1000-1000",
+              "description": "HVAC Equipment",
+              "total_cost": 773500.0,
+              "cost_per_sf": 14.26,
+              "cost_per_unit": 8500.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "62-1000-2000",
+              "description": "Rough Plumbing and finish plumbing",
+              "total_cost": 1210000.0,
+              "cost_per_sf": 22.28,
+              "cost_per_unit": 13297.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "62-1000-2050",
+              "description": "Water Heater",
+              "total_cost": 274000.0,
+              "cost_per_sf": 5.04,
+              "cost_per_unit": 3011.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "62-1000-3000",
+              "description": "Fire Sprinkler System sub bid design build to meet code",
+              "total_cost": 182000.0,
+              "cost_per_sf": 3.36,
+              "cost_per_unit": 2000.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 16,
+          "name": "ELECTRICAL",
+          "total_cost": 1767326.0,
+          "cost_per_sf": 32.59,
+          "cost_per_unit": 19421.0,
+          "line_items": [
+            {
+              "cost_code": "63-1000-1000",
+              "description": "Electrical",
+              "total_cost": 1345000.0,
+              "cost_per_sf": 24.8,
+              "cost_per_unit": 14780.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-1500",
+              "description": "Inverter",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-2000",
+              "description": "Fire Alarm System",
+              "total_cost": 96124.0,
+              "cost_per_sf": 1.77,
+              "cost_per_unit": 1056.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-3000",
+              "description": "Phone Data and TV Pre-Wire",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-4000",
+              "description": "Two Way radio",
+              "total_cost": 17108.0,
+              "cost_per_sf": 0.32,
+              "cost_per_unit": 188.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-4100",
+              "description": "CCTV Camera System",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-4200",
+              "description": "Telephone Entry System",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-5000",
+              "description": "Access Control",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-6000",
+              "description": "BDA System",
+              "total_cost": 54186.0,
+              "cost_per_sf": 1.0,
+              "cost_per_unit": 595.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-7000",
+              "description": "Cable - Satellite TV",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-8000",
+              "description": "Light Fixtures",
+              "total_cost": 143046.0,
+              "cost_per_sf": 2.64,
+              "cost_per_unit": 1572.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9000",
+              "description": "Combo Low Voltage Pre-Wire",
+              "total_cost": 54644.0,
+              "cost_per_sf": 1.01,
+              "cost_per_unit": 600.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9100",
+              "description": "Structure Pre-Wire",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9200",
+              "description": "Charging Stations",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9300",
+              "description": "Temporary Power",
+              "total_cost": 0.0,
+              "cost_per_sf": 0.0,
+              "cost_per_unit": 0.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            },
+            {
+              "cost_code": "63-1000-9400",
+              "description": "Transformer Pad",
+              "total_cost": 57219.0,
+              "cost_per_sf": 1.06,
+              "cost_per_unit": 629.0,
+              "notes": "",
+              "is_percentage_based": false,
+              "percentage": null
+            }
+          ]
+        },
+        {
+          "number": 99,
+          "name": "PROJECT ADMINISTRATION",
+          "total_cost": 1186621.0,
+          "cost_per_sf": 21.88,
+          "cost_per_unit": 13040.0,
+          "line_items": [
+            {
+              "cost_code": "75-1000-1000",
+              "description": "GC Fee",
+              "total_cost": 749445.0,
+              "cost_per_sf": 13.82,
+              "cost_per_unit": 8236.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 6.0
+            },
+            {
+              "cost_code": "75-1000-2000",
+              "description": "Bonding",
+              "total_cost": 187361.0,
+              "cost_per_sf": 3.45,
+              "cost_per_unit": 2059.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 1.5
+            },
+            {
+              "cost_code": "75-1000-3000",
+              "description": "Administration",
+              "total_cost": 249815.0,
+              "cost_per_sf": 4.61,
+              "cost_per_unit": 2745.0,
+              "notes": "",
+              "is_percentage_based": true,
+              "percentage": 2.0
+            }
+          ]
+        }
+      ]
     }
   ]
 }
