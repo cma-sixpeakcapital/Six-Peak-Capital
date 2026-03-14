@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LV Construction Cost Estimator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>LV Construction Cost Estimator</h1>
+        <p class="subtitle">{{ projects|length }} historical projects loaded</p>
+    </header>
+
+    <main>
+        {% if error %}
+        <div class="error-banner">{{ error }}</div>
+        {% endif %}
+
+        <section class="input-section">
+            <h2>Project Parameters</h2>
+            <form method="POST" action="/estimate">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="gba">Gross Building Area (SF)</label>
+                        <input type="text" id="gba" name="gba"
+                               value="{{ form.gba if form else '' }}"
+                               placeholder="e.g. 50,000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="units">Number of Units</label>
+                        <input type="text" id="units" name="units"
+                               value="{{ form.units if form else '' }}"
+                               placeholder="e.g. 85" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unit_mix">Unit Mix</label>
+                        <input type="text" id="unit_mix" name="unit_mix"
+                               value="{{ form.unit_mix if form else '' }}"
+                               placeholder="1BR:50, 2BR:30, Studio:5">
+                    </div>
+                    <div class="form-group">
+                        <label for="construction_type">Construction Type</label>
+                        <select id="construction_type" name="construction_type">
+                            <option value="wood" {{ 'selected' if form and form.construction_type == 'wood' }}>Wood</option>
+                            <option value="concrete" {{ 'selected' if form and form.construction_type == 'concrete' }}>Concrete</option>
+                            <option value="mixed" {{ 'selected' if form and form.construction_type == 'mixed' }}>Mixed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="num_floors">Floors</label>
+                        <input type="number" id="num_floors" name="num_floors"
+                               value="{{ form.num_floors if form else '5' }}" min="1" max="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="gc_fee">GC Fee %</label>
+                        <input type="number" id="gc_fee" name="gc_fee"
+                               value="{{ form.gc_fee if form else '6.0' }}" step="0.5" min="0" max="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="bonding">Bonding %</label>
+                        <input type="number" id="bonding" name="bonding"
+                               value="{{ form.bonding if form else '1.0' }}" step="0.5" min="0" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin">Admin %</label>
+                        <input type="number" id="admin" name="admin"
+                               value="{{ form.admin if form else '2.0' }}" step="0.5" min="0" max="10">
+                    </div>
+                </div>
+                <button type="submit" class="btn-estimate">Generate Estimate</button>
+            </form>
+        </section>
+
+        {% if estimate %}
+        <section class="results-section">
+            <div class="summary-banner">
+                <div class="summary-total">
+                    <span class="label">Project Total</span>
+                    <span class="value">{{ estimate.project_total|currency }}</span>
+                </div>
+                <div class="summary-metrics">
+                    <div class="metric">
+                        <span class="label">Cost / SF</span>
+                        <span class="value">{{ estimate.cost_per_sf|currency2 }}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Cost / Unit</span>
+                        <span class="value">{{ estimate.cost_per_unit|currency }}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Target</span>
+                        <span class="value">{{ "{:,.0f}".format(estimate.target_gba) }} SF / {{ estimate.target_units }} Units</span>
+                    </div>
+                </div>
+                <div class="confidence-range">
+                    <span class="label">Confidence Range</span>
+                    <span class="range">{{ estimate.low_total|currency }} &mdash; {{ estimate.high_total|currency }}</span>
+                </div>
+            </div>
+
+            {% if estimate.similar_projects %}
+            <div class="similar-projects">
+                <h3>Based on Similar Projects</h3>
+                <div class="similar-list">
+                    {% for name, score in zip(estimate.similar_projects, estimate.match_scores) %}
+                    <div class="similar-item">
+                        <span class="name">{{ name }}</span>
+                        <span class="score">{{ score|pct }} match</span>
+                        <div class="score-bar"><div class="score-fill" style="width: {{ (score * 100)|int }}%"></div></div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="division-table">
+                <h3>Division Breakdown</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-div">Div</th>
+                            <th class="col-name">Category</th>
+                            <th class="col-num">Total</th>
+                            <th class="col-num">$/SF</th>
+                            <th class="col-num">$/Unit</th>
+                            <th class="col-num">Low</th>
+                            <th class="col-num">High</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for div in estimate.divisions %}
+                        <tr class="division-row">
+                            <td class="col-div">{{ div.number }}</td>
+                            <td class="col-name">
+                                <details>
+                                    <summary>{{ div.name }}</summary>
+                                    <table class="line-items">
+                                        <thead>
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Description</th>
+                                                <th class="col-num">Total</th>
+                                                <th class="col-num">$/SF</th>
+                                                <th class="col-num">$/Unit</th>
+                                                <th class="col-num">Conf</th>
+                                                <th class="col-num">Pts</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in div.line_items %}
+                                            <tr>
+                                                <td class="code">{{ item.cost_code }}</td>
+                                                <td>{{ item.description }}</td>
+                                                <td class="col-num">{{ item.estimated_total|currency }}</td>
+                                                <td class="col-num">{{ item.estimated_per_sf|currency2 }}</td>
+                                                <td class="col-num">{{ item.estimated_per_unit|currency }}</td>
+                                                <td class="col-num">
+                                                    <span class="conf-dot conf-{{ 'high' if item.confidence > 0.7 else ('med' if item.confidence > 0.4 else 'low') }}"></span>
+                                                    {{ item.confidence|pct }}
+                                                </td>
+                                                <td class="col-num">{{ item.data_points }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </details>
+                            </td>
+                            <td class="col-num">{{ div.estimated_total|currency }}</td>
+                            <td class="col-num">{{ div.estimated_per_sf|currency2 }}</td>
+                            <td class="col-num">{{ div.estimated_per_unit|currency }}</td>
+                            <td class="col-num">{{ div.low_total|currency }}</td>
+                            <td class="col-num">{{ div.high_total|currency }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="subtotal-row">
+                            <td></td>
+                            <td>Subtotal (excl. Admin)</td>
+                            <td class="col-num">{{ estimate.project_subtotal|currency }}</td>
+                            <td class="col-num">{{ (estimate.project_subtotal / estimate.target_gba)|currency2 }}</td>
+                            <td class="col-num">{{ (estimate.project_subtotal / estimate.target_units)|currency }}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td></td>
+                            <td>PROJECT TOTAL</td>
+                            <td class="col-num">{{ estimate.project_total|currency }}</td>
+                            <td class="col-num">{{ estimate.cost_per_sf|currency2 }}</td>
+                            <td class="col-num">{{ estimate.cost_per_unit|currency }}</td>
+                            <td class="col-num">{{ estimate.low_total|currency }}</td>
+                            <td class="col-num">{{ estimate.high_total|currency }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="reference-section">
+            <details {% if not estimate %}open{% endif %}>
+                <summary><h3 style="display:inline">Historical Projects Reference</h3></summary>
+                <table class="ref-table">
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th class="col-num">GBA (SF)</th>
+                            <th class="col-num">Units</th>
+                            <th class="col-num">$/SF</th>
+                            <th class="col-num">Total</th>
+                            <th class="col-num">Divisions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in projects %}
+                        <tr>
+                            <td>{{ p.name }}</td>
+                            <td class="col-num">{{ "{:,.0f}".format(p.gba) }}</td>
+                            <td class="col-num">{{ p.total_units }}</td>
+                            <td class="col-num">{{ p.cost_per_sf|currency }}</td>
+                            <td class="col-num">{{ p.project_total|currency }}</td>
+                            <td class="col-num">{{ p.divisions|length }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </details>
+        </section>
+    </main>
+
+    <footer>
+        <p>LV Construction Cost Estimator &middot; {{ projects|length }} projects &middot; {{ db_cost_codes }} cost codes</p>
+    </footer>
+
+    <script>
+    // Auto-format number inputs with commas
+    document.querySelectorAll('#gba, #units').forEach(input => {
+        input.addEventListener('blur', function() {
+            let val = this.value.replace(/,/g, '');
+            if (!isNaN(val) && val !== '') {
+                this.value = Number(val).toLocaleString();
+            }
+        });
+    });
+    </script>
+</body>
+</html>

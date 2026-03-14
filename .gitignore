@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+dist/
+build/
+
+# Temp data files (content from Box)
+_temp_*.txt
+
+# Claude tool results
+.claude/projects/
+
+# IDE
+.vscode/
+.idea/
