@@ -77,6 +77,8 @@ class HistoricalDatabase:
                     "project_name": project.name,
                     "gba": project.gba,
                     "units": project.total_units,
+                    "gba_concrete": project.gba_concrete,
+                    "gba_wood": project.gba_wood,
                 }
             )
 
@@ -97,6 +99,8 @@ class HistoricalDatabase:
                         "is_percentage_based": item.is_percentage_based,
                         "percentage": item.percentage,
                         "notes": item.notes,
+                        "gba_concrete": project.gba_concrete,
+                        "gba_wood": project.gba_wood,
                     }
                 )
 
@@ -223,6 +227,14 @@ class HistoricalDatabase:
                 "cost_per_unit": p.cost_per_unit,
                 "source_file": p.source_file,
                 "source_file_id": p.source_file_id,
+                "podium_levels": p.podium_levels,
+                "wood_levels": p.wood_levels,
+                "subterranean": p.subterranean,
+                "parking_spaces": p.parking_spaces,
+                "elevator_count": p.elevator_count,
+                "elevator_stops": p.elevator_stops,
+                "lot_size_sf": p.lot_size_sf,
+                "shored_area": p.shored_area,
                 "divisions": [],
             }
             for div in p.divisions:
@@ -308,6 +320,14 @@ class HistoricalDatabase:
                 cost_per_unit=proj_data["cost_per_unit"],
                 source_file=proj_data["source_file"],
                 source_file_id=proj_data.get("source_file_id", ""),
+                podium_levels=proj_data.get("podium_levels", 0),
+                wood_levels=proj_data.get("wood_levels", 0),
+                subterranean=proj_data.get("subterranean", False),
+                parking_spaces=proj_data.get("parking_spaces", 0),
+                elevator_count=proj_data.get("elevator_count", 1),
+                elevator_stops=proj_data.get("elevator_stops", 0),
+                lot_size_sf=proj_data.get("lot_size_sf", 0.0),
+                shored_area=proj_data.get("shored_area", 0.0),
             )
             self.add_project(project)
 

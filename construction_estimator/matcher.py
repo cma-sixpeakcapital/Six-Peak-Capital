@@ -8,6 +8,8 @@ weighted similarity across multiple dimensions:
 - Unit mix (ratio of 1BR/2BR/Studio)
 - Construction type (wood, concrete, mixed)
 - Number of floors
+- Concrete ratio (proportion of GBA that is concrete)
+- Unit density (units per SF)
 """
 
 import math
@@ -16,11 +18,13 @@ from construction_estimator.models import Project
 
 # Weights for each similarity dimension (must sum to 1.0)
 DEFAULT_WEIGHTS = {
-    "gba": 0.30,
-    "units": 0.25,
-    "unit_mix": 0.15,
-    "construction_type": 0.15,
-    "num_floors": 0.15,
+    "gba": 0.15,
+    "units": 0.20,
+    "unit_mix": 0.10,
+    "construction_type": 0.10,
+    "num_floors": 0.10,
+    "concrete_ratio": 0.20,
+    "unit_density": 0.15,
 }
 
 
@@ -39,6 +43,8 @@ class ProjectMatcher:
         target_construction_type: str = "wood",
         target_num_floors: int = 5,
         top_n: int = 5,
+        target_gba_concrete: float = 0,
+        target_gba_wood: float = 0,
     ) -> list[tuple[Project, float]]:
         """Find the most similar projects to the target parameters.
 
@@ -50,6 +56,8 @@ class ProjectMatcher:
             target_construction_type: "wood", "concrete", or "mixed"
             target_num_floors: Number of floors
             top_n: Number of results to return
+            target_gba_concrete: Target concrete area (SF)
+            target_gba_wood: Target wood area (SF)
 
         Returns:
             List of (Project, similarity_score) tuples, highest score first.
@@ -64,6 +72,8 @@ class ProjectMatcher:
                 target_unit_mix,
                 target_construction_type,
                 target_num_floors,
+                target_gba_concrete,
+                target_gba_wood,
             )
             scored.append((project, score))
 
@@ -78,6 +88,8 @@ class ProjectMatcher:
         target_unit_mix: dict[str, int],
         target_construction_type: str,
         target_num_floors: int,
+        target_gba_concrete: float = 0,
+        target_gba_wood: float = 0,
     ) -> float:
         """Compute weighted similarity score between project and target."""
         scores = {}
@@ -115,6 +127,34 @@ class ProjectMatcher:
             scores["num_floors"] = max(0.0, 1.0 - floor_diff * 0.25)
         else:
             scores["num_floors"] = 0.0
+
+        # Concrete ratio similarity
+        target_total = target_gba_concrete + target_gba_wood
+        if target_total > 0:
+            target_ratio = target_gba_concrete / target_total
+        elif target_gba > 0:
+            target_ratio = 0.0  # assume all wood if not specified
+        else:
+            target_ratio = 0.0
+
+        if project.gba > 0:
+            project_ratio = project.gba_concrete / project.gba
+        else:
+            project_ratio = 0.0
+
+        scores["concrete_ratio"] = math.exp(
+            -5 * abs(target_ratio - project_ratio)
+        )
+
+        # Unit density similarity (units per SF)
+        if target_gba > 0 and project.gba > 0 and target_units > 0 and project.total_units > 0:
+            target_density = target_units / target_gba
+            project_density = project.total_units / project.gba
+            scores["unit_density"] = math.exp(
+                -3 * abs(target_density - project_density)
+            )
+        else:
+            scores["unit_density"] = 0.0
 
         # Weighted sum
         total = sum(

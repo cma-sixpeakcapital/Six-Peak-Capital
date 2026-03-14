@@ -301,6 +301,64 @@ footer {
     font-size: 0.8rem;
 }
 
+/* Section headers */
+.section-header {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin: 1.25rem 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+.section-header:first-child { margin-top: 0; }
+
+.computed-field {
+    background: #f0f4ff;
+    border: 1px dashed #93c5fd;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e40af;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 1.5rem;
+}
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+.checkbox-group label {
+    margin: 0;
+    text-transform: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.fee-details {
+    margin-top: 1.25rem;
+}
+.fee-details summary {
+    cursor: pointer;
+}
+
 /* Print */
 @media print {
     header { background: none; color: #000; border-bottom: 2px solid #000; }

@@ -58,6 +58,14 @@ class Project:
     cost_per_unit: float = 0.0
     source_file: str = ""
     source_file_id: str = ""  # Box file ID
+    podium_levels: int = 0
+    wood_levels: int = 0
+    subterranean: bool = False
+    parking_spaces: int = 0
+    elevator_count: int = 1
+    elevator_stops: int = 0
+    lot_size_sf: float = 0.0  # for site work pricing
+    shored_area: float = 0.0  # for shoring pricing
 
     @property
     def construction_type(self) -> str:

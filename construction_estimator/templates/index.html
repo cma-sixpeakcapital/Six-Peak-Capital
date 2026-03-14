@@ -20,54 +20,153 @@
         <section class="input-section">
             <h2>Project Parameters</h2>
             <form method="POST" action="/estimate">
-                <div class="form-grid">
+
+                <!-- Section A: Building Structure -->
+                <h3 class="section-header">A &mdash; Building Structure</h3>
+                <div class="form-grid-3">
                     <div class="form-group">
-                        <label for="gba">Gross Building Area (SF)</label>
-                        <input type="text" id="gba" name="gba"
-                               value="{{ form.gba if form else '' }}"
-                               placeholder="e.g. 50,000" required>
+                        <label for="podium_levels">Concrete Levels</label>
+                        <input type="number" id="podium_levels" name="podium_levels"
+                               value="{{ form.podium_levels if form else '1' }}" min="0" max="5">
                     </div>
                     <div class="form-group">
-                        <label for="units">Number of Units</label>
-                        <input type="text" id="units" name="units"
-                               value="{{ form.units if form else '' }}"
-                               placeholder="e.g. 85" required>
+                        <label for="wood_levels">Wood Frame Levels</label>
+                        <input type="number" id="wood_levels" name="wood_levels"
+                               value="{{ form.wood_levels if form else '4' }}" min="1" max="7">
                     </div>
                     <div class="form-group">
-                        <label for="unit_mix">Unit Mix</label>
-                        <input type="text" id="unit_mix" name="unit_mix"
-                               value="{{ form.unit_mix if form else '' }}"
-                               placeholder="1BR:50, 2BR:30, Studio:5">
-                    </div>
-                    <div class="form-group">
-                        <label for="construction_type">Construction Type</label>
-                        <select id="construction_type" name="construction_type">
-                            <option value="wood" {{ 'selected' if form and form.construction_type == 'wood' }}>Wood</option>
-                            <option value="concrete" {{ 'selected' if form and form.construction_type == 'concrete' }}>Concrete</option>
-                            <option value="mixed" {{ 'selected' if form and form.construction_type == 'mixed' }}>Mixed</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="num_floors">Floors</label>
-                        <input type="number" id="num_floors" name="num_floors"
-                               value="{{ form.num_floors if form else '5' }}" min="1" max="20">
-                    </div>
-                    <div class="form-group">
-                        <label for="gc_fee">GC Fee %</label>
-                        <input type="number" id="gc_fee" name="gc_fee"
-                               value="{{ form.gc_fee if form else '6.0' }}" step="0.5" min="0" max="20">
-                    </div>
-                    <div class="form-group">
-                        <label for="bonding">Bonding %</label>
-                        <input type="number" id="bonding" name="bonding"
-                               value="{{ form.bonding if form else '1.0' }}" step="0.5" min="0" max="10">
-                    </div>
-                    <div class="form-group">
-                        <label for="admin">Admin %</label>
-                        <input type="number" id="admin" name="admin"
-                               value="{{ form.admin if form else '2.0' }}" step="0.5" min="0" max="10">
+                        <label>Total Floors</label>
+                        <div class="computed-field" id="calc_total_floors">5</div>
                     </div>
                 </div>
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label for="gba_concrete">Concrete / Podium Area SF</label>
+                        <input type="text" id="gba_concrete" name="gba_concrete"
+                               value="{{ form.gba_concrete if form else '' }}"
+                               placeholder="e.g. 12,000" class="sf-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="gba_wood">Wood Frame Area SF</label>
+                        <input type="text" id="gba_wood" name="gba_wood"
+                               value="{{ form.gba_wood if form else '' }}"
+                               placeholder="e.g. 38,000" class="sf-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Total GBA</label>
+                        <div class="computed-field" id="calc_total_gba">0 SF</div>
+                    </div>
+                </div>
+
+                <!-- Section B: Site & Parking -->
+                <h3 class="section-header">B &mdash; Site &amp; Parking</h3>
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label for="lot_size">Lot Size SF</label>
+                        <input type="text" id="lot_size" name="lot_size"
+                               value="{{ form.lot_size if form else '' }}"
+                               placeholder="e.g. 45,000" class="sf-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="parking_spaces">Parking Spaces</label>
+                        <input type="number" id="parking_spaces" name="parking_spaces"
+                               value="{{ form.parking_spaces if form else '0' }}" min="0">
+                    </div>
+                    <div></div>
+                </div>
+                <div class="form-grid-3">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="on_site_parking" name="on_site_parking" value="1"
+                               {{ 'checked' if form and form.on_site_parking }}>
+                        <label for="on_site_parking">On-Site Parking</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="underground_parking" name="underground_parking" value="1"
+                               {{ 'checked' if form and form.underground_parking }}>
+                        <label for="underground_parking">Underground Parking</label>
+                    </div>
+                    <div class="form-group" id="shored_area_group" style="display:none;">
+                        <label for="shored_area">Shored Area SF</label>
+                        <input type="text" id="shored_area" name="shored_area"
+                               value="{{ form.shored_area if form else '' }}"
+                               placeholder="e.g. 20,000" class="sf-input">
+                    </div>
+                </div>
+
+                <!-- Section C: Units & Systems -->
+                <h3 class="section-header">C &mdash; Units &amp; Systems</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="units_0br">0BR (Studio)</label>
+                        <input type="number" id="units_0br" name="units_0br"
+                               value="{{ form.units_0br if form else '0' }}" min="0" class="unit-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="units_1br">1BR</label>
+                        <input type="number" id="units_1br" name="units_1br"
+                               value="{{ form.units_1br if form else '0' }}" min="0" class="unit-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="units_2br">2BR</label>
+                        <input type="number" id="units_2br" name="units_2br"
+                               value="{{ form.units_2br if form else '0' }}" min="0" class="unit-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="units_3br">3BR</label>
+                        <input type="number" id="units_3br" name="units_3br"
+                               value="{{ form.units_3br if form else '0' }}" min="0" class="unit-input">
+                    </div>
+                </div>
+                <div class="form-grid-3" style="margin-top:1rem;">
+                    <div class="form-group">
+                        <label>Total Units</label>
+                        <div class="computed-field" id="calc_total_units">0</div>
+                    </div>
+                    <div class="form-group">
+                        <label>HVAC Estimate</label>
+                        <div class="computed-field" id="calc_hvac">$0</div>
+                    </div>
+                    <div></div>
+                </div>
+                <div class="form-grid-3" style="margin-top:1rem;">
+                    <div class="form-group">
+                        <label for="elevator_count">Elevator Count</label>
+                        <input type="number" id="elevator_count" name="elevator_count"
+                               value="{{ form.elevator_count if form else '2' }}" min="1" max="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="elevator_stops">Elevator Stops</label>
+                        <input type="number" id="elevator_stops" name="elevator_stops"
+                               value="{{ form.elevator_stops if form else '7' }}" min="2" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Elevator Estimate</label>
+                        <div class="computed-field" id="calc_elevator">$0</div>
+                    </div>
+                </div>
+
+                <!-- Section D: Fee Structure -->
+                <details class="fee-details">
+                    <summary><h3 class="section-header" style="display:inline; border-bottom:none; margin:0; padding:0;">D &mdash; Fee Structure</h3></summary>
+                    <div class="form-grid-3" style="margin-top:0.75rem;">
+                        <div class="form-group">
+                            <label for="gc_fee">GC Fee %</label>
+                            <input type="number" id="gc_fee" name="gc_fee"
+                                   value="{{ form.gc_fee if form else '6.0' }}" step="0.5" min="0" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="bonding">Bonding %</label>
+                            <input type="number" id="bonding" name="bonding"
+                                   value="{{ form.bonding if form else '1.0' }}" step="0.5" min="0" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="admin">Admin %</label>
+                            <input type="number" id="admin" name="admin"
+                                   value="{{ form.admin if form else '2.0' }}" step="0.5" min="0" max="10">
+                        </div>
+                    </div>
+                </details>
+
                 <button type="submit" class="btn-estimate">Generate Estimate</button>
             </form>
         </section>
@@ -91,6 +190,10 @@
                     <div class="metric">
                         <span class="label">Target</span>
                         <span class="value">{{ "{:,.0f}".format(estimate.target_gba) }} SF / {{ estimate.target_units }} Units</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Breakdown</span>
+                        <span class="value">Concrete: {{ "{:,.0f}".format(gba_concrete) }} SF / Wood: {{ "{:,.0f}".format(gba_wood) }} SF</span>
                     </div>
                 </div>
                 <div class="confidence-range">
@@ -235,15 +338,123 @@
     </footer>
 
     <script>
-    // Auto-format number inputs with commas
-    document.querySelectorAll('#gba, #units').forEach(input => {
-        input.addEventListener('blur', function() {
-            let val = this.value.replace(/,/g, '');
-            if (!isNaN(val) && val !== '') {
-                this.value = Number(val).toLocaleString();
-            }
+    (function() {
+        // Helper: parse number from input (strip commas)
+        function parseNum(el) {
+            if (!el) return 0;
+            var val = (el.value || '').replace(/,/g, '');
+            var n = parseFloat(val);
+            return isNaN(n) ? 0 : n;
+        }
+        function parseInt2(el) {
+            if (!el) return 0;
+            var val = (el.value || '').replace(/,/g, '');
+            var n = parseInt(val, 10);
+            return isNaN(n) ? 0 : n;
+        }
+
+        // Helper: format number with commas
+        function fmtNum(n) {
+            return n.toLocaleString('en-US');
+        }
+        function fmtCurrency(n) {
+            return '$' + n.toLocaleString('en-US');
+        }
+
+        // Elements
+        var podiumLevels = document.getElementById('podium_levels');
+        var woodLevels = document.getElementById('wood_levels');
+        var gbaConcrete = document.getElementById('gba_concrete');
+        var gbaWood = document.getElementById('gba_wood');
+        var calcTotalFloors = document.getElementById('calc_total_floors');
+        var calcTotalGba = document.getElementById('calc_total_gba');
+
+        var undergroundParking = document.getElementById('underground_parking');
+        var shoredAreaGroup = document.getElementById('shored_area_group');
+
+        var units0br = document.getElementById('units_0br');
+        var units1br = document.getElementById('units_1br');
+        var units2br = document.getElementById('units_2br');
+        var units3br = document.getElementById('units_3br');
+        var calcTotalUnits = document.getElementById('calc_total_units');
+        var calcHvac = document.getElementById('calc_hvac');
+
+        var elevatorCount = document.getElementById('elevator_count');
+        var elevatorStops = document.getElementById('elevator_stops');
+        var calcElevator = document.getElementById('calc_elevator');
+
+        // Auto-format SF inputs with commas on blur
+        document.querySelectorAll('.sf-input').forEach(function(input) {
+            input.addEventListener('blur', function() {
+                var val = this.value.replace(/,/g, '');
+                if (!isNaN(val) && val !== '') {
+                    this.value = Number(val).toLocaleString('en-US');
+                }
+            });
         });
-    });
+
+        // Calculate total floors
+        function updateTotalFloors() {
+            var total = parseInt2(podiumLevels) + parseInt2(woodLevels);
+            calcTotalFloors.textContent = fmtNum(total);
+        }
+
+        // Calculate total GBA
+        function updateTotalGba() {
+            var total = parseNum(gbaConcrete) + parseNum(gbaWood);
+            calcTotalGba.textContent = fmtNum(total) + ' SF';
+        }
+
+        // Calculate total units and HVAC
+        function updateUnitsAndHvac() {
+            var n0 = parseInt2(units0br);
+            var n1 = parseInt2(units1br);
+            var n2 = parseInt2(units2br);
+            var n3 = parseInt2(units3br);
+            var total = n0 + n1 + n2 + n3;
+            calcTotalUnits.textContent = fmtNum(total);
+
+            var hvac = n0 * 5200 + n1 * 5500 + n2 * 9000 + n3 * 13000;
+            calcHvac.textContent = fmtCurrency(hvac);
+        }
+
+        // Calculate elevator estimate
+        function updateElevator() {
+            var count = parseInt2(elevatorCount);
+            var stops = parseInt2(elevatorStops);
+            var total = count * stops * 31400;
+            calcElevator.textContent = fmtCurrency(total);
+        }
+
+        // Toggle shored area visibility
+        function updateShoredVisibility() {
+            shoredAreaGroup.style.display = undergroundParking.checked ? '' : 'none';
+        }
+
+        // Bind events
+        podiumLevels.addEventListener('input', updateTotalFloors);
+        woodLevels.addEventListener('input', updateTotalFloors);
+
+        gbaConcrete.addEventListener('input', updateTotalGba);
+        gbaWood.addEventListener('input', updateTotalGba);
+
+        units0br.addEventListener('input', updateUnitsAndHvac);
+        units1br.addEventListener('input', updateUnitsAndHvac);
+        units2br.addEventListener('input', updateUnitsAndHvac);
+        units3br.addEventListener('input', updateUnitsAndHvac);
+
+        elevatorCount.addEventListener('input', updateElevator);
+        elevatorStops.addEventListener('input', updateElevator);
+
+        undergroundParking.addEventListener('change', updateShoredVisibility);
+
+        // Initialize computed values on page load
+        updateTotalFloors();
+        updateTotalGba();
+        updateUnitsAndHvac();
+        updateElevator();
+        updateShoredVisibility();
+    })();
     </script>
 </body>
 </html>
