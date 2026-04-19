@@ -1,12 +1,18 @@
-"""Postgres-backed storage (schema: rocks_doc + meetings, both JSONB)."""
+"""Postgres-backed storage (schema: rocks_doc + meetings, both JSONB).
+
+Connection strategy: open a fresh psycopg.connect per request with a
+generous connect_timeout. ConnectionPool kept timing out on Neon free-
+tier cold starts even with check_connection enabled. For a low-traffic
+dashboard (<<1 RPS) direct connections are reliable and simple.
+"""
 import json
-from dataclasses import dataclass, field
+from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Iterator
 
 import psycopg
 from psycopg.types.json import Json
-from psycopg_pool import ConnectionPool
 
 from .storage import ROCKS_SCHEMA_DEFAULT, STATUSES, _new_id
 
@@ -27,36 +33,29 @@ CREATE TABLE IF NOT EXISTS meetings (
 CREATE INDEX IF NOT EXISTS meetings_date_desc_idx ON meetings (date DESC, saved_at DESC);
 """
 
+CONNECT_TIMEOUT = 30  # seconds — covers Neon cold-start from idle
+
 
 @dataclass
 class PostgresStorage:
     dsn: str
-    pool: ConnectionPool = field(init=False)
 
     def __post_init__(self) -> None:
-        # Neon free tier auto-suspends compute after inactivity. A warm pool
-        # would hold stale TCP connections that hang on first use. So:
-        #   - min_size=0: don't pre-warm connections
-        #   - max_idle=45: close idle conns before Neon suspends (~5 min default)
-        #   - check: validate each connection before handing it out (reconnect
-        #     transparently if Neon woke back up on a dead socket)
-        #   - timeout=10: fail fast rather than hang the request
-        self.pool = ConnectionPool(
-            self.dsn,
-            min_size=0,
-            max_size=3,
-            max_idle=45,
-            timeout=10,
-            check=ConnectionPool.check_connection,
-            open=True,
-        )
-        with self.pool.connection() as conn:
+        with self._connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(SCHEMA_SQL)
             conn.commit()
 
+    @contextmanager
+    def _connect(self) -> Iterator[psycopg.Connection]:
+        conn = psycopg.connect(self.dsn, connect_timeout=CONNECT_TIMEOUT)
+        try:
+            yield conn
+        finally:
+            conn.close()
+
     def load_rocks(self) -> dict[str, Any]:
-        with self.pool.connection() as conn:
+        with self._connect() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT data FROM rocks_doc WHERE id = 1")
                 row = cur.fetchone()
@@ -68,7 +67,7 @@ class PostgresStorage:
         return data
 
     def save_rocks(self, data: dict[str, Any]) -> None:
-        with self.pool.connection() as conn:
+        with self._connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
@@ -223,7 +222,7 @@ class PostgresStorage:
             raise ValueError("meeting requires 'id' and 'date'")
         meeting = dict(meeting)
         meeting.setdefault("saved_at", datetime.now(timezone.utc).isoformat())
-        with self.pool.connection() as conn:
+        with self._connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
@@ -245,13 +244,13 @@ class PostgresStorage:
         if limit is not None:
             sql += " LIMIT %s"
             params = (limit,)
-        with self.pool.connection() as conn:
+        with self._connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(sql, params)
                 return [row[0] for row in cur.fetchall()]
 
     def get_meeting(self, meeting_id: str) -> dict[str, Any] | None:
-        with self.pool.connection() as conn:
+        with self._connect() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT data FROM meetings WHERE id = %s", (meeting_id,))
                 row = cur.fetchone()
@@ -308,4 +307,5 @@ class PostgresStorage:
         return todo
 
     def close(self) -> None:
-        self.pool.close()
+        # Nothing to close — connections are per-request.
+        pass

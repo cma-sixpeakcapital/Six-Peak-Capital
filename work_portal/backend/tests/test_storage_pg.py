@@ -14,9 +14,24 @@ pytest.importorskip("psycopg")
 from app.storage_pg import PostgresStorage
 
 TEST_DSN = os.environ.get("TEST_DATABASE_URL")
+# Safety: refuse to run against a DSN that looks like production.
+# These tests TRUNCATE tables; pointing at prod wipes real data.
+_PROD_MARKERS = ("work-portal-api", "neondb_owner")
+if TEST_DSN and any(marker in TEST_DSN for marker in _PROD_MARKERS):
+    if os.environ.get("ALLOW_PROD_TEST_DB") != "yes":
+        TEST_DSN = None  # force skip
+        _skip_reason = (
+            "TEST_DATABASE_URL looks like production — refusing to run destructive "
+            "tests. Set ALLOW_PROD_TEST_DB=yes only if you're sure."
+        )
+    else:
+        _skip_reason = None
+else:
+    _skip_reason = "TEST_DATABASE_URL not set — skipping Postgres integration tests"
+
 pytestmark = pytest.mark.skipif(
     not TEST_DSN,
-    reason="TEST_DATABASE_URL not set — skipping Postgres integration tests",
+    reason=_skip_reason or "TEST_DATABASE_URL not set",
 )
 
 
@@ -24,7 +39,7 @@ pytestmark = pytest.mark.skipif(
 def pg_storage():
     store = PostgresStorage(dsn=TEST_DSN)
     # Wipe state between tests
-    with store.pool.connection() as conn:
+    with store._connect() as conn:
         with conn.cursor() as cur:
             cur.execute("TRUNCATE rocks_doc; TRUNCATE meetings;")
         conn.commit()
