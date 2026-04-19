@@ -1,0 +1,18 @@
+{
+  "id": "2026-04-14",
+  "date": "2026-04-14",
+  "title": "L10 — Week of Apr 14",
+  "attendees": ["Chris Adair", "Partner 2", "Partner 3"],
+  "summary": "Acama GMP is on track for June close; lender docs due Thursday. BD site traffic is light — holding on paid media until organic baseline is measured. Hiring pipeline has two candidates advancing to final interview.",
+  "action_items": [
+    {"owner": "Chris", "task": "Send lender the updated Acama GMP workbook", "due": "2026-04-18"},
+    {"owner": "Partner 2", "task": "Schedule final interviews for PE candidates", "due": "2026-04-22"},
+    {"owner": "Partner 3", "task": "Draft Q2 cash forecast for review", "due": "2026-04-25"}
+  ],
+  "files": [
+    {"name": "Acama_GMP.xlsx", "note": "Needs sign-off before lender submission"},
+    {"name": "Q2_Cash_Forecast_Draft.xlsx", "note": "Draft for review next week"}
+  ],
+  "source_url": "",
+  "ingested_at": "2026-04-14T16:00:00Z"
+}

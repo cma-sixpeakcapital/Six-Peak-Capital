@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}L10 Weekly — Six Peak Capital{% endblock %}
+
+{% macro rock_row(rock) -%}
+<li class="rock rock-{{ rock.status or 'incomplete' }}" data-rock-id="{{ rock.id }}">
+    <button type="button" class="check" data-rock-id="{{ rock.id }}"
+            aria-label="Toggle complete"
+            title="Click to toggle complete">{% if rock.status == 'complete' %}✓{% else %}◻{% endif %}</button>
+    <div class="rock-body">
+        <div class="rock-title">
+            {% if rock.link %}<a href="{{ rock.link }}" target="_blank" rel="noopener">{{ rock.title }}</a>
+            {% else %}{{ rock.title }}{% endif %}
+        </div>
+        {% if rock.notes %}<div class="rock-notes">{{ rock.notes }}</div>{% endif %}
+    </div>
+    {% if rock.due %}<span class="rock-due">{{ rock.due }}</span>{% endif %}
+</li>
+{%- endmacro %}
+
+{% block content %}
+<section class="hero">
+    <span class="section-label">This Week</span>
+    <h1 class="hero-title">Level 10 Weekly</h1>
+    {% if latest %}
+    <p class="hero-sub">Last meeting: <strong>{{ latest.date }}</strong> — {{ latest.title }}</p>
+    {% else %}
+    <p class="hero-sub muted">No meetings ingested yet. The next Read.ai call will populate this dashboard automatically.</p>
+    {% endif %}
+    <div class="divider"></div>
+</section>
+
+<section class="card">
+    <div class="card-head">
+        <span class="section-label">Weekly Summary</span>
+        <h2>{% if latest %}{{ latest.date }} — {{ latest.title }}{% else %}—{% endif %}</h2>
+    </div>
+    {% if latest %}
+        {% if latest.summary %}<p class="lede">{{ latest.summary }}</p>{% endif %}
+        <div class="two-col">
+            <div>
+                <h3 class="sub-head">Action Items</h3>
+                {% if latest.action_items %}
+                <ul class="action-list">
+                    {% for item in latest.action_items %}
+                    <li>
+                        <span class="owner">{{ item.owner or "Unassigned" }}</span>
+                        <span class="task">{{ item.task }}</span>
+                        {% if item.due %}<span class="due">due {{ item.due }}</span>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}<p class="muted">No action items extracted.</p>{% endif %}
+            </div>
+            <div>
+                <h3 class="sub-head">Files Referenced</h3>
+                {% if latest.files %}
+                <ul class="files-list">
+                    {% for f in latest.files %}
+                    <li>
+                        {% if f.url %}<a href="{{ f.url }}">{{ f.name }}</a>{% else %}<span>{{ f.name }}</span>{% endif %}
+                        {% if f.note %}<span class="file-note">— {{ f.note }}</span>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}<p class="muted">No files referenced.</p>{% endif %}
+            </div>
+        </div>
+        {% if latest.source_url %}
+        <p class="source"><a href="{{ latest.source_url }}" target="_blank" rel="noopener">Open in Read.ai →</a></p>
+        {% endif %}
+    {% else %}
+        <p class="muted">Waiting for the first ingest.</p>
+    {% endif %}
+</section>
+
+<section class="rocks-section">
+    <div class="section-heading">
+        <span class="section-label">Company Rocks</span>
+        <h2>Shared quarterly goals</h2>
+    </div>
+    <div class="card">
+        {% if company_rocks %}
+        <ul class="rocks-list">
+            {% for rock in company_rocks %}{{ rock_row(rock) }}{% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted">No company rocks set. Add via <code>PUT /api/company_rocks</code>.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="rocks-section">
+    <div class="section-heading">
+        <span class="section-label">Individual Rocks</span>
+        <h2>By category, then owner</h2>
+    </div>
+    {% if categorized %}
+        {% for cat in categorized %}
+        {% set cat_rocks = [] %}
+        {% for o in cat.owners %}{% set _ = cat_rocks.extend(o.rocks) %}{% endfor %}
+        {% set cat_done = cat_rocks | selectattr('status', 'equalto', 'complete') | list | length %}
+        <div class="category-block">
+            <div class="category-heading">
+                <h3>{{ cat.name }}</h3>
+                <span class="category-count">{{ cat_done }} / {{ cat_rocks|length }}</span>
+            </div>
+            <div class="people-grid">
+                {% for o in cat.owners %}
+                {% set done = o.rocks | selectattr('status', 'equalto', 'complete') | list | length %}
+                <div class="card person-card">
+                    <div class="person-head">
+                        <strong>{{ o.name }}</strong>
+                        <span class="person-count">{{ done }} / {{ o.rocks|length }}</span>
+                    </div>
+                    <ul class="rocks-list">
+                        {% for rock in o.rocks %}{{ rock_row(rock) }}{% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="card"><p class="muted">No individual rocks yet. Add via <code>PUT /api/rocks/&lt;person&gt;</code>.</p></div>
+    {% endif %}
+</section>
+
+<section class="card">
+    <div class="card-head">
+        <span class="section-label">Recent Meetings</span>
+        <h2>History</h2>
+    </div>
+    {% if history %}
+    <ul class="history-list">
+        {% for m in history %}
+        <li>
+            <a href="{{ url_for('meeting_detail', meeting_id=m.id) }}">
+                <span class="hist-date">{{ m.date }}</span>
+                <span class="hist-title">{{ m.title }}</span>
+                <span class="hist-actions">{{ m.action_items|length }} actions</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No prior meetings yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,312 @@
+{
+  "company_rocks": [],
+  "rocks": {
+    "Bob Kennedy": [
+      {
+        "category": "Governance / Legal / Board",
+        "due": "End of Q1 2026",
+        "id": "r21",
+        "notes": "Lead negotiations with MRK and Steyn Capital",
+        "status": "incomplete",
+        "title": "MRK Negotiations"
+      },
+      {
+        "category": "Governance / Legal / Board",
+        "due": "End of Jan 2026",
+        "id": "r23",
+        "notes": "Finalize transaction, board resolution, amend operating agreement",
+        "status": "incomplete",
+        "title": "300 Deharo Resolution"
+      },
+      {
+        "category": "Governance / Legal / Board",
+        "due": "End of Q1 2026",
+        "id": "r24",
+        "notes": "Finalize cost of capital and incentive resolutions",
+        "status": "incomplete",
+        "title": "Board Resolutions"
+      },
+      {
+        "category": "Governance / Legal / Board",
+        "due": "End of Feb 2026",
+        "id": "r25",
+        "notes": "Oversight of Tom Taggart\u2019s parking study",
+        "status": "incomplete",
+        "title": "LIHTC Parking Study Oversight"
+      }
+    ],
+    "Bob Kennedy & Chris Aiello": [
+      {
+        "category": "Governance / Legal / Board",
+        "due": "Apr\u2013May 2026",
+        "id": "r22",
+        "notes": "Manage closing logistics/legal with Steyn",
+        "status": "incomplete",
+        "title": "2859 Francis Debt & Equity Execution"
+      },
+      {
+        "category": "Governance / Legal / Board",
+        "due": "End of Q1 2026",
+        "id": "r26",
+        "notes": "Re-implement an EOS framework that makes sense for Six Peak and LV",
+        "status": "incomplete",
+        "title": "Establish a company EOS framework"
+      }
+    ],
+    "Chris Aiello": [
+      {
+        "category": "Asset Management / Transactions",
+        "due": "2026-04-13",
+        "id": "r10",
+        "notes": "Propose Steyn pref equity investment",
+        "status": "incomplete",
+        "title": "Update BBC memo for 4/13 IC meeing"
+      },
+      {
+        "category": "Development / Construction / Diligence",
+        "due": "End of Q3 2026",
+        "id": "r19",
+        "notes": "",
+        "status": "incomplete",
+        "title": "Figure out outreach to all tax credit investors that will consider a ground lease structure"
+      }
+    ],
+    "Chris Aiello & Chris Andresen": [
+      {
+        "category": "Asset Management / Transactions",
+        "due": "2026-04-21",
+        "id": "r11",
+        "notes": "Ensure capital calls are out and entities are formed",
+        "status": "incomplete",
+        "title": "Finalize 3rd St Closing 4/21"
+      }
+    ],
+    "Chris Andresen & Robert Carrega": [
+      {
+        "category": "Finance / Structure / Capital",
+        "due": "End of Q2 2026",
+        "id": "r1",
+        "notes": "Update titles, legal structure, and signatories for all converted accounts, fix JP access",
+        "status": "incomplete",
+        "title": "Update Chase Accounts (LLC \u2192 LP)"
+      },
+      {
+        "category": "Finance / Structure / Capital",
+        "due": "End of April",
+        "id": "r2",
+        "notes": "CMA to keep updating, but eventually we want to add in actuals as time goes by",
+        "status": "incomplete",
+        "title": "Review the board portal for accuracy of expenses"
+      },
+      {
+        "category": "Finance / Structure / Capital",
+        "due": "End of April",
+        "id": "r3",
+        "notes": "Complete Rich Note and remaining restructure documents",
+        "status": "incomplete",
+        "title": "Finalize Remaining Restructure Items"
+      },
+      {
+        "category": "Finance / Structure / Capital",
+        "due": "End of Q2 2026",
+        "id": "r4",
+        "notes": "Move Francis, Ramsgate, Crenshaw, Shadow Way, Reseda to deal-level entities",
+        "status": "incomplete",
+        "title": "Move Investments Out of Six Peak Capital"
+      }
+    ],
+    "Derek Sanders & Chris Aiello": [
+      {
+        "category": "Development / Construction / Diligence",
+        "due": "End of Q2 2026",
+        "id": "r15",
+        "notes": "Discuss with lender once the DWP utility plan is officially finalized",
+        "status": "incomplete",
+        "title": "Ramsgate Utility plan"
+      }
+    ],
+    "Derek Sanders & Grady Lakamp": [
+      {
+        "category": "Development / Construction / Diligence",
+        "due": "2026-05-15",
+        "id": "r12",
+        "notes": "Negotiate and finalize GMP with LV / Six Peak / MRK",
+        "status": "incomplete",
+        "title": "Francis GMP Contract Finalization & closing budget"
+      }
+    ],
+    "Derek Sanders & Tom Taggart": [
+      {
+        "category": "Development / Construction / Diligence",
+        "due": "ASAP",
+        "id": "r14",
+        "notes": "waiting for a new meter from Weights & Measures to be installed.  Need electric to be billed out by QMC",
+        "status": "incomplete",
+        "title": "Reading Utility bill back issue"
+      }
+    ],
+    "Derek Sanders (discuss with Grady)": [
+      {
+        "category": "Development / Construction / Diligence",
+        "due": "By Francis",
+        "id": "r13",
+        "notes": "Find consistent solution to photo reporting on all construction projects",
+        "status": "incomplete",
+        "title": "Construction photo plan"
+      }
+    ],
+    "Grady Lakamp & Bob Kennedy": [
+      {
+        "category": "LV Rocks",
+        "due": "",
+        "id": "r27",
+        "notes": "",
+        "status": "incomplete",
+        "title": "HR/401k/employees discussion"
+      }
+    ],
+    "Schuyler Dietz": [
+      {
+        "category": "Development / Construction / Diligence",
+        "due": "End of Feb 2026",
+        "id": "r16",
+        "notes": "Use database and work with a broker to identify a list of 100+ devt. sites that fit SP parameters",
+        "status": "incomplete",
+        "title": "Create a targeted list of outbound dev. site leads"
+      },
+      {
+        "category": "Development / Construction / Diligence",
+        "due": "2026-05-05",
+        "id": "r17",
+        "notes": "Prepare for May 5 meetings",
+        "status": "incomplete",
+        "title": "Finalize uplifters memo and term sheet"
+      },
+      {
+        "category": "Development / Construction / Diligence",
+        "due": "2026-03-15",
+        "id": "r18",
+        "link": "Initial email sent 2/5, follow up on 2/23",
+        "notes": "Continue to reach out until the respond",
+        "status": "incomplete",
+        "title": "8350 Reseda HOA dialogue"
+      }
+    ],
+    "Schuyler Dietz & Chris Aiello": [
+      {
+        "category": "Reporting / Communication / Brand",
+        "due": "Ongoing, starting January",
+        "id": "r20",
+        "notes": "Weekly notes for Whipple & Califa projects, Monthly construction reports with photos",
+        "status": "incomplete",
+        "title": "Monthly Reporting to Justin Kruger"
+      },
+      {
+        "category": "LV Rocks",
+        "due": "End of April",
+        "id": "r28",
+        "link": "https://lv-bd-site.onrender.com/",
+        "notes": "Get Grady comments and finalize website",
+        "status": "incomplete",
+        "title": "Revise LV website"
+      }
+    ],
+    "Tom Taggart": [
+      {
+        "category": "Asset Management / Transactions",
+        "due": "2026-07-01",
+        "id": "r5",
+        "link": "https://docs.google.com/document/d/1UTi_qsMwp1-3nk6BAQ0CR8DgM69dkONoZOBd-pto3Ao/edit?usp=sharing",
+        "notes": "Choose 2-3 candidates and get proposals/proformas",
+        "status": "incomplete",
+        "title": "Property Manager Questions and Proformas"
+      },
+      {
+        "category": "Asset Management / Transactions",
+        "due": "End of April",
+        "id": "r6",
+        "notes": "Consultant selection and SoCal LIHTC parking analysis",
+        "status": "incomplete",
+        "title": "LIHTC Parking Study"
+      },
+      {
+        "category": "Asset Management / Transactions",
+        "due": "End of April",
+        "id": "r7",
+        "notes": "Renewal plan",
+        "status": "incomplete",
+        "title": "Reading Lease renewal plan"
+      },
+      {
+        "category": "Asset Management / Transactions",
+        "due": "2026",
+        "id": "r8",
+        "notes": "Tenant Lawsuit - work with Grandview counsel",
+        "status": "incomplete",
+        "title": "Venice Lawsuit monitoring"
+      },
+      {
+        "category": "Asset Management / Transactions",
+        "due": "End of April",
+        "id": "r9",
+        "notes": "Replace landscaping",
+        "status": "incomplete",
+        "title": "Wilton transition"
+      }
+    ]
+  },
+  "team": [
+    {
+      "name": "Chris Andresen & Robert Carrega",
+      "role": "Finance / Structure / Capital"
+    },
+    {
+      "name": "Tom Taggart",
+      "role": "Asset Management / Transactions"
+    },
+    {
+      "name": "Chris Aiello",
+      "role": "Asset Management / Transactions"
+    },
+    {
+      "name": "Chris Aiello & Chris Andresen",
+      "role": "Asset Management / Transactions"
+    },
+    {
+      "name": "Derek Sanders & Grady Lakamp",
+      "role": "Development / Construction / Diligence"
+    },
+    {
+      "name": "Derek Sanders (discuss with Grady)",
+      "role": "Development / Construction / Diligence"
+    },
+    {
+      "name": "Derek Sanders & Tom Taggart",
+      "role": "Development / Construction / Diligence"
+    },
+    {
+      "name": "Derek Sanders & Chris Aiello",
+      "role": "Development / Construction / Diligence"
+    },
+    {
+      "name": "Schuyler Dietz",
+      "role": "Development / Construction / Diligence"
+    },
+    {
+      "name": "Schuyler Dietz & Chris Aiello",
+      "role": "Reporting / Communication / Brand"
+    },
+    {
+      "name": "Bob Kennedy",
+      "role": "Governance / Legal / Board"
+    },
+    {
+      "name": "Bob Kennedy & Chris Aiello",
+      "role": "Governance / Legal / Board"
+    },
+    {
+      "name": "Grady Lakamp & Bob Kennedy",
+      "role": "LV Rocks"
+    }
+  ]
+}

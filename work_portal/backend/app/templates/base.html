@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}L10 Portal{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='portal.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="wrap">
+            <div class="brand">
+                <div class="brand-mark"></div>
+                <div class="brand-text">
+                    <span class="brand-label">Six Peak Capital</span>
+                    <span class="brand-title">L10 Leadership Portal</span>
+                </div>
+            </div>
+            <nav class="top-nav">
+                <a href="{{ url_for('portal') }}">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+    <main class="wrap main-content">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+        <div class="wrap">
+            <span>L10 Weekly — auto-updated after each meeting</span>
+            <button type="button" id="reset-key-btn" class="link-btn" title="Reset portal API key">reset key</button>
+        </div>
+    </footer>
+    <script src="{{ url_for('static', filename='portal.js') }}"></script>
+</body>
+</html>
