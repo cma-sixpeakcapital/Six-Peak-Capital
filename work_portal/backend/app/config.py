@@ -10,6 +10,7 @@ class Config:
     api_key: str
     anthropic_api_key: str
     readai_api_key: str
+    database_url: str = ""
     readai_base_url: str = "https://api.read.ai/v1"
     summarizer_model: str = "claude-haiku-4-5-20251001"
 
@@ -25,6 +26,7 @@ class Config:
             api_key=os.environ.get("PORTAL_API_KEY", ""),
             anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", ""),
             readai_api_key=os.environ.get("READAI_API_KEY", ""),
+            database_url=os.environ.get("DATABASE_URL", ""),
             readai_base_url=os.environ.get("READAI_BASE_URL", "https://api.read.ai/v1"),
             summarizer_model=os.environ.get("SUMMARIZER_MODEL", "claude-haiku-4-5-20251001"),
         )

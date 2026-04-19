@@ -5,7 +5,6 @@ from flask import Flask, abort, current_app, jsonify, render_template, request
 
 from .ingest import IngestService
 from .readai import ReadAIClient
-from .storage import Storage
 from .summarizer import Summarizer
 
 
@@ -45,8 +44,9 @@ def _group_by_category(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
-def _get_storage() -> Storage:
-    return Storage(data_dir=current_app.config["APP_CONFIG"].data_dir)
+def _get_storage():
+    """Return the singleton storage attached to the app (JSON or Postgres)."""
+    return current_app.config["STORAGE"]
 
 
 def _get_ingest_service() -> IngestService:
