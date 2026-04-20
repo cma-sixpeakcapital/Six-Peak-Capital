@@ -40,6 +40,37 @@
         });
     }
 
+    function wireEditRock() {
+        document.querySelectorAll(".edit-rock-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const id = btn.dataset.rockId;
+                const form = document.querySelector(`.edit-rock-form[data-rock-id="${id}"]`);
+                if (!form) return;
+                form.classList.remove("hidden");
+                const first = form.querySelector("input[name=title]");
+                if (first) first.focus();
+            });
+        });
+        document.querySelectorAll(".cancel-edit-rock").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const form = btn.closest(".edit-rock-form");
+                if (form) form.classList.add("hidden");
+            });
+        });
+        document.querySelectorAll(".edit-rock-form").forEach(function (form) {
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                const id = form.dataset.rockId;
+                const data = Object.fromEntries(new FormData(form).entries());
+                const submit = form.querySelector("button[type=submit]");
+                handleAction(submit, () => apiRequest(`/api/rocks/${encodeURIComponent(id)}`, {
+                    method: "PATCH",
+                    body: JSON.stringify(data),
+                }));
+            });
+        });
+    }
+
     function wireDeleteRock() {
         document.querySelectorAll(".delete-rock-btn").forEach(function (btn) {
             btn.addEventListener("click", function () {
@@ -180,6 +211,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         wireToggleRock();
         wireMoveRock();
+        wireEditRock();
         wireDeleteRock();
         wireToggleAction();
         wireMoveAction();

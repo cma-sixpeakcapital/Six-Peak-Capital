@@ -186,6 +186,47 @@ def test_api_rock_delete_missing(client):
     assert client.delete("/api/rocks/nope").status_code == 404
 
 
+def test_update_rock_patches_allowed_fields(storage: Storage):
+    storage.set_person_rocks("Chris", [{"id": "r1", "title": "old", "status": "incomplete"}])
+    updated = storage.update_rock("r1", {"title": "new", "due": "2026-05-01", "notes": "note"})
+    assert updated["title"] == "new"
+    assert updated["due"] == "2026-05-01"
+    assert updated["notes"] == "note"
+    # status preserved (not in allowed list for patch)
+    assert updated["status"] == "incomplete"
+
+
+def test_update_rock_ignores_unknown_fields(storage: Storage):
+    storage.set_person_rocks("Chris", [{"id": "r1", "title": "t", "status": "incomplete"}])
+    updated = storage.update_rock("r1", {"title": "new", "id": "hacked", "status": "complete"})
+    assert updated["id"] == "r1"  # id untouched
+    assert updated["status"] == "incomplete"  # status untouched
+    assert updated["title"] == "new"
+
+
+def test_update_company_rock(storage: Storage):
+    storage.set_company_rocks([{"id": "c1", "title": "t", "status": "incomplete"}])
+    updated = storage.update_rock("c1", {"title": "new", "due": "2026-06-30"})
+    assert updated["title"] == "new"
+    assert updated["due"] == "2026-06-30"
+
+
+def test_update_rock_missing(storage: Storage):
+    assert storage.update_rock("nope", {"title": "x"}) is None
+
+
+def test_api_rock_update(client, storage):
+    storage.set_person_rocks("Chris", [{"id": "r1", "title": "old", "status": "incomplete"}])
+    r = client.patch("/api/rocks/r1", json={"title": "new", "due": "2026-05-01"})
+    assert r.status_code == 200
+    assert r.get_json()["title"] == "new"
+    assert storage.load_rocks()["rocks"]["Chris"][0]["due"] == "2026-05-01"
+
+
+def test_api_rock_update_missing(client):
+    assert client.patch("/api/rocks/nope", json={"title": "x"}).status_code == 404
+
+
 # --- Route tests ---
 
 def test_api_todos_list(client, storage):

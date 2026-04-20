@@ -143,6 +143,23 @@ class PostgresStorage:
                 return rock
         return None
 
+    def update_rock(self, rock_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
+        allowed = {"title", "notes", "due", "category", "link"}
+        clean = {k: v for k, v in updates.items() if k in allowed}
+        data = self.load_rocks()
+        for rocks in (data.get("rocks") or {}).values():
+            for rock in rocks:
+                if rock.get("id") == rock_id:
+                    rock.update(clean)
+                    self.save_rocks(data)
+                    return rock
+        for rock in data.get("company_rocks") or []:
+            if rock.get("id") == rock_id:
+                rock.update(clean)
+                self.save_rocks(data)
+                return rock
+        return None
+
     def delete_rock(self, rock_id: str) -> bool:
         data = self.load_rocks()
         for rocks in (data.get("rocks") or {}).values():

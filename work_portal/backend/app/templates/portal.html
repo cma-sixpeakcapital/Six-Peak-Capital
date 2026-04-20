@@ -13,9 +13,20 @@
             {% else %}{{ rock.title }}{% endif %}
         </div>
         {% if rock.notes %}<div class="rock-notes">{{ rock.notes }}</div>{% endif %}
+        <form class="add-form edit-rock-form hidden" data-rock-id="{{ rock.id }}" autocomplete="off">
+            <input type="text" name="title" placeholder="Title" value="{{ rock.title }}" required />
+            <input type="text" name="notes" placeholder="Notes" value="{{ rock.notes or '' }}" />
+            <input type="text" name="due" placeholder="Due" value="{{ rock.due or '' }}" />
+            <div class="form-actions">
+                <button type="submit" class="btn-primary small">Save</button>
+                <button type="button" class="pill-btn cancel-edit-rock">Cancel</button>
+            </div>
+        </form>
     </div>
     <div class="rock-right">
         {% if rock.due %}<span class="rock-due">{{ rock.due }}</span>{% endif %}
+        <button type="button" class="pill-btn edit-rock-btn" data-rock-id="{{ rock.id }}"
+                title="Edit rock">Edit</button>
         <button type="button" class="pill-btn move-rock-btn" data-rock-id="{{ rock.id }}"
                 title="Move to To-Dos">→ To-Dos</button>
         <button type="button" class="pill-btn danger delete-rock-btn" data-rock-id="{{ rock.id }}"

@@ -145,6 +145,14 @@ def register_routes(app: Flask) -> None:
             abort(404, description="rock not found")
         return jsonify(rock)
 
+    @app.route("/api/rocks/<rock_id>", methods=["PATCH"])
+    def api_rock_update(rock_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        rock = _get_storage().update_rock(rock_id, body)
+        if rock is None:
+            abort(404)
+        return jsonify(rock)
+
     @app.route("/api/rocks/<rock_id>", methods=["DELETE"])
     def api_rock_delete(rock_id: str) -> Any:
         if not _get_storage().delete_rock(rock_id):

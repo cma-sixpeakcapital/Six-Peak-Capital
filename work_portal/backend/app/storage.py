@@ -117,6 +117,24 @@ class Storage:
                 return rock
         return None
 
+    def update_rock(self, rock_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
+        """Patch editable fields on a rock. Returns the updated rock or None if not found."""
+        allowed = {"title", "notes", "due", "category", "link"}
+        clean = {k: v for k, v in updates.items() if k in allowed}
+        data = self.load_rocks()
+        for rocks in (data.get("rocks") or {}).values():
+            for rock in rocks:
+                if rock.get("id") == rock_id:
+                    rock.update(clean)
+                    self.save_rocks(data)
+                    return rock
+        for rock in data.get("company_rocks") or []:
+            if rock.get("id") == rock_id:
+                rock.update(clean)
+                self.save_rocks(data)
+                return rock
+        return None
+
     def delete_rock(self, rock_id: str) -> bool:
         """Remove a rock (person or company). Returns True if found and removed."""
         data = self.load_rocks()
