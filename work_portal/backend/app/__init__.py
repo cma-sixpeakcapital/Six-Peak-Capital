@@ -1,3 +1,5 @@
+from datetime import date
+
 from flask import Flask
 
 from .config import Config
@@ -19,5 +21,13 @@ def create_app(config: Config | None = None) -> Flask:
     app.config["APP_CONFIG"] = cfg
     app.config["SECRET_KEY"] = cfg.secret_key
     app.config["STORAGE"] = make_storage(cfg)
+
+    @app.context_processor
+    def inject_today():
+        today = date.today()
+        # Format: "Monday, April 20, 2026" (cross-platform — strip zero-pad manually)
+        display = today.strftime("%A, %B {day}, %Y").replace("{day}", str(today.day))
+        return {"today_display": display}
+
     register_routes(app)
     return app

@@ -46,35 +46,27 @@ html, body {
     padding-top: 18px;
     padding-bottom: 18px;
 }
-.brand { display: flex; align-items: center; gap: 14px; }
-.brand-mark {
-    width: 36px;
+.brand { display: flex; align-items: center; gap: 16px; }
+.brand-logo {
     height: 36px;
-    background: var(--rust);
-    border-radius: 6px;
-    position: relative;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
 }
-.brand-mark::after {
-    content: "";
-    position: absolute;
-    inset: 6px;
-    border: 2px solid var(--white);
-    border-radius: 3px;
-}
-.brand-text { display: flex; flex-direction: column; }
-.brand-label {
-    font-family: var(--font-body);
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--rust);
-    text-transform: uppercase;
-    letter-spacing: 0.25em;
-}
+.brand-text { display: flex; flex-direction: column; gap: 2px; }
 .brand-title {
     font-family: var(--font-display);
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: var(--white);
+    letter-spacing: -0.01em;
+}
+.brand-date {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--steel);
+    letter-spacing: 0.02em;
 }
 .top-nav a {
     color: var(--steel);
