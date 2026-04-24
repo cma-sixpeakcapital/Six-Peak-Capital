@@ -27,12 +27,3 @@ services:
       - key: SUMMARIZER_MODEL
         value: claude-haiku-4-5-20251001
 
-  - type: web
-    name: lv-bd-site
-    runtime: python
-    pythonVersion: "3.11.11"
-    rootDir: bd_site
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
-    plan: free
-
