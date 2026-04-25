@@ -8,13 +8,6 @@
       "port": 8765
     },
     {
-      "name": "bd-site",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py"],
-      "port": 5002,
-      "cwd": "bd_site"
-    },
-    {
       "name": "work-portal-api",
       "runtimeExecutable": "python",
       "runtimeArgs": ["wsgi.py"],
