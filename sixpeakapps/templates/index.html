@@ -9,16 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --denim: #0B1833;
+            --space: #2C3A51;
             --steel-light: #E2E7F0;
             --rust: #C4581A;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
             height: 100%;
-            background: var(--steel-light);
+            background: var(--space);
             font-family: 'DM Sans', sans-serif;
-            color: var(--denim);
+            color: var(--steel-light);
         }
         .page {
             min-height: 100vh;
@@ -34,7 +34,16 @@
             gap: 64px;
             flex-wrap: wrap;
         }
-        .logos img {
+        .logo-card {
+            background: #FFFFFF;
+            padding: 24px 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-card img {
             height: 120px;
             width: auto;
             display: block;
@@ -42,12 +51,13 @@
         .divider {
             width: 1px;
             height: 96px;
-            background: var(--denim);
-            opacity: 0.15;
+            background: var(--steel-light);
+            opacity: 0.25;
         }
         @media (max-width: 600px) {
             .logos { gap: 32px; }
-            .logos img { height: 80px; }
+            .logo-card { padding: 16px 20px; }
+            .logo-card img { height: 80px; }
             .divider { display: none; }
         }
     </style>
@@ -55,9 +65,13 @@
 <body>
     <main class="page">
         <div class="logos">
-            <img src="{{ url_for('static', filename='images/six-peak-logo.webp') }}" alt="Six Peak Capital" />
+            <div class="logo-card">
+                <img src="{{ url_for('static', filename='images/six-peak-logo.webp') }}" alt="Six Peak Capital" />
+            </div>
             <span class="divider" aria-hidden="true"></span>
-            <img src="{{ url_for('static', filename='images/lv-llc-logo.jpg') }}" alt="LV Construction" />
+            <div class="logo-card">
+                <img src="{{ url_for('static', filename='images/lv-llc-logo.jpg') }}" alt="LV Construction" />
+            </div>
         </div>
     </main>
 </body>
