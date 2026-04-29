@@ -10,13 +10,44 @@ from .storage import Storage
 from .summarizer import Summarizer
 
 
+# Match a leading subject phrase followed by an intent verb like
+# "will / should / must / needs to / plans to / agreed to". Captures up to
+# 80 chars before the verb so compound owners ("Schuyler Dietz & Chris Aiello",
+# "Pedro Rosales, Greg Smith, and Grady Lakamp") survive intact.
+_OWNER_RE = re.compile(
+    r"^(.{2,80}?)\s+(?:will|should|must|needs\s+to|plans\s+to|agreed\s+to)\s+\w",
+    re.IGNORECASE,
+)
+
+
+def _extract_owner(text: str) -> str:
+    """Best-effort owner extraction from the start of a Read.ai action sentence.
+
+    Returns the leading subject phrase or "" when no confident match.
+    """
+    if not text:
+        return ""
+    m = _OWNER_RE.match(text)
+    if not m:
+        return ""
+    owner = m.group(1).strip().rstrip(",.;:")
+    # Reject pronouns / generic subjects that aren't really owners
+    if owner.lower() in {"it", "this", "that", "there", "they", "we", "you", "everyone", "the team"}:
+        return ""
+    # Require it to start capitalized — proper noun-ish
+    if not owner or not owner[0].isupper():
+        return ""
+    return owner
+
+
 def _assign_action_item_ids(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Normalize action items at ingest time.
 
     Read.ai sends action items as ``{id, text, completed}`` (one sentence per
     item, owner baked in). Our internal shape is ``{id, owner, task, due,
-    completed}``. Map ``text`` -> ``task`` so the rest of the app can rely
-    on a stable schema.
+    completed}``. Map ``text`` -> ``task`` and extract a likely owner from
+    the start of the sentence so the rest of the app can rely on a stable
+    schema.
     """
     out: list[dict[str, Any]] = []
     for item in items or []:
@@ -25,6 +56,10 @@ def _assign_action_item_ids(items: list[dict[str, Any]]) -> list[dict[str, Any]]
         item.setdefault("completed", False)
         if not item.get("task") and item.get("text"):
             item["task"] = item["text"]
+        if not item.get("owner"):
+            owner = _extract_owner(item.get("task") or item.get("text") or "")
+            if owner:
+                item["owner"] = owner
         out.append(item)
     return out
 

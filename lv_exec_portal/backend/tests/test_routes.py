@@ -186,6 +186,27 @@ def test_portal_renders_text_only_action_items(client, storage: Storage):
     assert "Bob will finalize EOS" in body
 
 
+def test_extract_owner_simple():
+    from app.ingest import _extract_owner
+    assert _extract_owner("Bob Kennedy will finalize EOS") == "Bob Kennedy"
+    assert _extract_owner("Pedro Rosales, Greg Smith, and Grady Lakamp will review") == "Pedro Rosales, Greg Smith, and Grady Lakamp"
+    assert _extract_owner("It will be reviewed") == ""
+
+
+def test_ingest_extracts_owner(client, storage: Storage):
+    payload = {"meeting": {
+        "id": "owner1", "title": "LV Construction Executive",
+        "start_time": "2026-04-28T15:00:00Z",
+        "summary": "s",
+        "action_items": [
+            {"id": "ai_1", "text": "Bob Kennedy will finalize EOS framework", "completed": False},
+        ],
+    }}
+    r = client.post("/api/ingest/readai", json=payload, headers={"X-API-Key": "test-key"})
+    assert r.status_code == 200
+    assert storage.get_meeting("owner1")["action_items"][0]["owner"] == "Bob Kennedy"
+
+
 def test_move_text_only_action_to_todos_carries_text(client, storage: Storage):
     storage.save_meeting({
         "id": "m1", "date": "2026-04-28",

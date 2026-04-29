@@ -288,6 +288,85 @@ def test_move_text_only_action_to_todos_carries_text(client, storage):
     assert len(todos) == 1 and todos[0]["task"] == "Send the docs"
 
 
+# --- Owner extraction from Read.ai action sentences ---
+
+def test_extract_owner_simple_name():
+    from app.ingest import _extract_owner
+    assert _extract_owner("Chris Aiello will fix any issues") == "Chris Aiello"
+
+
+def test_extract_owner_three_word_name():
+    from app.ingest import _extract_owner
+    assert _extract_owner("Chris Andresen will form the new entities") == "Chris Andresen"
+
+
+def test_extract_owner_compound_with_ampersand():
+    from app.ingest import _extract_owner
+    assert _extract_owner(
+        "Schuyler Dietz & Chris Aiello will finalize the uplifters memo"
+    ) == "Schuyler Dietz & Chris Aiello"
+
+
+def test_extract_owner_comma_separated_list():
+    from app.ingest import _extract_owner
+    assert _extract_owner(
+        "Pedro Rosales, Greg Smith, and Grady Lakamp will review the package"
+    ) == "Pedro Rosales, Greg Smith, and Grady Lakamp"
+
+
+def test_extract_owner_should_modal():
+    from app.ingest import _extract_owner
+    assert _extract_owner("Bob Kennedy should email Michael by Friday") == "Bob Kennedy"
+
+
+def test_extract_owner_needs_to():
+    from app.ingest import _extract_owner
+    assert _extract_owner("Tom Taggart needs to call the appraiser") == "Tom Taggart"
+
+
+def test_extract_owner_pronoun_rejected():
+    from app.ingest import _extract_owner
+    assert _extract_owner("It will be done by Friday") == ""
+    assert _extract_owner("They will review tomorrow") == ""
+
+
+def test_extract_owner_no_match_returns_empty():
+    from app.ingest import _extract_owner
+    assert _extract_owner("Just a sentence with no clear owner") == ""
+    assert _extract_owner("") == ""
+
+
+def test_ingest_extracts_owner_from_text(client, storage):
+    payload = {"meeting": {
+        "id": "owner1", "title": "L10",
+        "start_time": "2026-04-28T15:00:00Z",
+        "summary": "s",
+        "action_items": [
+            {"id": "ai_1", "text": "Chris Aiello will fix any issues", "completed": False},
+            {"id": "ai_2", "text": "Bob Kennedy will propose dates for the next meeting", "completed": False},
+        ],
+    }}
+    r = client.post("/api/ingest/readai", json=payload, headers={"X-API-Key": "test-key"})
+    assert r.status_code == 200
+    m = storage.get_meeting("owner1")
+    assert m["action_items"][0]["owner"] == "Chris Aiello"
+    assert m["action_items"][1]["owner"] == "Bob Kennedy"
+
+
+def test_ingest_does_not_overwrite_explicit_owner(client, storage):
+    payload = {"meeting": {
+        "id": "owner2", "title": "L10",
+        "start_time": "2026-04-28T15:00:00Z",
+        "summary": "s",
+        "action_items": [
+            {"id": "ai_1", "owner": "ExplicitOwner", "text": "Chris Aiello will fix it", "completed": False},
+        ],
+    }}
+    r = client.post("/api/ingest/readai", json=payload, headers={"X-API-Key": "test-key"})
+    assert r.status_code == 200
+    assert storage.get_meeting("owner2")["action_items"][0]["owner"] == "ExplicitOwner"
+
+
 # --- Route tests ---
 
 def test_api_todos_list(client, storage):
