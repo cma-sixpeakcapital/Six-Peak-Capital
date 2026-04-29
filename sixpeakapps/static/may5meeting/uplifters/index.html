@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uplifters Foundation JV · Steyn Pre-Read · May 5, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --denim:#0B1833; --denim-light:#111E3D;
+  --space:#2C3A51; --space-light:#384862; --space-muted:#1E2C44;
+  --steel:#BFC7DA; --steel-light:#E2E7F0;
+  --ghost:#F8F9F4; --ghost-warm:#FAFAF6;
+  --rust:#C4581A; --rust-glow:#E8935A; --rust-light:rgba(196,88,26,0.12); --rust-subtle:rgba(196,88,26,0.06);
+  --gray:#94A3B8; --gray-dk:#475569;
+  --success:#10B981; --warning:#F59E0B; --error:#EF4444;
+  --font-primary:'Aptos','DM Sans',Calibri,'Segoe UI',sans-serif;
+  --font-display:'DM Sans','Aptos','Segoe UI',sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { font-family:var(--font-primary); background:var(--steel-light); color:var(--denim); line-height:1.6; }
+
+/* DECK SHELL */
+.deck { min-height:100vh; display:flex; flex-direction:column; }
+.topbar { background:linear-gradient(135deg, var(--space-light) 0%, var(--space-muted) 60%, var(--denim) 100%); padding:2rem 0 1.6rem; border-bottom:3px solid var(--rust); }
+.topbar .inner { max-width:1180px; margin:0 auto; padding:0 2rem; display:flex; justify-content:space-between; align-items:flex-end; gap:2rem; flex-wrap:wrap; }
+.topbar a.back { color:var(--steel); text-decoration:none; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.18em; font-weight:600; opacity:0.85; }
+.topbar a.back:hover { color:var(--rust-glow); opacity:1; }
+.topbar .label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; color:var(--rust); margin-bottom:0.5rem; }
+.topbar h1 { font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--ghost-warm); letter-spacing:-0.01em; }
+.topbar .sub { color:var(--steel); font-size:0.85rem; opacity:0.85; margin-top:0.4rem; max-width:760px; line-height:1.55; }
+.topbar .meta { display:flex; flex-direction:column; align-items:flex-end; gap:0.7rem; min-width:240px; }
+.topbar .meta .progress { display:flex; align-items:center; gap:0.85rem; width:100%; }
+.topbar .meta .bar { flex:1; height:3px; background:rgba(191,199,218,0.2); border-radius:2px; overflow:hidden; }
+.topbar .meta .fill { height:100%; background:linear-gradient(90deg, var(--rust), var(--rust-glow)); border-radius:2px; transition:width 0.3s ease; }
+.topbar .meta .counter { font-family:var(--font-display); font-size:0.78rem; font-weight:700; color:var(--ghost-warm); letter-spacing:0.1em; white-space:nowrap; }
+.topbar .meta .counter .cur { color:var(--rust-glow); }
+.topbar .meta .now-showing { font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.16em; color:var(--steel); opacity:0.7; }
+.topbar .meta .now-showing .name { color:var(--ghost-warm); opacity:1; margin-left:6px; }
+
+/* SLIDE NAV CHIPS */
+.deck-nav { background:#FFFFFF; border-bottom:1px solid rgba(11,24,51,0.08); padding:0; position:sticky; top:0; z-index:40; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
+.deck-nav-inner { max-width:1280px; margin:0 auto; padding:0 1.5rem; display:flex; gap:0; overflow-x:auto; }
+.deck-nav button { background:none; border:none; cursor:pointer; padding:13px 14px; font-family:inherit; font-size:0.7rem; font-weight:600; color:var(--gray-dk); text-transform:uppercase; letter-spacing:0.12em; white-space:nowrap; border-bottom:3px solid transparent; transition:all 0.15s ease; display:flex; align-items:center; gap:8px; }
+.deck-nav button .ix { color:var(--rust); font-weight:700; opacity:0.6; font-size:0.66rem; }
+.deck-nav button:hover { color:var(--rust); }
+.deck-nav button:hover .ix { opacity:1; }
+.deck-nav button.active { color:var(--rust); border-bottom-color:var(--rust); }
+.deck-nav button.active .ix { opacity:1; }
+
+/* SLIDE STAGE */
+.stage { flex:1; padding:2.5rem 2rem 8rem; overflow-x:hidden; }
+.stage-inner { max-width:1180px; margin:0 auto; }
+
+.slide { display:none; animation:slideIn 0.35s ease; }
+.slide.active { display:block; }
+@keyframes slideIn {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* SLIDE COVER */
+.slide .slide-cover { margin-bottom:2rem; }
+.slide .slide-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; color:var(--rust); margin-bottom:0.75rem; }
+.slide .slide-label::after { content:''; display:block; width:60px; height:2px; background:linear-gradient(90deg, var(--rust), transparent); margin-top:0.6rem; }
+.slide h1.title { font-family:var(--font-display); font-size:1.85rem; font-weight:700; color:var(--denim); letter-spacing:-0.012em; line-height:1.2; margin-bottom:0.6rem; max-width:920px; }
+.slide h1.title em { color:var(--rust); font-style:normal; }
+.slide .lede { font-size:1rem; color:var(--gray-dk); line-height:1.7; max-width:880px; }
+
+/* THESIS HERO */
+.thesis-hero {
+  background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%);
+  color:var(--ghost-warm);
+  border-radius:14px;
+  padding:2.5rem 2.5rem 2rem;
+  position:relative; overflow:hidden;
+  box-shadow:0 10px 40px rgba(11,24,51,0.15);
+}
+.thesis-hero::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--rust) 0%, var(--rust-glow) 50%, transparent 100%);
+}
+.thesis-hero .label { color:var(--rust-glow); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; margin-bottom:0.7rem; }
+.thesis-hero h2 { font-family:var(--font-display); font-size:1.9rem; font-weight:700; color:var(--ghost-warm); letter-spacing:-0.015em; margin-bottom:0.85rem; line-height:1.2; max-width:880px; }
+.thesis-hero h2 em { color:var(--rust-glow); font-style:normal; }
+.thesis-hero p { color:var(--steel); font-size:1rem; line-height:1.7; max-width:820px; }
+.thesis-hero p strong { color:var(--ghost-warm); font-weight:600; }
+.thesis-hero .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; margin-top:1.85rem; padding-top:1.75rem; border-top:1px solid rgba(191,199,218,0.15); }
+@media(max-width:900px) { .thesis-hero .stats { grid-template-columns:1fr 1fr; } .thesis-hero h2 { font-size:1.45rem; } }
+.thesis-hero .stat .num { font-family:var(--font-display); font-size:1.95rem; font-weight:700; color:var(--rust-glow); line-height:1.1; }
+.thesis-hero .stat .lbl { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.14em; color:var(--steel); margin-top:6px; opacity:0.85; line-height:1.45; }
+
+/* SHARED COMPONENTS */
+.kpi-row { display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-bottom:1.25rem; }
+@media(max-width:900px) { .kpi-row { grid-template-columns:1fr 1fr; } }
+.kpi { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.kpi .lbl { font-size:0.66rem; color:var(--gray-dk); font-weight:600; text-transform:uppercase; letter-spacing:0.14em; }
+.kpi .val { font-family:var(--font-display); font-size:1.95rem; font-weight:700; color:var(--rust); margin-top:0.55rem; line-height:1.05; }
+.kpi .val.denim { color:var(--denim); }
+.kpi .val.sm { font-size:1.2rem; padding-top:0.5rem; }
+.kpi .delta { font-size:0.78rem; color:var(--gray-dk); margin-top:7px; }
+
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+.grid5 { display:grid; grid-template-columns:repeat(5,1fr); gap:0.75rem; }
+@media(max-width:1000px) { .grid5 { grid-template-columns:1fr 1fr; } }
+@media(max-width:900px) { .grid2,.grid3 { grid-template-columns:1fr; } .grid5 { grid-template-columns:1fr; } }
+
+.card { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.5rem 1.6rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.card.dark { background:var(--denim); color:var(--ghost-warm); border-color:rgba(191,199,218,0.1); }
+.card.dark h3 { color:var(--ghost-warm); }
+.card.dark p, .card.dark li { color:var(--steel); }
+.card h3 { font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin-bottom:0.6rem; }
+.card p { font-size:0.92rem; color:var(--gray-dk); line-height:1.65; }
+.card ul { list-style:none; padding:0; margin:0.6rem 0 0; }
+.card ul li { font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55; }
+.card ul li::before { content:''; position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px; }
+
+/* SCOPE TILES */
+.scope-tile { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.4rem 1.25rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); position:relative; height:100%; display:flex; flex-direction:column; }
+.scope-tile .ix { font-family:var(--font-display); font-size:1.6rem; font-weight:700; color:var(--rust-light); position:absolute; top:1.1rem; right:1.4rem; line-height:1; }
+.scope-tile .lbl { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--rust); margin-bottom:0.5rem; }
+.scope-tile h4 { font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--denim); margin-bottom:0.55rem; line-height:1.3; padding-right:1.5rem; }
+.scope-tile p { font-size:0.83rem; color:var(--gray-dk); line-height:1.6; }
+
+/* FEE TABLE */
+.tbl { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.tbl table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+.tbl thead { background:var(--denim); }
+.tbl th { color:var(--rust-glow); font-family:var(--font-display); font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; padding:14px 16px; text-align:right; }
+.tbl th:first-child { text-align:left; }
+.tbl td { padding:11px 16px; text-align:right; border-bottom:1px solid rgba(11,24,51,0.06); color:var(--gray-dk); font-variant-numeric:tabular-nums; }
+.tbl td:first-child { text-align:left; color:var(--denim); font-weight:600; }
+.tbl tr:last-child td { border-bottom:none; }
+.tbl tr:hover td { background:rgba(196,88,26,0.04); }
+.tbl .row-total td { background:rgba(196,88,26,0.06); color:var(--rust); font-weight:700; border-top:2px solid var(--rust); }
+.tbl .row-total td:first-child { color:var(--rust); }
+
+/* PNL FLOW */
+.pnl-flow { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0; background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+@media(max-width:900px) { .pnl-flow { grid-template-columns:1fr; } }
+.pnl-flow .step { padding:1.5rem 1.6rem; border-right:1px solid rgba(11,24,51,0.08); position:relative; }
+.pnl-flow .step:last-child { border-right:none; }
+@media(max-width:900px) { .pnl-flow .step { border-right:none; border-bottom:1px solid rgba(11,24,51,0.08); } .pnl-flow .step:last-child { border-bottom:none; } }
+.pnl-flow .step .lbl { font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--gray-dk); margin-bottom:8px; }
+.pnl-flow .step .val { font-family:var(--font-display); font-size:2rem; font-weight:700; color:var(--denim); line-height:1.05; }
+.pnl-flow .step .val.rust { color:var(--rust); }
+.pnl-flow .step .desc { font-size:0.82rem; color:var(--gray-dk); margin-top:8px; line-height:1.55; }
+.pnl-flow .step::after { content:'→'; position:absolute; right:-12px; top:50%; transform:translateY(-50%); font-size:1.2rem; color:var(--rust); background:#FFFFFF; padding:6px 4px; z-index:2; }
+.pnl-flow .step:last-child::after { display:none; }
+@media(max-width:900px) { .pnl-flow .step::after { display:none; } }
+
+/* ANNUAL CHART */
+.fy-chart { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.5rem 1.6rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.fy-chart .bars { display:grid; grid-template-columns:repeat(5,1fr); gap:0.6rem; align-items:flex-end; height:200px; margin:1rem 0 0.5rem; padding-top:1rem; }
+.fy-chart .bar { display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end; }
+.fy-chart .bar .magnitude { width:80%; background:linear-gradient(to top, var(--rust), var(--rust-glow)); border-radius:6px 6px 0 0; min-height:8px; position:relative; }
+.fy-chart .bar .magnitude .v { position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-family:var(--font-display); font-size:0.75rem; font-weight:700; color:var(--denim); white-space:nowrap; }
+.fy-chart .bar .yr { font-size:0.72rem; color:var(--gray-dk); margin-top:8px; font-weight:600; }
+.fy-chart .axis { display:flex; justify-content:space-between; padding-top:0.5rem; border-top:2px solid var(--denim); margin-top:6px; }
+.fy-chart .axis-label { font-size:0.7rem; color:var(--gray); font-weight:600; text-transform:uppercase; letter-spacing:0.1em; }
+
+/* TIMELINE */
+.timeline { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:2rem 2rem 1.6rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.timeline .track { position:relative; padding:1rem 0; }
+.timeline .line { position:absolute; left:0; right:0; top:50%; height:3px; background:linear-gradient(90deg, var(--rust) 0%, var(--rust-glow) 100%); border-radius:2px; }
+.timeline .nodes { display:grid; grid-template-columns:repeat(5,1fr); gap:0.6rem; position:relative; }
+.timeline .node { text-align:center; position:relative; padding:1.5rem 0; }
+.timeline .node .dot { width:18px; height:18px; background:var(--rust); border:4px solid #FFFFFF; border-radius:50%; margin:0 auto 0.7rem; box-shadow:0 0 0 2px var(--rust); position:relative; z-index:2; }
+.timeline .node .yr { font-family:var(--font-display); font-size:0.85rem; font-weight:700; color:var(--rust); margin-bottom:4px; }
+.timeline .node .ev { font-size:0.78rem; color:var(--gray-dk); line-height:1.5; max-width:180px; margin:0 auto; }
+
+/* RISK GRID */
+.risk-grid { display:grid; grid-template-columns:1fr; gap:0.6rem; }
+.risk-row { display:grid; grid-template-columns:160px 1fr 110px; gap:1rem; padding:1.05rem 1.2rem; background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:10px; align-items:center; }
+@media(max-width:700px) { .risk-row { grid-template-columns:1fr; } }
+.risk-row .name { font-family:var(--font-display); font-weight:700; color:var(--denim); font-size:0.95rem; }
+.risk-row .desc { font-size:0.85rem; color:var(--gray-dk); line-height:1.55; }
+.risk-row .level { display:inline-block; padding:5px 12px; border-radius:6px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; text-align:center; }
+.risk-row .level.low { background:rgba(16,185,129,0.12); color:#0b6e54; }
+.risk-row .level.med { background:rgba(245,158,11,0.14); color:#92670a; }
+.risk-row .level.attn { background:rgba(196,88,26,0.14); color:var(--rust); }
+
+/* GAUGE */
+.gauge { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.6rem 1.8rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.gauge .heading { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; gap:1rem; flex-wrap:wrap; }
+.gauge .heading h3 { font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin-bottom:0.3rem; }
+.gauge .pct { font-family:var(--font-display); font-size:2rem; font-weight:700; color:var(--rust); line-height:1; }
+.gauge .meter { height:14px; background:var(--steel-light); border-radius:7px; overflow:hidden; margin:0.7rem 0 0.5rem; position:relative; }
+.gauge .fill { height:100%; background:linear-gradient(90deg, var(--rust), var(--rust-glow)); border-radius:7px; }
+.gauge .scale { display:flex; justify-content:space-between; font-size:0.7rem; color:var(--gray); font-weight:600; }
+.gauge .desc { font-size:0.86rem; color:var(--gray-dk); line-height:1.7; margin-top:1rem; }
+
+/* CASE CARD */
+.case-card { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.case-card .case-header { background:var(--denim); padding:1.4rem 1.8rem; color:var(--ghost-warm); }
+.case-card .case-header .label { color:var(--rust-glow); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; }
+.case-card .case-header h3 { font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:var(--ghost-warm); margin-top:0.4rem; }
+.case-card .case-header p { color:var(--steel); font-size:0.86rem; margin-top:0.45rem; line-height:1.6; }
+.case-card .case-body { padding:1.5rem 1.8rem 1.8rem; }
+.case-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:start; }
+@media(max-width:800px) { .case-grid { grid-template-columns:1fr; } }
+.case-grid .group h5 { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--rust); margin-bottom:0.55rem; }
+.case-grid .group .row { display:flex; justify-content:space-between; padding:7px 0; font-size:0.86rem; border-bottom:1px solid rgba(11,24,51,0.06); }
+.case-grid .group .row:last-child { border-bottom:none; }
+.case-grid .group .row .lbl { color:var(--gray-dk); }
+.case-grid .group .row .val { font-weight:600; color:var(--denim); }
+.case-grid .group .row.total { padding-top:11px; margin-top:6px; border-top:2px solid var(--rust); }
+.case-grid .group .row.total .lbl, .case-grid .group .row.total .val { color:var(--rust); font-weight:700; }
+
+/* CALLOUT */
+.callout { background:rgba(196,88,26,0.05); border-left:3px solid var(--rust); padding:1.1rem 1.3rem; border-radius:0 8px 8px 0; font-size:0.92rem; color:var(--gray-dk); line-height:1.7; margin:1.25rem 0; }
+.callout strong { color:var(--rust); font-weight:700; }
+.callout.warn { border-left-color:var(--warning); }
+.callout.warn strong { color:#92670a; }
+
+/* AUTHORIZATION CTA */
+.auth-cta {
+  background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%);
+  color:var(--ghost-warm);
+  border-radius:14px;
+  padding:2.5rem 2.5rem 2rem;
+  position:relative; overflow:hidden;
+}
+.auth-cta::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--rust) 0%, var(--rust-glow) 100%);
+}
+.auth-cta .label { color:var(--rust-glow); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; margin-bottom:0.7rem; }
+.auth-cta h3 { font-family:var(--font-display); font-size:1.6rem; font-weight:700; color:var(--ghost-warm); margin-bottom:0.85rem; line-height:1.25; }
+.auth-cta p { color:var(--steel); font-size:0.95rem; line-height:1.7; max-width:780px; margin-bottom:1.25rem; }
+.auth-cta .ask-box { background:rgba(196,88,26,0.1); border:1px solid rgba(196,88,26,0.3); border-radius:10px; padding:1.2rem 1.4rem; }
+.auth-cta .ask-box .ask-lbl { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust-glow); margin-bottom:0.5rem; }
+.auth-cta .ask-box p { color:var(--ghost-warm); font-size:0.95rem; margin-bottom:0; }
+
+/* ATTACHMENTS */
+.attach-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.6rem 1.2rem; }
+@media(max-width:700px) { .attach-grid { grid-template-columns:1fr; } }
+.attach-grid a {
+  display:flex; align-items:center; gap:12px;
+  padding:13px 16px; background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:8px;
+  color:var(--denim); text-decoration:none; font-size:0.88rem; transition:all 0.15s ease;
+  box-shadow:0 2px 6px rgba(0,0,0,0.02);
+}
+.attach-grid a:hover { border-color:var(--rust); background:rgba(196,88,26,0.04); }
+.attach-grid a .ico { width:34px; height:34px; border-radius:6px; background:var(--rust-light); color:var(--rust); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.7rem; flex-shrink:0; }
+.attach-grid a .meta { font-size:0.7rem; opacity:0.55; margin-left:auto; }
+
+/* PILL LINKS */
+.pills { display:flex; flex-wrap:wrap; gap:0.55rem; margin-top:1rem; }
+.pills a { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; background:#FFFFFF; border:1px solid rgba(11,24,51,0.1); border-radius:999px; text-decoration:none; color:var(--denim); font-size:0.78rem; font-weight:600; transition:all 0.15s ease; }
+.pills a:hover { background:var(--rust); color:#fff; border-color:var(--rust); }
+.pills a .arr { color:var(--rust); }
+.pills a:hover .arr { color:#fff; }
+
+/* DECK FOOTER CONTROLS */
+.deck-controls {
+  position:fixed; bottom:0; left:0; right:0;
+  background:rgba(255,255,255,0.96); backdrop-filter:blur(8px);
+  border-top:1px solid rgba(11,24,51,0.1);
+  padding:1rem 2rem;
+  display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;
+  z-index:50;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.06);
+}
+.deck-controls .crumb { font-size:0.78rem; color:var(--gray-dk); display:flex; align-items:center; gap:10px; }
+.deck-controls .crumb .ix { font-family:var(--font-display); font-weight:700; color:var(--rust); }
+.deck-controls .crumb .name { font-weight:600; color:var(--denim); }
+.deck-controls .arrows { display:flex; gap:0.6rem; align-items:center; }
+.arrow-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 22px; border-radius:8px;
+  font-family:var(--font-display); font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;
+  border:none; cursor:pointer; transition:all 0.15s ease;
+  background:#FFFFFF; color:var(--denim); border:1px solid rgba(11,24,51,0.12);
+}
+.arrow-btn:hover:not(:disabled) { border-color:var(--rust); color:var(--rust); }
+.arrow-btn.primary { background:var(--rust); color:#fff; border-color:var(--rust); }
+.arrow-btn.primary:hover:not(:disabled) { background:var(--rust-glow); border-color:var(--rust-glow); color:#fff; }
+.arrow-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.arrow-btn .arr { font-size:1rem; }
+.kbd-hint { font-size:0.68rem; color:var(--gray); display:flex; gap:6px; align-items:center; }
+.kbd-hint kbd { background:#fff; border:1px solid rgba(11,24,51,0.15); border-bottom-width:2px; border-radius:4px; padding:1px 6px; font-family:'JetBrains Mono', monospace; font-size:0.66rem; color:var(--denim); }
+
+@media(max-width:640px) {
+  .stage { padding:1.5rem 1rem 7rem; }
+  .slide h1.title { font-size:1.4rem; }
+  .deck-controls { padding:0.85rem 1rem; }
+  .arrow-btn { padding:9px 16px; font-size:0.72rem; }
+  .kbd-hint { display:none; }
+  .deck-controls .crumb .name { display:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="inner">
+    <div>
+      <a class="back" href="../">← Back to portal</a>
+      <div style="height:1rem;"></div>
+      <div class="label">Section 04 · Authorization Ask</div>
+      <h1>Uplifters Foundation · Pacific Palisades JV</h1>
+      <p class="sub">Development management &amp; owner's representative engagement for the Uplifters Foundation disaster rebuild program. To be presented by Schuyler. Full IC memo and exhibits attached on the final slide.</p>
+    </div>
+    <div class="meta">
+      <div class="now-showing">Now showing<span class="name" id="topbarName">Thesis</span></div>
+      <div class="progress">
+        <div class="bar"><div class="fill" id="progressFill" style="width:11.1%;"></div></div>
+        <div class="counter"><span class="cur" id="counterCur">01</span> / <span id="counterTot">09</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SECTION CHIPS NAV -->
+<nav class="deck-nav">
+  <div class="deck-nav-inner">
+    <button data-slide="0" class="active"><span class="ix">01</span>Thesis</button>
+    <button data-slide="1"><span class="ix">02</span>Opportunity</button>
+    <button data-slide="2"><span class="ix">03</span>Mandate</button>
+    <button data-slide="3"><span class="ix">04</span>Economics</button>
+    <button data-slide="4"><span class="ix">05</span>Sample Deal</button>
+    <button data-slide="5"><span class="ix">06</span>Timeline</button>
+    <button data-slide="6"><span class="ix">07</span>Risk &amp; Status</button>
+    <button data-slide="7"><span class="ix">08</span>Strategic Upside</button>
+    <button data-slide="8"><span class="ix">09</span>Authorization</button>
+  </div>
+</nav>
+
+<!-- STAGE -->
+<main class="stage">
+  <div class="stage-inner">
+
+  <!-- SLIDE 01 · THESIS -->
+  <section class="slide active" id="slide-0">
+    <div class="slide-cover">
+      <div class="slide-label">01 · Thesis</div>
+      <h1 class="title">A first-of-its-kind tax-exempt bond structure to rebuild Pacific Palisades, <em>and</em> a first-mover platform for Six Peak</h1>
+      <p class="lede">Uplifters Foundation is a California 501(c)(3) standing up a ~$200M, ~60-home mission-driven rebuild for families displaced by the January 2025 fire. Six Peak would serve as exclusive development manager and owner's representative on a fee-based basis, with no equity and no completion guarantee.</p>
+    </div>
+
+    <div class="thesis-hero">
+      <div class="label">The shape of the engagement</div>
+      <h2>If the model works in the Palisades, it becomes a replicable platform for disaster recovery and workforce housing nationwide.</h2>
+      <p>Six Peak's exposure is <strong>fee-for-services</strong>. No equity, no completion guarantee, no ownership risk. The structural innovation sits with the Foundation: tax-exempt municipal bond financing to fund market-rate, for-sale single-family housing, with no developer promote and proceeds funding community infrastructure rather than shareholder returns.</p>
+      <div class="stats">
+        <div class="stat"><div class="num">~60</div><div class="lbl">Single-family<br>homes</div></div>
+        <div class="stat"><div class="num">$9.0M</div><div class="lbl">Gross fees<br>over program life</div></div>
+        <div class="stat"><div class="num">$4.1M</div><div class="lbl">Net to Six Peak<br>after staffing &amp; OH</div></div>
+        <div class="stat"><div class="num">5 yrs</div><div class="lbl">Operating period<br>FY 2027 – 2031</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 02 · OPPORTUNITY -->
+  <section class="slide" id="slide-1">
+    <div class="slide-cover">
+      <div class="slide-label">02 · Opportunity</div>
+      <h1 class="title">Why this engagement, and why now</h1>
+      <p class="lede">The Palisades Fire created an urgent rebuilding need that conventional private development can't serve at the scale or pricing the displaced community needs. Uplifters' tax-exempt bond structure threads that needle.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>The Foundation</h3>
+        <p>Uplifters Foundation is a California 501(c)(3) nonprofit dedicated to rebuilding for the most vulnerable victims of the Palisades Fire. Completed homes are first offered at a discount to former residents who commit to return. Net proceeds fund public facilities (playgrounds, parks, utilities) instead of a developer promote.</p>
+      </div>
+      <div class="card">
+        <h3>The Financing Innovation</h3>
+        <p>This is the first known use of tax-exempt municipal bond financing to fund market-rate, for-sale single-family housing at scale. Eliminating the cost of equity capital and the developer promote drives a structural cost advantage versus conventional private builders.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.25rem;">
+      <h3>Platform Opportunity Beyond the Palisades</h3>
+      <p>If the program executes successfully, Six Peak becomes the only operator in the country with a demonstrated track record on this financing and delivery model. Three replication paths sit one rung below today's mandate:</p>
+      <ul>
+        <li><strong>Adjacent disaster markets:</strong> Altadena is the immediate next target. A fundraise effort will commence at the close of this first $200M round. Future climate-driven disasters around the country are the natural extension. The program is a repeatable financial strategy more than a development strategy.</li>
+        <li><strong>Workforce / attainable housing:</strong> below-market-rate, new-construction homes are the most desirable form of residential real estate, with a near-endless pool of buyers.</li>
+        <li><strong>Institutional adoption:</strong> once one bond closes successfully, the template becomes underwriteable by a much broader pool.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SLIDE 03 · MANDATE -->
+  <section class="slide" id="slide-2">
+    <div class="slide-cover">
+      <div class="slide-label">03 · Mandate</div>
+      <h1 class="title">What Six Peak is being asked to do</h1>
+      <p class="lede">End-to-end development management and owner's representative services from site sourcing through final sale, organized into five service categories. Six Peak acts in a representative and managerial capacity, <strong>not</strong> as principal, contractor, broker, architect, or engineer.</p>
+    </div>
+
+    <div class="grid5">
+      <div class="scope-tile">
+        <div class="ix">A</div>
+        <div class="lbl">Program-Level</div>
+        <h4>Standards, roster, controls</h4>
+        <p>Build the program-wide playbook: product standards, design-build roster, master agreements, budgets, schedules, reporting formats.</p>
+      </div>
+      <div class="scope-tile">
+        <div class="ix">B</div>
+        <div class="lbl">Acquisition</div>
+        <h4>Sourcing &amp; predevelopment</h4>
+        <p>Source on- and off-market lots within the buy box; manage diligence (title, zoning, geotech, environmental); oversee close.</p>
+      </div>
+      <div class="scope-tile">
+        <div class="ix">C</div>
+        <div class="lbl">Project Mgmt</div>
+        <h4>Execution &amp; controls</h4>
+        <p>Design development, value engineering, permitting, construction oversight, draws, change orders, contingency, closeout.</p>
+      </div>
+      <div class="scope-tile">
+        <div class="ix">D</div>
+        <div class="lbl">Sales &amp; Exit</div>
+        <h4>Lease-to-sale &amp; disposition</h4>
+        <p>Pricing recommendations, broker management, marketing, escrow &amp; contract administration, transaction closing.</p>
+      </div>
+      <div class="scope-tile">
+        <div class="ix">E</div>
+        <div class="lbl">Post-Completion</div>
+        <h4>Warranty &amp; reconciliation</h4>
+        <p>Warranty claims, punch-list follow-up, final cost reconciliation, release of retained contingency.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Risk profile:</strong> The engagement is a fee-based services arrangement, not a principal-risk investment. Six Peak does not contribute equity, assume a completion guarantee, or take ownership risk.
+    </div>
+  </section>
+
+  <!-- SLIDE 04 · ECONOMICS -->
+  <section class="slide" id="slide-3">
+    <div class="slide-cover">
+      <div class="slide-label">04 · Economics</div>
+      <h1 class="title">The fee structure and the path to net</h1>
+      <p class="lede">Six Peak earns at four points across the lifecycle of each home. Aggregated across ~60 homes, the program produces approximately $9.0M of gross fee revenue and ~$4.1M of net income after staffing and overhead.</p>
+    </div>
+
+    <div class="tbl" style="margin-bottom:1.5rem;">
+      <table>
+        <thead>
+          <tr><th>Fee Stage</th><th>Basis</th><th>Rate</th><th>Per-Home Avg.</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Acquisition fee</td><td>Lot purchase price</td><td>1.0%</td><td>~$12K</td></tr>
+          <tr><td>Development management fee</td><td>Total construction cost</td><td>6.0%</td><td>~$96K</td></tr>
+          <tr><td>Leasing fee</td><td>Annual rent (interim period)</td><td>3.0%</td><td>~$3K</td></tr>
+          <tr><td>Disposition fee</td><td>Sale price</td><td>1.0%</td><td>~$40K</td></tr>
+          <tr class="row-total"><td>Per-home total (illustrative)</td><td>—</td><td>—</td><td>~$151K</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:0.85rem; color:var(--gray-dk); font-style:italic; max-width:820px; margin-bottom:1rem;">Per-home figures are illustrative, calibrated against the 701 Radcliffe Avenue case study (next slide). Actual per-home fees will vary with lot price, scope, and rent assumptions.</p>
+
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:1.25rem 0 0.85rem;">Gross-to-Net Walk</h3>
+    <div class="pnl-flow">
+      <div class="step">
+        <div class="lbl">Gross Fees · Program Life</div>
+        <div class="val rust">~$9.0M</div>
+        <div class="desc">All four fee streams aggregated across ~60 homes over the FY27–FY31 operating window.</div>
+      </div>
+      <div class="step">
+        <div class="lbl">Less · Staffing &amp; Overhead</div>
+        <div class="val">~$4.9M</div>
+        <div class="desc">Dedicated PM, asset management, and back-office capacity allocated to the program over the term.</div>
+      </div>
+      <div class="step">
+        <div class="lbl">Net to Six Peak</div>
+        <div class="val rust">~$4.1M</div>
+        <div class="desc">Net income to SPC across the program, with no capital deployed and no completion guarantee.</div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.85rem;">Annual Fee Revenue Schedule (Illustrative)</h3>
+    <div class="fy-chart">
+      <div class="bars">
+        <div class="bar"><div class="magnitude" style="height:30%;"><span class="v">~$1.1M</span></div><div class="yr">FY 2027</div></div>
+        <div class="bar"><div class="magnitude" style="height:100%;"><span class="v">~$3.7M</span></div><div class="yr">FY 2028</div></div>
+        <div class="bar"><div class="magnitude" style="height:66%;"><span class="v">~$2.4M</span></div><div class="yr">FY 2029</div></div>
+        <div class="bar"><div class="magnitude" style="height:38%;"><span class="v">~$1.4M</span></div><div class="yr">FY 2030</div></div>
+        <div class="bar"><div class="magnitude" style="height:12%;"><span class="v">~$0.4M</span></div><div class="yr">FY 2031</div></div>
+      </div>
+      <div class="axis"><span class="axis-label">Acquisitions ramp</span><span class="axis-label">Construction completions peak</span><span class="axis-label">Dispositions tail</span></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 05 · SAMPLE DEAL -->
+  <section class="slide" id="slide-4">
+    <div class="slide-cover">
+      <div class="slide-label">05 · Sample Deal · Exhibit E</div>
+      <h1 class="title">Sample Deal · 701 Radcliffe Avenue</h1>
+      <p class="lede">A real comparable transaction. Westward Homes acquired 701 Radcliffe in December 2025 for $1.2M. The fee build-up below shows what Six Peak would earn if the deal were routed through the Uplifters program.</p>
+    </div>
+
+    <div class="case-card">
+      <div class="case-header">
+        <div class="label">Sample Deal · Pacific Palisades</div>
+        <h3>701 Radcliffe Avenue</h3>
+        <p>Acquired by Westward Homes · December 2025 · Huntington Palisades sub-market · standard Palisades lot · realized RTI cost $62K · total construction $1.6M</p>
+      </div>
+      <div class="case-body">
+        <div class="case-grid">
+          <div class="group">
+            <h5>Deal Snapshot</h5>
+            <div class="row"><span class="lbl">Acquisition price</span><span class="val">$1,200,000</span></div>
+            <div class="row"><span class="lbl">Ready-to-issue (RTI) cost</span><span class="val">$62,000</span></div>
+            <div class="row"><span class="lbl">Total construction cost</span><span class="val">$1,600,000</span></div>
+            <div class="row"><span class="lbl">Target home size</span><span class="val">~3,250 SF · 2-story</span></div>
+            <div class="row"><span class="lbl">Features</span><span class="val">Pool · 1-car garage · roof terrace</span></div>
+          </div>
+          <div class="group">
+            <h5>Six Peak Fee Build-up</h5>
+            <div class="row"><span class="lbl">Acquisition fee · 1% of purchase</span><span class="val">~$12,000</span></div>
+            <div class="row"><span class="lbl">Development fee · 6% of cost</span><span class="val">~$96,000</span></div>
+            <div class="row"><span class="lbl">Leasing fee · 3% of annual rent</span><span class="val">~$3,000</span></div>
+            <div class="row"><span class="lbl">Disposition fee · 1% of sale</span><span class="val">~$40,000</span></div>
+            <div class="row total"><span class="lbl">Six Peak per-deal capture</span><span class="val">~$151,000</span></div>
+          </div>
+        </div>
+        <div class="callout" style="margin-bottom:0; margin-top:1.4rem;">
+          ~$151K per comparable deal · <strong>no capital deployment</strong>. Scaled across the 60-home target, this is the per-asset building block that rolls into the $9.0M aggregate fee plan.
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:2rem 0 0.85rem;">Architectural Visuals</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:1rem;">The renderings and floor plans below illustrate the product the Six Peak design-build roster is targeting for a typical Palisades lot: a ~3,250 SF two-story home with a pool, one-car garage, and rooftop terrace.</p>
+
+    <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.6rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); margin-bottom:1rem;">
+      <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.7rem;">Rendering · 701 Radcliffe Ave.</div>
+      <div style="background:#FAFAF6; border-radius:8px; padding:1rem; text-align:center;">
+        <img src="assets/radcliffe-rendering.jpg" alt="Architectural rendering of 701 Radcliffe Avenue: two-story home with pool, garage, and rooftop terrace" style="max-width:100%; height:auto; border-radius:6px; display:block; margin:0 auto;">
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.6rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.7rem;">Proposed Ground Floor Plan</div>
+        <div style="background:#FAFAF6; border-radius:8px; padding:0.75rem; text-align:center;">
+          <img src="assets/radcliffe-floor-1.jpg" alt="Proposed ground floor plan: kitchen, living rooms, dining, pool, garage, guest bedroom" style="max-width:100%; height:auto; border-radius:6px; display:block; margin:0 auto;">
+        </div>
+        <p style="font-size:0.78rem; color:var(--gray-dk); margin-top:0.7rem; line-height:1.55;">Open-plan kitchen + dual living rooms, pool flanking the dining room, ground-floor guest bedroom + bath, attached garage.</p>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.6rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.7rem;">Proposed Second Floor Plan</div>
+        <div style="background:#FAFAF6; border-radius:8px; padding:0.75rem; text-align:center;">
+          <img src="assets/radcliffe-floor-2.jpg" alt="Proposed second floor plan: primary suite plus three bedrooms, balconies, laundry" style="max-width:100%; height:auto; border-radius:6px; display:block; margin:0 auto;">
+        </div>
+        <p style="font-size:0.78rem; color:var(--gray-dk); margin-top:0.7rem; line-height:1.55;">Primary suite with bath and dedicated closet, three additional bedrooms, three full baths, laundry room, balconies on three sides.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 06 · TIMELINE -->
+  <section class="slide" id="slide-5">
+    <div class="slide-cover">
+      <div class="slide-label">06 · Timeline</div>
+      <h1 class="title">Program milestones · five-year operating window</h1>
+      <p class="lede">Acquisitions ramp in 2027, construction completions peak in 2028, and dispositions tail through 2031.</p>
+    </div>
+
+    <div class="timeline">
+      <div class="track">
+        <div class="line"></div>
+        <div class="nodes">
+          <div class="node">
+            <div class="dot"></div>
+            <div class="yr">FY 2026</div>
+            <div class="ev">Mandate signed · Program standards &amp; roster set</div>
+          </div>
+          <div class="node">
+            <div class="dot"></div>
+            <div class="yr">FY 2027</div>
+            <div class="ev">First lots acquired · First builds underway</div>
+          </div>
+          <div class="node">
+            <div class="dot"></div>
+            <div class="yr">FY 2028</div>
+            <div class="ev">Construction completions peak</div>
+          </div>
+          <div class="node">
+            <div class="dot"></div>
+            <div class="yr">FY 2029</div>
+            <div class="ev">Sustained completions · Initial dispositions</div>
+          </div>
+          <div class="node">
+            <div class="dot"></div>
+            <div class="yr">FY 2030</div>
+            <div class="ev">Sustained dispositions · Replication conversations</div>
+          </div>
+          <div class="node">
+            <div class="dot"></div>
+            <div class="yr">FY 2031</div>
+            <div class="ev">Program wind-down</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>This program is the first instance of a repeatable opportunity and possible new business vertical.</strong> The timeline above is illustrative of a single bond issuance. If it works, multiple issuances will fund multiple branches of this strategy, starting with the Palisades, then Altadena, and expanding as the original bonds begin maturing.
+    </div>
+  </section>
+
+  <!-- SLIDE 07 · RISK & STATUS -->
+  <section class="slide" id="slide-6">
+    <div class="slide-cover">
+      <div class="slide-label">07 · Risk &amp; Deal Status</div>
+      <h1 class="title">What we're watching, and where the deal stands</h1>
+      <p class="lede">Probability of close is currently estimated at 50/50. The two gating variables are regulatory completion and bond fundraising. Risk profile is execution-shaped, not principal.</p>
+    </div>
+
+    <div class="grid2" style="margin-bottom:1.5rem;">
+      <div class="gauge">
+        <div class="heading">
+          <div>
+            <h3>Probability of Closing</h3>
+            <p style="font-size:0.85rem; color:var(--gray-dk);">Working estimate as of April 20, 2026</p>
+          </div>
+          <div class="pct">~50%</div>
+        </div>
+        <div class="meter"><div class="fill" style="width:50%;"></div></div>
+        <div class="scale"><span>Speculative</span><span>Working</span><span>Committed</span></div>
+        <p class="desc">The ask before the Committee is to authorize negotiation and finalization of definitive documentation, not contingent on the program being fully subscribed at signing.</p>
+      </div>
+
+      <div class="card dark">
+        <h3>Gating Variables &amp; Credit Profile</h3>
+        <ul>
+          <li><strong style="color:var(--rust-glow);">Regulatory pathway.</strong> Foundation is progressing through required regulatory and local governance approvals. Process is moving smoothly at California public-agency cadence; expected to clear in the next several weeks.</li>
+          <li><strong style="color:var(--rust-glow);">Fundraising.</strong> $21M in early written commitments secured in initial outreach. Formal bond issuance and full subscription remain ahead. Target buyers are HNW former Palisades residents redirecting tax-exempt fixed-income allocations.</li>
+          <li><strong style="color:var(--rust-glow);">Credit profile.</strong> $200M of debt supported by ~$198M of hard assets (land, CIP, capitalized interest), with repayment from rent and home sale proceeds.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.85rem;">Execution Risk Map</h3>
+    <div class="risk-grid">
+      <div class="risk-row">
+        <div class="name">Regulatory Approval</div>
+        <div class="desc">Foundation working through California public-agency approvals. Pace is the typical risk; substance is on track.</div>
+        <div><span class="level med">Medium</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="name">Bond Subscription</div>
+        <div class="desc">Jefferies is acting as the placement agent for the Foundation's bonds, alongside sector-leading legal and political consultants engaged on behalf of the Foundation.</div>
+        <div><span class="level attn">Attention</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="name">Construction Execution</div>
+        <div class="desc">Mitigated by use of vetted design-build roster with GMP/cost-plus-fee structures and Foundation-side approval matrix.</div>
+        <div><span class="level low">Low</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="name">Sales / Disposition Pacing</div>
+        <div class="desc">Initial buyer pool is the displaced community itself, with a discount mechanism. Demand is structural rather than market-cycle dependent.</div>
+        <div><span class="level low">Low</span></div>
+      </div>
+      <div class="risk-row">
+        <div class="name">Six Peak Capital Risk</div>
+        <div class="desc">No equity, no completion guarantee, no ownership risk. Engagement is fee-for-services.</div>
+        <div><span class="level low">Low</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 08 · STRATEGIC UPSIDE -->
+  <section class="slide" id="slide-7">
+    <div class="slide-cover">
+      <div class="slide-label">08 · Strategic Upside</div>
+      <h1 class="title">Why this engagement matters beyond the fee</h1>
+      <p class="lede">Three strategic benefits to Six Peak that don't show up in the $9.0M / $4.1M numbers.</p>
+    </div>
+
+    <div class="grid3">
+      <div class="card">
+        <h3>Profile &amp; Positioning</h3>
+        <p>Sits Six Peak at the center of one of the highest-profile rebuilding efforts in Los Angeles. Strengthens relationships with institutional capital, municipalities, public agencies, and local stakeholders in ways conventional development assignments rarely do.</p>
+      </div>
+      <div class="card">
+        <h3>Direct Capability Match</h3>
+        <p>Not a passive advisory role. This is a full execution mandate built on the firm's actual operating strengths: site sourcing, underwriting, design-build management, construction oversight, draw administration, disposition.</p>
+      </div>
+      <div class="card">
+        <h3>First-Mover Position</h3>
+        <p>If the program succeeds, Six Peak is the only operator with a proven track record on this financing &amp; delivery model. The relationships, learnings, and operational playbook built in the Palisades become a durable moat.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>How to read the strategic upside:</strong> The $4.1M of net income is the floor of what this engagement is worth to Six Peak. It captures the contractual revenue but not the option value of being the only operator in the country with a proven track record on this model when the next disaster market or workforce-housing program comes calling.
+    </div>
+  </section>
+
+  <!-- SLIDE 09 · AUTHORIZATION + ATTACHMENTS -->
+  <section class="slide" id="slide-8">
+    <div class="slide-cover">
+      <div class="slide-label">09 · The Ask</div>
+      <h1 class="title">Authorization &amp; recommendation</h1>
+    </div>
+
+    <div class="auth-cta">
+      <div class="label">Recommendation</div>
+      <h3>Authorize Six Peak to negotiate and finalize the engagement with Uplifters Foundation</h3>
+      <p>The undersigned sponsoring members recommend that the Investment Committee authorize Six Peak Capital LP to negotiate and finalize definitive documentation with Uplifters Foundation, and to take such further steps as are reasonably necessary to pursue the engagement on terms substantially consistent with this memorandum.</p>
+      <div class="ask-box">
+        <div class="ask-lbl">What we're asking the Committee to approve</div>
+        <p>Authorization to proceed on terms substantially consistent with the IC memo and term sheet. Authorization is <strong style="color:var(--rust-glow);">not contingent</strong> on the Foundation's program being fully subscribed at signing.</p>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.2rem; font-weight:700; color:var(--denim); margin:2rem 0 0.75rem;">Deep-Dive Attachments</h3>
+    <p style="font-size:0.92rem; color:var(--gray-dk); max-width:820px; margin-bottom:0.85rem;">The full IC memo PDF below contains the entire walkthrough plus five exhibits at the back:</p>
+    <ul style="list-style:none; padding:0; margin:0 0 1.4rem; max-width:820px;">
+      <li style="font-size:0.9rem; color:var(--gray-dk); padding:5px 0 5px 22px; position:relative; line-height:1.6;"><span style="position:absolute; left:0; top:5px; font-weight:700; color:var(--rust); font-size:0.78rem;">A.</span> Draft Term Sheet for the Development / Owner's Representative Services Agreement</li>
+      <li style="font-size:0.9rem; color:var(--gray-dk); padding:5px 0 5px 22px; position:relative; line-height:1.6;"><span style="position:absolute; left:0; top:5px; font-weight:700; color:var(--rust); font-size:0.78rem;">B.</span> Six Peak Homebuilder Brand Roadmap</li>
+      <li style="font-size:0.9rem; color:var(--gray-dk); padding:5px 0 5px 22px; position:relative; line-height:1.6;"><span style="position:absolute; left:0; top:5px; font-weight:700; color:var(--rust); font-size:0.78rem;">C.</span> TEFRA-Approved Lot Inventory: the ~750-lot universe gating every acquisition</li>
+      <li style="font-size:0.9rem; color:var(--gray-dk); padding:5px 0 5px 22px; position:relative; line-height:1.6;"><span style="position:absolute; left:0; top:5px; font-weight:700; color:var(--rust); font-size:0.78rem;">D.</span> Lot Acquisitions Checklist: full underwriting workflow per lot</li>
+      <li style="font-size:0.9rem; color:var(--gray-dk); padding:5px 0 5px 22px; position:relative; line-height:1.6;"><span style="position:absolute; left:0; top:5px; font-weight:700; color:var(--rust); font-size:0.78rem;">E.</span> Sample Deal, 701 Radcliffe Avenue (the case study from Slide 05)</li>
+    </ul>
+
+    <div class="attach-grid">
+      <a href="Uplifters_IC_Memo.pdf" target="_blank">
+        <span class="ico">PDF</span><span><strong>Uplifters IC Memo:</strong> full memo &amp; exhibits A–E</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_Uplifters_v25.xlsx" target="_blank">
+        <span class="ico">XL</span><span>Uplifters program model · v25</span><span class="meta">.xlsx</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_Uplifters_ExtendedBD_v25.xlsx" target="_blank">
+        <span class="ico">XL</span><span>Uplifters + Extended BD model · v25</span><span class="meta">.xlsx</span>
+      </a>
+    </div>
+  </section>
+
+  </div>
+</main>
+
+<!-- DECK FOOTER CONTROLS -->
+<div class="deck-controls">
+  <div class="crumb">
+    <span class="ix" id="crumbIx">01 / 09</span>
+    <span class="name" id="crumbName">Thesis</span>
+  </div>
+  <div class="kbd-hint">
+    Use <kbd>←</kbd> <kbd>→</kbd> arrows to advance
+  </div>
+  <div class="arrows">
+    <button class="arrow-btn" id="prevBtn" onclick="goPrev()" disabled><span class="arr">←</span> Previous</button>
+    <button class="arrow-btn primary" id="nextBtn" onclick="goNext()">Next <span class="arr">→</span></button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const navBtns = document.querySelectorAll('.deck-nav button');
+const slideNames = ['Thesis', 'Opportunity', 'Mandate', 'Economics', 'Sample Deal', 'Timeline', 'Risk & Status', 'Strategic Upside', 'Authorization'];
+let cur = 0;
+
+function goSlide(i) {
+  if (i < 0 || i >= slides.length) return;
+  cur = i;
+  slides.forEach((s, ix) => s.classList.toggle('active', ix === i));
+  navBtns.forEach((b, ix) => b.classList.toggle('active', ix === i));
+  document.getElementById('counterCur').textContent = String(i+1).padStart(2,'0');
+  document.getElementById('progressFill').style.width = ((i+1)/slides.length*100) + '%';
+  document.getElementById('crumbIx').textContent = String(i+1).padStart(2,'0') + ' / ' + String(slides.length).padStart(2,'0');
+  document.getElementById('crumbName').textContent = slideNames[i];
+  document.getElementById('topbarName').textContent = slideNames[i];
+  document.getElementById('prevBtn').disabled = (i === 0);
+  document.getElementById('nextBtn').disabled = (i === slides.length - 1);
+  document.getElementById('nextBtn').innerHTML = (i === slides.length - 1) ? 'End <span class="arr">·</span>' : 'Next <span class="arr">→</span>';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goNext() { if (cur < slides.length - 1) goSlide(cur + 1); }
+function goPrev() { if (cur > 0) goSlide(cur - 1); }
+
+navBtns.forEach((b, ix) => b.addEventListener('click', () => goSlide(ix)));
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); goNext(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   { e.preventDefault(); goPrev(); }
+  if (e.key === 'Home') { e.preventDefault(); goSlide(0); }
+  if (e.key === 'End')  { e.preventDefault(); goSlide(slides.length - 1); }
+});
+
+goSlide(0);
+</script>
+</body>
+</html>

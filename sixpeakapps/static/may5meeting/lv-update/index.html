@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LV Construction · Operating Update · Steyn Pre-Read · May 5, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --denim:#0B1833; --denim-light:#111E3D;
+  --space:#2C3A51; --space-light:#384862; --space-muted:#1E2C44;
+  --steel:#BFC7DA; --steel-light:#E2E7F0;
+  --ghost:#F8F9F4; --ghost-warm:#FAFAF6;
+  --rust:#C4581A; --rust-glow:#E8935A; --rust-light:rgba(196,88,26,0.12); --rust-subtle:rgba(196,88,26,0.06);
+  --gray:#94A3B8; --gray-dk:#475569;
+  --success:#10B981; --warning:#F59E0B; --error:#EF4444;
+  --font-primary:'Aptos','DM Sans',Calibri,'Segoe UI',sans-serif;
+  --font-display:'DM Sans','Aptos','Segoe UI',sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { font-family:var(--font-primary); background:var(--steel-light); color:var(--denim); line-height:1.6; }
+
+/* DECK SHELL */
+.deck { min-height:100vh; display:flex; flex-direction:column; }
+.topbar { background:linear-gradient(135deg, var(--space-light) 0%, var(--space-muted) 60%, var(--denim) 100%); padding:2rem 0 1.6rem; border-bottom:3px solid var(--rust); }
+.topbar .inner { max-width:1180px; margin:0 auto; padding:0 2rem; display:flex; justify-content:space-between; align-items:flex-end; gap:2rem; flex-wrap:wrap; }
+.topbar a.back { color:var(--steel); text-decoration:none; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.18em; font-weight:600; opacity:0.85; }
+.topbar a.back:hover { color:var(--rust-glow); opacity:1; }
+.topbar .label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; color:var(--rust); margin-bottom:0.5rem; }
+.topbar h1 { font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--ghost-warm); letter-spacing:-0.01em; }
+.topbar .sub { color:var(--steel); font-size:0.85rem; opacity:0.85; margin-top:0.4rem; max-width:760px; line-height:1.55; }
+.topbar .meta { display:flex; flex-direction:column; align-items:flex-end; gap:0.7rem; min-width:240px; }
+.topbar .meta .progress { display:flex; align-items:center; gap:0.85rem; width:100%; }
+.topbar .meta .bar { flex:1; height:3px; background:rgba(191,199,218,0.2); border-radius:2px; overflow:hidden; }
+.topbar .meta .fill { height:100%; background:linear-gradient(90deg, var(--rust), var(--rust-glow)); border-radius:2px; transition:width 0.3s ease; }
+.topbar .meta .counter { font-family:var(--font-display); font-size:0.78rem; font-weight:700; color:var(--ghost-warm); letter-spacing:0.1em; white-space:nowrap; }
+.topbar .meta .counter .cur { color:var(--rust-glow); }
+.topbar .meta .now-showing { font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.16em; color:var(--steel); opacity:0.7; }
+.topbar .meta .now-showing .name { color:var(--ghost-warm); opacity:1; margin-left:6px; }
+
+/* SLIDE NAV CHIPS */
+.deck-nav { background:#FFFFFF; border-bottom:1px solid rgba(11,24,51,0.08); padding:0; position:sticky; top:0; z-index:40; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
+.deck-nav-inner { max-width:1280px; margin:0 auto; padding:0 1.5rem; display:flex; gap:0; overflow-x:auto; }
+.deck-nav button { background:none; border:none; cursor:pointer; padding:13px 16px; font-family:inherit; font-size:0.72rem; font-weight:600; color:var(--gray-dk); text-transform:uppercase; letter-spacing:0.12em; white-space:nowrap; border-bottom:3px solid transparent; transition:all 0.15s ease; display:flex; align-items:center; gap:8px; }
+.deck-nav button .ix { color:var(--rust); font-weight:700; opacity:0.6; font-size:0.66rem; }
+.deck-nav button:hover { color:var(--rust); }
+.deck-nav button:hover .ix { opacity:1; }
+.deck-nav button.active { color:var(--rust); border-bottom-color:var(--rust); }
+.deck-nav button.active .ix { opacity:1; }
+
+/* SLIDE STAGE */
+.stage { flex:1; padding:2.5rem 2rem 8rem; overflow-x:hidden; }
+.stage-inner { max-width:1180px; margin:0 auto; }
+
+.slide { display:none; animation:slideIn 0.35s ease; }
+.slide.active { display:block; }
+@keyframes slideIn {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* SLIDE COVER */
+.slide .slide-cover { margin-bottom:2rem; }
+.slide .slide-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; color:var(--rust); margin-bottom:0.75rem; }
+.slide .slide-label::after { content:''; display:block; width:60px; height:2px; background:linear-gradient(90deg, var(--rust), transparent); margin-top:0.6rem; }
+.slide h1.title { font-family:var(--font-display); font-size:1.85rem; font-weight:700; color:var(--denim); letter-spacing:-0.012em; line-height:1.2; margin-bottom:0.6rem; max-width:920px; }
+.slide h1.title em { color:var(--rust); font-style:normal; }
+.slide .lede { font-size:1rem; color:var(--gray-dk); line-height:1.7; max-width:880px; }
+
+/* SHARED COMPONENTS */
+.kpi-row { display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-bottom:1.25rem; }
+@media(max-width:900px) { .kpi-row { grid-template-columns:1fr 1fr; } }
+.kpi { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.kpi .lbl { font-size:0.66rem; color:var(--gray-dk); font-weight:600; text-transform:uppercase; letter-spacing:0.14em; }
+.kpi .val { font-family:var(--font-display); font-size:1.95rem; font-weight:700; color:var(--rust); margin-top:0.55rem; line-height:1.05; }
+.kpi .val.denim { color:var(--denim); }
+.kpi .val.sm { font-size:1.2rem; padding-top:0.5rem; }
+.kpi .val .ph { color:var(--gray); font-style:italic; }
+.kpi .delta { font-size:0.78rem; color:var(--gray-dk); margin-top:7px; }
+.kpi .delta.up { color:#0b6e54; font-weight:600; }
+.kpi .delta.dn { color:#a13b3b; font-weight:600; }
+
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+.grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+@media(max-width:900px) { .grid2,.grid3,.grid4 { grid-template-columns:1fr; } }
+
+.card { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.5rem 1.6rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.card.dark { background:var(--denim); color:var(--ghost-warm); border-color:rgba(191,199,218,0.1); }
+.card.dark h3 { color:var(--ghost-warm); }
+.card.dark p, .card.dark li { color:var(--steel); }
+.card h3 { font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin-bottom:0.6rem; }
+.card p { font-size:0.92rem; color:var(--gray-dk); line-height:1.65; }
+.card ul { list-style:none; padding:0; margin:0.6rem 0 0; }
+.card ul li { font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55; }
+.card ul li::before { content:''; position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px; }
+
+.callout { background:rgba(196,88,26,0.05); border-left:3px solid var(--rust); padding:1rem 1.25rem; border-radius:0 8px 8px 0; font-size:0.92rem; color:var(--gray-dk); line-height:1.7; margin:1.25rem 0; }
+.callout strong { color:var(--rust); font-weight:700; }
+.callout.warn { border-left-color:var(--warning); }
+.callout.warn strong { color:#92670a; }
+
+/* CLOSING TILES */
+.closings { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+@media(max-width:900px) { .closings { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .closings { grid-template-columns:1fr; } }
+.closing {
+  background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px;
+  padding:1.4rem 1.4rem 1.25rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);
+  position:relative; transition:all 0.2s ease; cursor:default;
+  display:flex; flex-direction:column; height:100%;
+}
+.closing:hover { transform:translateY(-3px); border-color:rgba(196,88,26,0.4); box-shadow:0 12px 40px rgba(11,24,51,0.1); }
+.closing .accent { width:36px; height:3px; background:var(--rust); border-radius:2px; margin-bottom:0.85rem; }
+.closing .name { font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--denim); margin-bottom:0.3rem; }
+.closing .id { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.12em; color:var(--rust); margin-bottom:0.85rem; }
+.closing .fields-block { flex:1; display:flex; flex-direction:column; }
+.closing .field { font-size:0.78rem; color:var(--gray-dk); margin-bottom:8px; display:grid; grid-template-columns:90px 1fr; gap:0.6rem; align-items:start; }
+.closing .field .lbl { font-weight:600; color:var(--space); }
+.closing .field .val { color:var(--gray-dk); text-align:right; line-height:1.4; }
+.closing .field .ph { color:var(--gray); font-style:italic; }
+.closing .field.scope { min-height:60px; }
+.closing .status { margin-top:auto; padding-top:0.85rem; border-top:1px dashed rgba(11,24,51,0.1); font-size:0.78rem; }
+.closing .status .badge { display:inline-block; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; padding:3px 8px; border-radius:4px; background:rgba(245,158,11,0.14); color:#92670a; }
+.closings { align-items:stretch; }
+
+/* TABLES */
+.tbl { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.tbl table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+.tbl thead { background:var(--denim); }
+.tbl th { color:var(--rust-glow); font-family:var(--font-display); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; padding:13px 14px; text-align:right; }
+.tbl th:first-child { text-align:left; }
+.tbl td { padding:10px 14px; text-align:right; border-bottom:1px solid rgba(11,24,51,0.06); color:var(--gray-dk); font-variant-numeric:tabular-nums; }
+.tbl td:first-child { text-align:left; color:var(--denim); font-weight:600; }
+.tbl tr:last-child td { border-bottom:none; }
+.tbl tr:hover td { background:rgba(196,88,26,0.04); }
+.tbl .row-total td { background:rgba(196,88,26,0.06); color:var(--rust); font-weight:700; border-top:2px solid var(--rust); }
+.tbl .row-total td:first-child { color:var(--rust); }
+.tbl .pos { color:#0b6e54; }
+.tbl .neg { color:#a13b3b; }
+.tbl .muted { color:var(--gray); font-style:italic; }
+
+/* PILL LINKS */
+.pills { display:flex; flex-wrap:wrap; gap:0.55rem; margin-top:1rem; }
+.pills a { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; background:#FFFFFF; border:1px solid rgba(11,24,51,0.1); border-radius:999px; text-decoration:none; color:var(--denim); font-size:0.78rem; font-weight:600; transition:all 0.15s ease; }
+.pills a:hover { background:var(--rust); color:#fff; border-color:var(--rust); }
+.pills a .arr { color:var(--rust); }
+.pills a:hover .arr { color:#fff; }
+.pills a.primary { background:var(--rust); color:#fff; border-color:var(--rust); }
+.pills a.primary .arr { color:#fff; }
+.pills a.primary:hover { background:var(--rust-glow); border-color:var(--rust-glow); }
+
+/* PLACEHOLDER STYLING */
+.ph-block {
+  background:rgba(94,123,155,0.05); border:1px dashed rgba(94,123,155,0.4); border-radius:8px;
+  padding:1rem 1.2rem; font-size:0.86rem; color:var(--space); font-style:italic; line-height:1.65;
+}
+.ph-block .ph-tag { display:inline-block; font-style:normal; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; padding:3px 9px; border-radius:4px; background:rgba(94,123,155,0.2); color:var(--space); margin-right:8px; vertical-align:middle; }
+.ph-block ul { list-style:none; padding:0; margin:0.6rem 0 0; }
+.ph-block ul li { padding:4px 0 4px 18px; position:relative; }
+.ph-block ul li::before { content:'·'; position:absolute; left:6px; top:0; color:var(--rust); font-size:1.4rem; line-height:1.1; }
+
+.placeholder-banner {
+  background:linear-gradient(135deg, rgba(196,88,26,0.08), rgba(232,147,90,0.04));
+  border:1px dashed rgba(196,88,26,0.45); border-radius:10px;
+  padding:1rem 1.25rem; margin-bottom:1.5rem;
+  display:flex; align-items:center; gap:1rem;
+  font-size:0.86rem; color:var(--space);
+}
+.placeholder-banner .pb-ico { width:36px; height:36px; border-radius:8px; background:var(--rust); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; flex-shrink:0; }
+.placeholder-banner strong { color:var(--rust); }
+
+/* DECK FOOTER CONTROLS (fixed) */
+.deck-controls {
+  position:fixed; bottom:0; left:0; right:0;
+  background:rgba(255,255,255,0.96); backdrop-filter:blur(8px);
+  border-top:1px solid rgba(11,24,51,0.1);
+  padding:1rem 2rem;
+  display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;
+  z-index:50;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.06);
+}
+.deck-controls .crumb { font-size:0.78rem; color:var(--gray-dk); display:flex; align-items:center; gap:10px; }
+.deck-controls .crumb .ix { font-family:var(--font-display); font-weight:700; color:var(--rust); }
+.deck-controls .crumb .name { font-weight:600; color:var(--denim); }
+.deck-controls .arrows { display:flex; gap:0.6rem; align-items:center; }
+.arrow-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 22px; border-radius:8px;
+  font-family:var(--font-display); font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;
+  border:none; cursor:pointer; transition:all 0.15s ease;
+  background:#FFFFFF; color:var(--denim); border:1px solid rgba(11,24,51,0.12);
+}
+.arrow-btn:hover:not(:disabled) { border-color:var(--rust); color:var(--rust); }
+.arrow-btn.primary { background:var(--rust); color:#fff; border-color:var(--rust); }
+.arrow-btn.primary:hover:not(:disabled) { background:var(--rust-glow); border-color:var(--rust-glow); color:#fff; }
+.arrow-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.arrow-btn .arr { font-size:1rem; }
+.kbd-hint { font-size:0.68rem; color:var(--gray); display:flex; gap:6px; align-items:center; }
+.kbd-hint kbd { background:#fff; border:1px solid rgba(11,24,51,0.15); border-bottom-width:2px; border-radius:4px; padding:1px 6px; font-family:'JetBrains Mono', monospace; font-size:0.66rem; color:var(--denim); }
+
+@media(max-width:640px) {
+  .stage { padding:1.5rem 1rem 7rem; }
+  .slide h1.title { font-size:1.4rem; }
+  .deck-controls { padding:0.85rem 1rem; }
+  .arrow-btn { padding:9px 16px; font-size:0.72rem; }
+  .kbd-hint { display:none; }
+  .deck-controls .crumb .name { display:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="inner">
+    <div>
+      <a class="back" href="../">← Back to portal</a>
+      <div style="height:1rem;"></div>
+      <div class="label">Section 02 · Pre-Read</div>
+      <h1>LV Construction · Operating Update</h1>
+      <p class="sub">Team build, marketing &amp; website refresh, existing project buyout (where the largest GMP risks sit), the four pending closings, and the Extended BD plan.</p>
+    </div>
+    <div class="meta">
+      <div class="now-showing">Now showing<span class="name" id="topbarName">Team Update</span></div>
+      <div class="progress">
+        <div class="bar"><div class="fill" id="progressFill" style="width:16.67%;"></div></div>
+        <div class="counter"><span class="cur" id="counterCur">01</span> / <span id="counterTot">06</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SECTION CHIPS NAV -->
+<nav class="deck-nav">
+  <div class="deck-nav-inner">
+    <button data-slide="0" class="active"><span class="ix">01</span>Team</button>
+    <button data-slide="1"><span class="ix">02</span>Marketing &amp; Website</button>
+    <button data-slide="2"><span class="ix">03</span>Project Buyout</button>
+    <button data-slide="3"><span class="ix">04</span>Pending Closings</button>
+    <button data-slide="4"><span class="ix">05</span>Extended BD</button>
+    <button data-slide="5"><span class="ix">06</span>Reporting Outputs</button>
+  </div>
+</nav>
+
+<!-- STAGE -->
+<main class="stage">
+  <div class="stage-inner">
+
+  <!-- SLIDE 01 · TEAM UPDATE -->
+  <section class="slide active" id="slide-0">
+    <div class="slide-cover">
+      <div class="slide-label">01 · Team</div>
+      <h1 class="title">Team update</h1>
+      <p class="lede">Four recent additions plus the trigger hires baked into the Base Case to staff the four pending closings. The four closings (Slide 04) wrap the LV expansion effort, so the go-forward roster stabilizes from here.</p>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:0.5rem 0 0.85rem;">Recent Additions</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:1rem;">Four additions since the prior Steyn check-in. Lucy, Brisa, and Steven are live on <a href="https://lvllc.com/team" target="_blank" style="color:var(--rust); text-decoration:none; font-weight:600;">lvllc.com/team</a>; Henry is in the Base Case roster but not yet on the public site.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem;">
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.5rem 1.25rem 1.4rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); text-align:center;">
+        <div style="width:120px; height:120px; border-radius:50%; background:#F4F6FA; border:1px dashed rgba(94,123,155,0.4); margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+          <img src="assets/team/lucy.jpg" alt="Lucy Mohler" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:0.66rem; color:var(--gray); text-align:center; padding:0 8px;&quot;>Add photo<br>assets/team/<br>lucy.jpg</div>'">
+        </div>
+        <div style="font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--denim); margin-bottom:0.3rem;">Lucy Mohler</div>
+        <div style="font-size:0.7rem; color:var(--rust); font-weight:700; text-transform:uppercase; letter-spacing:0.12em;">Assistant Project Manager</div>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.5rem 1.25rem 1.4rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); text-align:center;">
+        <div style="width:120px; height:120px; border-radius:50%; background:#F4F6FA; border:1px dashed rgba(94,123,155,0.4); margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+          <img src="assets/team/brisa.jpg" alt="Brisa Sanchez" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:0.66rem; color:var(--gray); text-align:center; padding:0 8px;&quot;>Add photo<br>assets/team/<br>brisa.jpg</div>'">
+        </div>
+        <div style="font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--denim); margin-bottom:0.3rem;">Brisa Sanchez</div>
+        <div style="font-size:0.7rem; color:var(--rust); font-weight:700; text-transform:uppercase; letter-spacing:0.12em;">Project Coordinator</div>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.5rem 1.25rem 1.4rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); text-align:center;">
+        <div style="width:120px; height:120px; border-radius:50%; background:var(--space-muted); margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; color:var(--steel);">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
+        </div>
+        <div style="font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--denim); margin-bottom:0.3rem;">Steven Garcia</div>
+        <div style="font-size:0.7rem; color:var(--rust); font-weight:700; text-transform:uppercase; letter-spacing:0.12em;">Senior Superintendent</div>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.5rem 1.25rem 1.4rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); text-align:center;">
+        <div style="width:120px; height:120px; border-radius:50%; background:var(--space-muted); margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; color:var(--steel);">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
+        </div>
+        <div style="font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--denim); margin-bottom:0.3rem;">Henry Vera</div>
+        <div style="font-size:0.7rem; color:var(--rust); font-weight:700; text-transform:uppercase; letter-spacing:0.12em;">Assistant Project Manager</div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.75rem 0 0.5rem;">Trigger Hires · Tied to the Four Pending Closings</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:1rem;">Six trigger hires sized to the four pending closings, all baked into the Base Case v25 model. <strong style="color:var(--denim);">~$740K aggregate annual run-rate.</strong> With these in place, the LV expansion effort wraps and the go-forward roster stabilizes.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.85rem; margin-bottom:0.85rem;">
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:10px; padding:1rem 1.25rem 1.05rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.55rem;">
+          <div>
+            <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.25rem;">Francis · Jul 2026</div>
+            <div style="font-family:var(--font-display); font-size:0.98rem; font-weight:700; color:var(--denim);">1 trigger hire</div>
+          </div>
+          <div style="font-family:var(--font-display); font-size:0.95rem; font-weight:700; color:var(--rust); white-space:nowrap;">$130K</div>
+        </div>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li style="padding-left:14px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.5;"><span style="position:absolute; left:0; top:9px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span>Assistant Project Manager · $130K</li>
+        </ul>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:10px; padding:1rem 1.25rem 1.05rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.55rem;">
+          <div>
+            <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.25rem;">Riverton (Denny) · Oct 2026</div>
+            <div style="font-family:var(--font-display); font-size:0.98rem; font-weight:700; color:var(--denim);">1 trigger hire</div>
+          </div>
+          <div style="font-family:var(--font-display); font-size:0.95rem; font-weight:700; color:var(--rust); white-space:nowrap;">$125K</div>
+        </div>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li style="padding-left:14px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.5;"><span style="position:absolute; left:0; top:9px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span>Assistant Superintendent · $125K</li>
+        </ul>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:10px; padding:1rem 1.25rem 1.05rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.55rem;">
+          <div>
+            <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.25rem;">Lexington · Oct 2026</div>
+            <div style="font-family:var(--font-display); font-size:0.98rem; font-weight:700; color:var(--denim);">1 trigger hire</div>
+          </div>
+          <div style="font-family:var(--font-display); font-size:0.95rem; font-weight:700; color:var(--rust); white-space:nowrap;">$125K</div>
+        </div>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li style="padding-left:14px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.5;"><span style="position:absolute; left:0; top:9px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span>Assistant Superintendent · $125K</li>
+        </ul>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:10px; padding:1rem 1.25rem 1.05rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.55rem;">
+          <div>
+            <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.25rem;">Acama · Nov 2026</div>
+            <div style="font-family:var(--font-display); font-size:0.98rem; font-weight:700; color:var(--denim);">3 trigger hires</div>
+          </div>
+          <div style="font-family:var(--font-display); font-size:0.95rem; font-weight:700; color:var(--rust); white-space:nowrap;">$360K</div>
+        </div>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li style="padding-left:14px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.5;"><span style="position:absolute; left:0; top:9px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span>Senior Superintendent · $160K</li>
+          <li style="padding-left:14px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.5;"><span style="position:absolute; left:0; top:9px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span>Assistant Superintendent · $125K</li>
+          <li style="padding-left:14px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.5;"><span style="position:absolute; left:0; top:9px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span>Laborer · $75K</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:10px; padding:1rem 1.25rem 1.05rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); margin-bottom:0.85rem;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.55rem;">
+        <div>
+          <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.25rem;">Reseda · Apr 2027 (FY27 construction start)</div>
+          <div style="font-family:var(--font-display); font-size:0.98rem; font-weight:700; color:var(--denim);">1 trigger hire</div>
+        </div>
+        <div style="font-family:var(--font-display); font-size:0.95rem; font-weight:700; color:var(--rust); white-space:nowrap;">$160K</div>
+      </div>
+      <ul style="list-style:none; padding:0; margin:0;">
+        <li style="padding-left:14px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.5;"><span style="position:absolute; left:0; top:9px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span>Senior Superintendent · $160K · steps in when Reseda's construction start lands in April 2027</li>
+      </ul>
+    </div>
+
+    <div class="callout warn">
+      <strong>If Klump &amp; Scott move forward</strong> (currently pending IC review), the model assumes <strong style="color:#92670a;">~$900K of 3rd-party outsourced PM/Site cost</strong> at $45K/month spread Aug 2026 through Mar 2028, rather than additional in-house hires. K&amp;S would be staffed by an outsourced team, not the standing roster, so the trigger-hire list above does not change if the projects close.
+    </div>
+
+    <div class="callout">
+      <strong>Tie back to the SPC pillars:</strong> This list is the operational expression of Pillar #2 in the SPC update. Closing out the four projects stabilizes the roster, and this slide names exactly what "stabilized roster" means in headcount terms. Pillar #3 (BD) and Pillar #1 (AI) are what the stabilized team then scales into.
+    </div>
+  </section>
+
+  <!-- SLIDE 02 · MARKETING & WEBSITE -->
+  <section class="slide" id="slide-1">
+    <div class="slide-cover">
+      <div class="slide-label">02 · Marketing &amp; New Website</div>
+      <h1 class="title">New LV website is live <em>·</em> <a href="https://lvllc.com" target="_blank" style="color:var(--rust); text-decoration:none;">lvllc.com</a></h1>
+      <p class="lede">The relaunched LV site reframes the firm against its target client base for the next 12 months and supports the BD push that Tom &amp; Chris are leading. Live preview embedded below.</p>
+    </div>
+
+    <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04); margin-bottom:1.25rem;">
+      <div style="background:var(--denim); color:var(--ghost-warm); padding:1.1rem 1.4rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; color:var(--rust-glow); margin-bottom:0.3rem;">Live site</div>
+          <div style="font-family:var(--font-display); font-size:1rem; font-weight:700;">lvllc.com</div>
+        </div>
+        <a href="https://lvllc.com" target="_blank" style="display:inline-flex; align-items:center; gap:8px; padding:9px 16px; background:var(--rust); color:#fff; border-radius:8px; text-decoration:none; font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;">Open in new tab <span style="font-size:1rem;">↗</span></a>
+      </div>
+      <div style="padding:0; background:#F4F6FA; height:520px; position:relative;">
+        <iframe src="https://lvllc.com" style="width:100%; height:100%; border:0; display:block;" loading="lazy" title="LV Construction website"></iframe>
+      </div>
+      <div style="padding:0.85rem 1.2rem; font-size:0.74rem; color:var(--gray-dk); background:#FFFFFF; border-top:1px solid rgba(11,24,51,0.06);">
+        Live preview. If the embed doesn't load (some sites block embedding), use the <strong>Open in new tab ↗</strong> button above.
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>What's New on the Site &amp; What's Coming</h3>
+        <p>The current site reframes LV around the Extended BD posture, leading with construction capability and openly recruiting development partners who want LV inside the deal from day one rather than bolted on at GMP.</p>
+        <ul style="list-style:none; padding:0; margin:0.7rem 0 0;">
+          <li style="font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Live now:</strong> repositioned home, capability pages, project gallery, leadership</li>
+          <li style="font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">In flight:</strong> developer-partner content, "build with LV" CTA paths, case studies in podium &amp; Type IIIA work</li>
+          <li style="font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Next:</strong> developer-facing portal where partners can self-serve our <strong style="color:var(--rust);">AI estimating tool (v1 today)</strong> against their pro forma, producing early conceptual estimates that become a hand-raise for a real engagement</li>
+          <li style="font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Beyond v1:</strong> the AI estimating capability expands across more building types, regions, and feasibility variables as the underlying model matures</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Marketing Posture · Next 12 Months</h3>
+        <p>Marketing is the focus of the next 12 months. The job is straightforward: stand up a sustained <strong style="color:var(--denim);">developer-partner pipeline</strong> that feeds the Extended BD plan.</p>
+        <ul style="list-style:none; padding:0; margin:0.7rem 0 0;">
+          <li style="font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Positioning:</strong> LV as a construction-led partner for developers. Bring us in before the deal is closed, not just to bid the GC contract</li>
+          <li style="font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Audience:</strong> mid-market multifamily developers (Type IIIA / 5-over-podium) plus owner-builders looking for execution muscle</li>
+          <li style="font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Channels:</strong> the AI estimating tool as a top-of-funnel inbound; targeted outbound from Tom &amp; Chris; developer-network referrals; selective press around closed projects</li>
+          <li style="font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Tie-in to BD plan:</strong> every marketing dollar this year is in service of the Extended BD numbers in the SPC scenario tables, which assume sustained $50–100M/yr of construction billing post-FY27</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.25rem;">
+      <strong>Why the AI estimating tool sits inside marketing:</strong> Putting v1 of the estimating tool in front of developers is both a product hand-raise (they get a real number on their pro forma in minutes) and a marketing channel (LV lands in the developer's evaluation set on the first interaction). It's the same AI investment thesis from Section 03, applied at the top of the BD funnel instead of just inside the back-office.
+    </div>
+  </section>
+
+  <!-- SLIDE 03 · EXISTING PROJECT BUYOUT (NEW) -->
+  <section class="slide" id="slide-2">
+    <div class="slide-cover">
+      <div class="slide-label">03 · Project Buyout · Where GMP Risk Lives</div>
+      <h1 class="title">Existing project buyout <em>·</em> the largest in-flight risks under a GMP</h1>
+      <p class="lede">Under a guaranteed maximum price, the spread between estimated costs (used to set the GMP) and the actual subcontract pricing during buyout is where the GC carries margin risk. Until each trade is bought out, that line item remains open. This slide tracks where each active project sits on the buyout curve and where the residual risk is concentrated.</p>
+    </div>
+
+    <p style="font-size:0.85rem; color:var(--gray-dk); max-width:880px; margin-bottom:1rem;">Buyout figures pulled from the latest field reports for Ramsgate, Califa, Whipple, and Nelrose, at the trade scope only. Supervision, GC fee, and administration are excluded so % bought and $ remaining reflect actual subcontract exposure. Crenshaw is pending its field report. The four pending closings on Slide 04 enter buyout once they break ground.</p>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="lbl">Active GMP Contract Value</div><div class="val">$57.2M</div><div class="delta">Sum across the five active projects</div></div>
+      <div class="kpi"><div class="lbl">% Bought Out · Trade Scope</div><div class="val denim">95.6%</div><div class="delta">Weighted across the four reported projects</div></div>
+      <div class="kpi"><div class="lbl">Dollars Still in Buyout</div><div class="val">$2.4M</div><div class="delta">Open trade exposure across the four reports</div></div>
+      <div class="kpi"><div class="lbl">Buyout Variance to Date</div><div class="val denim">≈ Flat</div><div class="delta">+$6.5K net across the four field reports</div></div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.5rem;">Buyout Status by Project</h3>
+    <p style="font-size:0.82rem; color:var(--gray-dk); max-width:820px; margin-bottom:0.85rem; font-style:italic;">Five projects in active buyout. The values in the <strong style="color:var(--denim);">Remaining Contract</strong> column reflect the work still in flight (not the original total contract value). The four pending closings on Slide 04 are not yet in buyout and do not appear here until they break ground.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Project</th><th>Remaining Contract</th><th>% Bought Out</th><th>$ Remaining</th><th>Variance to Est.</th><th>Risk Note</th></tr></thead>
+        <tbody>
+          <tr><td>Crenshaw</td><td>$7.1M</td><td class="muted">Pending</td><td class="muted">Pending</td><td class="muted">Pending</td><td style="text-align:left;">Field report pending</td></tr>
+          <tr><td>Ramsgate</td><td>$20.2M</td><td>93.5%</td><td>$1.5M</td><td style="color:#a13b3b; font-weight:600;">+$0.13M</td><td style="text-align:left;">Largest $ open</td></tr>
+          <tr><td>Califa</td><td>$11.9M</td><td>100%</td><td class="muted">$0</td><td style="color:#0b6e54; font-weight:600;">−$0.10M</td><td style="text-align:left;">Trade buyout complete</td></tr>
+          <tr><td>Whipple</td><td>$14.4M</td><td>93.7%</td><td>$0.8M</td><td style="color:#0b6e54; font-weight:600;">−$0.12M</td><td style="text-align:left;">MEP scopes still open</td></tr>
+          <tr><td>Nelrose</td><td>$3.6M</td><td>100%</td><td class="muted">$0</td><td style="color:#a13b3b; font-weight:600;">+$0.09M</td><td style="text-align:left;">Trade buyout complete</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.7rem;">Where the Risk Sits</h3>
+    <div class="grid3">
+      <div class="card">
+        <h3>Trades Most Exposed</h3>
+        <ul>
+          <li>Ramsgate Doors &amp; Hardware · $516K open · 65% unbought</li>
+          <li>Ramsgate Drywall · $415K open · 21% unbought</li>
+          <li>Whipple HVAC · $339K open · 39% unbought</li>
+          <li>Structural, framing, and electrical substantially bought out across the book</li>
+          <li>Remaining exposure: late-cycle MEP and finishes, the expected shape at this stage</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Material / Pricing Watch</h3>
+        <ul>
+          <li>Largest single-trade revisions: Nelrose framing (+$97K), Ramsgate door hardware (+$42K), Ramsgate site drainage (+$40K)</li>
+          <li>No trade has moved more than $100K against budget</li>
+          <li>Net trade-scope variance: +$6.5K, less than 0.1% of the trade base</li>
+          <li>Unfavorable revisions absorbed within project contingency</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Mitigants in Flight</h3>
+        <ul>
+          <li>Ramsgate GC contingency has absorbed −$93K of trade variance, doing what contingency is designed to do</li>
+          <li>Favorable trade buyouts on Nelrose HVAC equipment (−$41K), Ramsgate drywall (−$36K), and Ramsgate electrical (−$31K), contributing ~$108K of favorable variance</li>
+          <li>Net buyout variance across the four reported projects is flat</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <strong>Why this slide matters:</strong> Under a GMP, the GC absorbs subcontract pricing variance up to the cap. The unbought portion of each project is the live risk surface, where the difference between hitting and missing the GC margin sits. Closing out buyout cleanly on the in-flight projects is what protects the FY 2026 / FY 2027 GC net income shown in the SPC update.
+    </div>
+  </section>
+
+  <!-- SLIDE 04 · PENDING CLOSINGS -->
+  <section class="slide" id="slide-3">
+    <div class="slide-cover">
+      <div class="slide-label">04 · Closings · Sequenced by Construction Start</div>
+      <h1 class="title">Pending closings <em>·</em> four in the pipeline</h1>
+      <p class="lede">Four projects close and break ground over the next four months: Francis, Riverton, Lexington, and Acama, in that order by construction start. Wrapping these closings completes the LV expansion effort and stabilizes the go-forward team. Each card lists both the construction start (the operational target) and the first billing month carried in the v25 Base Case (the conservative date the cash flow runs on).</p>
+    </div>
+
+    <div class="closings">
+
+      <div class="closing">
+        <div class="accent"></div>
+        <div class="id">Construction Start · Jun 20</div>
+        <div class="name">Francis</div>
+        <div class="field"><span class="lbl">Developer</span><span class="val">Six Peak</span></div>
+        <div class="field scope"><span class="lbl">Scope</span><span class="val">On-grade 3-story podium · 5 stories Type IIIA</span></div>
+        <div class="field"><span class="lbl">Units / Beds</span><span class="val">232 / 326</span></div>
+        <div class="field"><span class="lbl">Size</span><span class="val">143,000 SF</span></div>
+        <div class="field"><span class="lbl">Contract value</span><span class="val">$43.0M</span></div>
+        <div class="field"><span class="lbl">Closing</span><span class="val">Jun 3, 2026</span></div>
+        <div class="field"><span class="lbl">Construction start</span><span class="val">Jun 20, 2026</span></div>
+        <div class="field"><span class="lbl">Model first billing</span><span class="val">Jul 2026</span></div>
+        <div class="status"><span class="badge">In progress</span></div>
+      </div>
+
+      <div class="closing">
+        <div class="accent"></div>
+        <div class="id">Construction Start · Aug 1</div>
+        <div class="name">Riverton <span style="font-size:0.6rem; font-weight:600; color:var(--gray); text-transform:none; letter-spacing:0;">(a.k.a. Denny on lvllc.com)</span></div>
+        <div class="field"><span class="lbl">Developer</span><span class="val">HVN</span></div>
+        <div class="field scope"><span class="lbl">Scope</span><span class="val">Slab on grade · 5 stories Type IIIA</span></div>
+        <div class="field"><span class="lbl">Units / Beds</span><span class="val">80 / 160</span></div>
+        <div class="field"><span class="lbl">Size</span><span class="val">58,000 SF</span></div>
+        <div class="field"><span class="lbl">Contract value</span><span class="val ph">$ add</span></div>
+        <div class="field"><span class="lbl">Closing</span><span class="val">Jul 15, 2026</span></div>
+        <div class="field"><span class="lbl">Construction start</span><span class="val">Aug 1, 2026</span></div>
+        <div class="field"><span class="lbl">Model first billing</span><span class="val">Oct 2026</span></div>
+        <div class="status"><span class="badge">In progress</span></div>
+      </div>
+
+      <div class="closing">
+        <div class="accent"></div>
+        <div class="id">Construction Start · Aug 15</div>
+        <div class="name">Lexington</div>
+        <div class="field"><span class="lbl">Developer</span><span class="val">HVN</span></div>
+        <div class="field scope"><span class="lbl">Scope</span><span class="val">Slab on grade · 5 stories Type IIIA</span></div>
+        <div class="field"><span class="lbl">Units / Beds</span><span class="val">67 / 134</span></div>
+        <div class="field"><span class="lbl">Size</span><span class="val">50,000 SF</span></div>
+        <div class="field"><span class="lbl">Contract value</span><span class="val">$13.6M</span></div>
+        <div class="field"><span class="lbl">Closing</span><span class="val">Jul 31, 2026</span></div>
+        <div class="field"><span class="lbl">Construction start</span><span class="val">Aug 15, 2026</span></div>
+        <div class="field"><span class="lbl">Model first billing</span><span class="val">Oct 2026</span></div>
+        <div class="status"><span class="badge">In progress</span></div>
+      </div>
+
+      <div class="closing">
+        <div class="accent"></div>
+        <div class="id">Construction Start · Sep 15</div>
+        <div class="name">Acama</div>
+        <div class="field"><span class="lbl">Developer</span><span class="val">HVN</span></div>
+        <div class="field scope"><span class="lbl">Scope</span><span class="val">Slab on grade · 5 stories Type IIIA · 1 podium section for parking</span></div>
+        <div class="field"><span class="lbl">Units / Beds</span><span class="val">131 / 262</span></div>
+        <div class="field"><span class="lbl">Size</span><span class="val">88,000 SF</span></div>
+        <div class="field"><span class="lbl">Contract value</span><span class="val">$21.3M</span></div>
+        <div class="field"><span class="lbl">Closing</span><span class="val">Sep 1, 2026</span></div>
+        <div class="field"><span class="lbl">Construction start</span><span class="val">Sep 15, 2026</span></div>
+        <div class="field"><span class="lbl">Model first billing</span><span class="val">Nov 2026</span></div>
+        <div class="status"><span class="badge">In progress</span></div>
+      </div>
+
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-top:1.5rem;">
+      <div style="background:var(--denim); color:var(--ghost-warm); border-radius:12px; padding:1.2rem 1.4rem; text-align:center;">
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust-glow); margin-bottom:0.4rem;">Total Contract Value</div>
+        <div style="font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--ghost-warm); line-height:1.05;">~$77.9M+</div>
+        <div style="font-size:0.7rem; color:var(--steel); opacity:0.85; margin-top:6px;">excl. Riverton (TBD)</div>
+      </div>
+      <div style="background:var(--denim); color:var(--ghost-warm); border-radius:12px; padding:1.2rem 1.4rem; text-align:center;">
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust-glow); margin-bottom:0.4rem;">Total Units</div>
+        <div style="font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--ghost-warm); line-height:1.05;">510</div>
+        <div style="font-size:0.7rem; color:var(--steel); opacity:0.85; margin-top:6px;">across the four projects</div>
+      </div>
+      <div style="background:var(--denim); color:var(--ghost-warm); border-radius:12px; padding:1.2rem 1.4rem; text-align:center;">
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust-glow); margin-bottom:0.4rem;">Total Beds</div>
+        <div style="font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--ghost-warm); line-height:1.05;">882</div>
+        <div style="font-size:0.7rem; color:var(--steel); opacity:0.85; margin-top:6px;">across the four projects</div>
+      </div>
+      <div style="background:var(--denim); color:var(--ghost-warm); border-radius:12px; padding:1.2rem 1.4rem; text-align:center;">
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust-glow); margin-bottom:0.4rem;">Construction Window</div>
+        <div style="font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--ghost-warm); line-height:1.05;">Jun – Sep</div>
+        <div style="font-size:0.7rem; color:var(--steel); opacity:0.85; margin-top:6px;">all four breaking ground in 2026</div>
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:1.5rem;">
+      <strong>Bonding milestone, Justin Krueger vesting at $18M valuation:</strong> LV charges each bonded project <strong style="color:#92670a;">1.50%</strong> in bonding revenue and pays the surety <strong style="color:#92670a;">0.74%</strong> as the actual bond cost (Tier 1). The <strong style="color:#92670a;">0.76% spread</strong> is real cash received by LV, and it funds Krueger's equity purchase at an <strong style="color:#92670a;">$18M valuation</strong>. Bonding these four projects pushes Krueger across his <strong style="color:#92670a;">10% bonding vesting threshold</strong>.
+      <br><br>
+      <strong>FY 2026 dollar amount:</strong> bonding revenue of <strong style="color:#92670a;">$1,405,538</strong> (1.50% on the in-year bonded billing base of ~$93.7M, including the four pending closings) less surety cost of <strong style="color:#92670a;">$693,399</strong> (0.74%) leaves a <strong style="color:#92670a;">~$712K spread</strong> in FY 2026 alone. This $712K is <strong style="color:#92670a;">already included in the $1.78M consolidated net income</strong> shown on Slide 01 of the SPC update, not an addition on top.
+    </div>
+
+    <div class="callout warn" style="margin-top:0.75rem;">
+      <strong>What changes after these four:</strong> The surety steps to <strong style="color:#92670a;">Tier 2 at 3.25%</strong> on the next round of projects, which would compress the bonding spread materially against the same 1.50% project charge. The mitigant, and the path baked into the SPC Extended BD plan, is for LV to stand up <strong style="color:#92670a;">its own bonding capacity</strong>, which removes the third-party surety cost line entirely (this is the assumption referenced in the SPC scenario plan slide for FY 2029+).
+    </div>
+
+    <div class="callout">
+      <strong>Why these four matter together:</strong> Closing all four wraps the LV expansion. The PMs, supers, and back-office capacity stand up against this book and don't need to grow further before the BD pipeline (Slide 05) starts feeding them new work. From here on, every dollar of new construction billing lands on a stable cost base.
+    </div>
+  </section>
+
+  <!-- SLIDE 05 · EXTENDED BD -->
+  <section class="slide" id="slide-4">
+    <div class="slide-cover">
+      <div class="slide-label">05 · Extended BD · Pipeline &amp; Anchor Client</div>
+      <h1 class="title">Extended BD plan <em>·</em> what's in the pipeline for 2027 &amp; 2028</h1>
+      <p class="lede">The Extended BD plan is the upside lever in the SPC scenario set. This slide gives the operational view: the anchor client driving the next two years of bonded volume, and the five active leads being underwritten right now for 2027–2028 awards.</p>
+    </div>
+
+    <!-- HVN ANCHOR CLIENT BLOCK -->
+    <div style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); color:var(--ghost-warm); border-radius:14px; padding:2rem 2rem 1.7rem; margin-bottom:1.5rem; position:relative; overflow:hidden; box-shadow:0 10px 40px rgba(11,24,51,0.15);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--rust) 0%, var(--rust-glow) 50%, transparent 100%);"></div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1.5rem; flex-wrap:wrap; margin-bottom:1.25rem;">
+        <div>
+          <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.22em; color:var(--rust-glow); margin-bottom:0.55rem;">Anchor Client</div>
+          <h3 style="font-family:var(--font-display); font-size:1.65rem; font-weight:700; color:var(--ghost-warm); line-height:1.2; margin-bottom:0.4rem;">HVN Development</h3>
+          <p style="color:var(--steel); font-size:0.86rem; opacity:0.9;">Three of the four pending closings (Riverton, Lexington, Acama) are HVN projects · principal: Tommy Beadel</p>
+        </div>
+        <a href="https://www.hvndevelopment.com/" target="_blank" style="display:inline-flex; align-items:center; gap:8px; padding:9px 16px; background:rgba(196,88,26,0.15); color:var(--rust-glow); border:1px solid rgba(232,147,90,0.3); border-radius:8px; text-decoration:none; font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;">hvndevelopment.com <span style="font-size:1rem;">↗</span></a>
+      </div>
+      <p style="color:var(--steel); font-size:0.95rem; line-height:1.7; margin-bottom:1.25rem;">In recent conversations, Tommy Beadel signaled HVN is targeting <strong style="color:var(--rust-glow);">500–700 units of acquisitions in 2026 and 2027</strong> for the <strong style="color:var(--rust-glow);">2027 and 2028 LIHTC application rounds</strong>. LV currently sits as <strong style="color:var(--rust-glow);">#1 on HVN's internal "GC Power Rankings"</strong>, the position that captured Riverton, Lexington, and Acama. We are well-positioned to capture a meaningful share of that 2026/2027 acquisition pipeline as those projects move from award to financing to GC selection.</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; padding-top:1.25rem; border-top:1px solid rgba(191,199,218,0.15);">
+        <div>
+          <div style="font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--rust-glow); line-height:1.05;">500–700</div>
+          <div style="font-size:0.7rem; color:var(--steel); opacity:0.85; margin-top:6px; text-transform:uppercase; letter-spacing:0.14em; font-weight:600;">Units HVN targeting<br>2026 + 2027 acquisitions</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--rust-glow); line-height:1.05;">2027 / 2028</div>
+          <div style="font-size:0.7rem; color:var(--steel); opacity:0.85; margin-top:6px; text-transform:uppercase; letter-spacing:0.14em; font-weight:600;">LIHTC application rounds<br>those acquisitions feed</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--rust-glow); line-height:1.05;">#1</div>
+          <div style="font-size:0.7rem; color:var(--steel); opacity:0.85; margin-top:6px; text-transform:uppercase; letter-spacing:0.14em; font-weight:600;">LV's position on HVN's<br>internal GC power rankings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE LEADS -->
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.85rem;">Active Leads · Five Projects in Underwriting for 2027–2028</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:920px; margin-bottom:1rem;">Five leads sourced recently with minor outbound effort. None of these counterparties is at the anchor-relationship level HVN holds; they're early-stage pursuits we're underwriting for 2027–2028 awards. Two come from <strong style="color:var(--denim);">Visionary Development Enterprises (VDE)</strong> in Echo Park (workforce housing under the ED1 program), two from <strong style="color:var(--denim);"><a href="https://www.cypressequity.com/" target="_blank" style="color:var(--denim); text-decoration:none; border-bottom:1px solid var(--rust);">Cypress Equity Investments</a></strong> (Menlo + 1415 Wilshire), and one LIHTC family deal in Palmdale with <strong style="color:var(--denim);">Malhotra Ventures</strong>. Pipeline visibility into ~939 units across the five.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:1rem;">
+
+      <!-- 338 DOUGLAS (largest VDE) -->
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.4rem 1.2rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.6rem;">
+          <div>
+            <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.3rem;">Lead 01 · VDE · Echo Park</div>
+            <div style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim);">338 Douglas Street</div>
+          </div>
+          <span style="display:inline-block; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; padding:3px 8px; border-radius:4px; background:rgba(196,88,26,0.14); color:var(--rust); white-space:nowrap;">Largest in pipeline</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem 0.8rem; font-size:0.8rem; color:var(--gray-dk); margin-bottom:0.85rem;">
+          <div><strong style="color:var(--denim);">373 units</strong> · workforce 80% AMI</div>
+          <div><strong style="color:var(--denim);">$119.7M</strong> total project cost</div>
+          <div>ED1 expedited entitlement</div>
+          <div>Exit value $172.2M · 22.1% lev IRR</div>
+        </div>
+        <a href="assets/leads/338-douglas.pdf" target="_blank" style="margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:rgba(196,88,26,0.08); color:var(--rust); border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;">VDE deck <span>↓</span></a>
+      </div>
+
+      <!-- MENLO -->
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.4rem 1.2rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.6rem;">
+          <div>
+            <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.3rem;">Lead 02 · Cypress Equity · LA</div>
+            <div style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim);">Menlo Avenue</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem 0.8rem; font-size:0.8rem; color:var(--gray-dk); margin-bottom:0.85rem;">
+          <div><strong style="color:var(--denim);">195 units</strong> · 1BR + 2BR mix</div>
+          <div><strong style="color:var(--denim);">6 stories</strong> · 78'-0" max</div>
+          <div>0.92 acre · R4-1VL zoning</div>
+          <div>TOC Tier 4 incentive · 127K SF</div>
+        </div>
+        <a href="assets/leads/menlo.pdf" target="_blank" style="margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:rgba(196,88,26,0.08); color:var(--rust); border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;">Site yield <span>↓</span></a>
+      </div>
+
+      <!-- 1275 W SUNSET -->
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.4rem 1.2rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.6rem;">
+          <div>
+            <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.3rem;">Lead 03 · VDE · Echo Park</div>
+            <div style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim);">1275 W Sunset</div>
+          </div>
+          <span style="display:inline-block; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; padding:3px 8px; border-radius:4px; background:rgba(16,185,129,0.12); color:#0b6e54; white-space:nowrap;">Entitled</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem 0.8rem; font-size:0.8rem; color:var(--gray-dk); margin-bottom:0.85rem;">
+          <div><strong style="color:var(--denim);">163 units</strong> · workforce 80% AMI</div>
+          <div><strong style="color:var(--denim);">$51.5M</strong> total project cost</div>
+          <div>ED1 · fully entitled</div>
+          <div>Exit value $67.7M · 28.3% lev IRR</div>
+        </div>
+        <a href="assets/leads/1275-w-sunset.pdf" target="_blank" style="margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:rgba(196,88,26,0.08); color:var(--rust); border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;">VDE deck <span>↓</span></a>
+      </div>
+
+      <!-- 42ND STREET -->
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.4rem 1.2rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.6rem;">
+          <div>
+            <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.3rem;">Lead 04 · Malhotra Ventures · Palmdale LIHTC</div>
+            <div style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim);">42nd Street</div>
+          </div>
+          <span style="display:inline-block; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; padding:3px 8px; border-radius:4px; background:rgba(94,123,155,0.14); color:#5e7b9b; white-space:nowrap;">4% TC + Bonds</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem 0.8rem; font-size:0.8rem; color:var(--gray-dk); margin-bottom:0.85rem;">
+          <div><strong style="color:var(--denim);">160 units</strong> · large family</div>
+          <div><strong style="color:var(--denim);">$73.3M</strong> total dev cost</div>
+          <div>146K SF rentable · 5.0 acres</div>
+          <div>Construction start May 2027 · 20 mo</div>
+        </div>
+        <a href="assets/leads/42nd-street.pdf" target="_blank" style="margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:rgba(196,88,26,0.08); color:var(--rust); border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;">CUAC summary <span>↓</span></a>
+      </div>
+
+      <!-- 1415 WILSHIRE -->
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.4rem 1.2rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); display:flex; flex-direction:column; grid-column:1 / -1;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem; margin-bottom:0.6rem;">
+          <div>
+            <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.3rem;">Lead 05 · Cypress Equity · Santa Monica</div>
+            <div style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim);">1415 Wilshire Blvd</div>
+          </div>
+          <span style="display:inline-block; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; padding:3px 8px; border-radius:4px; background:rgba(245,158,11,0.14); color:#92670a; white-space:nowrap;">Feasibility · DB Waivers</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:0.4rem 0.8rem; font-size:0.8rem; color:var(--gray-dk); margin-bottom:0.85rem;">
+          <div><strong style="color:var(--denim);">48 units</strong> · 1BR · 100% affordable</div>
+          <div><strong style="color:var(--denim);">8 stories</strong> · 87'-6"</div>
+          <div>Type I-A floors 1-3 · Type III-A floors 4-8</div>
+          <div>5,000 SF lot · 5.7 FAR (DB waiver)</div>
+        </div>
+        <a href="assets/leads/1415-wilshire.pdf" target="_blank" style="margin-top:auto; align-self:flex-start; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background:rgba(196,88,26,0.08); color:var(--rust); border-radius:6px; text-decoration:none; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;">Feasibility study <span>↓</span></a>
+      </div>
+
+    </div>
+
+    <!-- AGGREGATE PIPELINE STATS -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-top:1.25rem;">
+      <div style="background:var(--denim); color:var(--ghost-warm); border-radius:12px; padding:1.1rem 1.3rem; text-align:center;">
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--rust-glow); margin-bottom:0.4rem;">Total Pipeline Units</div>
+        <div style="font-family:var(--font-display); font-size:1.6rem; font-weight:700; color:var(--ghost-warm); line-height:1.05;">939</div>
+        <div style="font-size:0.68rem; color:var(--steel); opacity:0.85; margin-top:6px;">across 5 active leads</div>
+      </div>
+      <div style="background:var(--denim); color:var(--ghost-warm); border-radius:12px; padding:1.1rem 1.3rem; text-align:center;">
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--rust-glow); margin-bottom:0.4rem;">VDE · Echo Park</div>
+        <div style="font-family:var(--font-display); font-size:1.6rem; font-weight:700; color:var(--ghost-warm); line-height:1.05;">2 deals</div>
+        <div style="font-size:0.68rem; color:var(--steel); opacity:0.85; margin-top:6px;">536 units · 1275 + 338</div>
+      </div>
+      <div style="background:var(--denim); color:var(--ghost-warm); border-radius:12px; padding:1.1rem 1.3rem; text-align:center;">
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--rust-glow); margin-bottom:0.4rem;">Cypress Equity</div>
+        <div style="font-family:var(--font-display); font-size:1.6rem; font-weight:700; color:var(--ghost-warm); line-height:1.05;">2 deals</div>
+        <div style="font-size:0.68rem; color:var(--steel); opacity:0.85; margin-top:6px;">243 units · Menlo + Wilshire</div>
+      </div>
+      <div style="background:var(--denim); color:var(--ghost-warm); border-radius:12px; padding:1.1rem 1.3rem; text-align:center;">
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--rust-glow); margin-bottom:0.4rem;">Plus HVN Pipeline</div>
+        <div style="font-family:var(--font-display); font-size:1.6rem; font-weight:700; color:var(--ghost-warm); line-height:1.05;">+500–700</div>
+        <div style="font-size:0.68rem; color:var(--steel); opacity:0.85; margin-top:6px;">units across 26/27 acquisitions</div>
+      </div>
+    </div>
+
+    <!-- TIE-IN -->
+    <div class="card" style="margin-top:1.25rem;">
+      <h3>Tie-In to the SPC Extended BD Scenario</h3>
+      <p>The numbers Steyn sees in the SPC Extended BD model are the financial expression of this LV pipeline. The five active leads above plus the HVN 26/27 acquisition pipeline together feed a sustained <strong>~$94–101M/yr of construction billing post-FY27</strong>, which holds consolidated NI in the $3–4M range and compounds cash to ~$18.4M by FY31. <strong>HVN is the one anchor relationship</strong> behind the case (LV #1 on their power rankings, three of four pending closings). The five recent leads with <strong>VDE</strong>, <strong>Cypress Equity Investments</strong>, and <strong>Malhotra Ventures</strong> came in with minor outbound effort and represent breadth that still needs to convert into the kind of depth HVN already gives us.</p>
+      <div class="pills">
+        <a class="primary" href="../spc-update/">SPC Section 01 · scenario tables <span class="arr">→</span></a>
+        <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_ExtendedBD_v25.xlsx" target="_blank">Extended BD model · v25 <span class="arr">↓</span></a>
+        <a href="https://www.hvndevelopment.com/" target="_blank">HVN Development <span class="arr">↗</span></a>
+        <a href="https://www.cypressequity.com/" target="_blank">Cypress Equity <span class="arr">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 06 · REPORTING · LET'S PRUNE TOGETHER -->
+  <section class="slide" id="slide-5">
+    <div class="slide-cover">
+      <div class="slide-label">06 · Reporting · What Should Actually Flow</div>
+      <h1 class="title">From a 40-slide quarterly to a <em>durable</em> reporting set</h1>
+      <p class="lede">The Q1 2026 LV Board Package is the most we'd ever ship at 40 slides. Going forward we want to substantially reduce both the deck and the standing reporting package to the items that actually move the conversation. The lists below are a working proposal. The goal of this slide is to land the final cut with Steyn together.</p>
+    </div>
+
+    <!-- REDUCTION MARKER -->
+    <div style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); color:var(--ghost-warm); border-radius:14px; padding:1.6rem 1.85rem 1.5rem; margin-bottom:1.5rem; position:relative; overflow:hidden; box-shadow:0 10px 40px rgba(11,24,51,0.15);">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--rust) 0%, var(--rust-glow) 50%, transparent 100%);"></div>
+      <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.22em; color:var(--rust-glow); margin-bottom:0.35rem;">Where We're Pointed</div>
+      <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:1.5rem; align-items:center; padding-top:0.6rem;">
+        <div>
+          <div style="font-family:var(--font-display); font-size:2.4rem; font-weight:700; color:var(--ghost-warm); line-height:1; margin-bottom:0.35rem;">40 slides</div>
+          <div style="font-size:0.7rem; color:var(--steel); text-transform:uppercase; letter-spacing:0.14em; font-weight:600; opacity:0.85;">Q1 2026 today<br>The maximum we'd ever ship</div>
+        </div>
+        <div style="text-align:center; font-size:0.74rem; color:var(--rust-glow); font-weight:700; text-transform:uppercase; letter-spacing:0.18em;">Reduce to →</div>
+        <div>
+          <div style="font-family:var(--font-display); font-size:2.4rem; font-weight:700; color:var(--rust-glow); line-height:1; margin-bottom:0.35rem;">~10–12 slides</div>
+          <div style="font-size:0.7rem; color:var(--steel); text-transform:uppercase; letter-spacing:0.14em; font-weight:600; opacity:0.85;">Quarterly board package<br>The only standing deck</div>
+        </div>
+      </div>
+      <div style="margin-top:1.1rem; padding-top:1rem; border-top:1px solid rgba(191,199,218,0.15); font-size:0.85rem; color:var(--steel); line-height:1.6;">
+        <strong style="color:var(--rust-glow); font-weight:700;">Between quarters there is no second deck.</strong> The monthly delivery is the financial package LV's controller already produces, with a short list of key operating outputs riding alongside it.
+      </div>
+    </div>
+
+    <!-- WORKING PROPOSAL · KEEP / TRIM -->
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.5rem;">Working Proposal · What's In, What's Out</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:920px; margin-bottom:1rem;">A starting cut to react to. Anything in the keep column is what we think actually drives the conversation each cycle. Anything in the trim column comes back when it has news, not on a schedule.</p>
+
+    <div class="grid2" style="margin-bottom:1.25rem;">
+
+      <div style="background:#FFFFFF; border:1px solid rgba(196,88,26,0.35); border-radius:12px; padding:1.4rem 1.55rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); position:relative;">
+        <div style="position:absolute; top:0; left:0; height:4px; width:64px; background:var(--rust); border-radius:0 0 4px 0;"></div>
+        <div style="display:inline-block; font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; padding:3px 9px; border-radius:4px; background:rgba(196,88,26,0.14); color:var(--rust); margin:0.4rem 0 0.55rem;">Keep · Standing Set</div>
+        <h4 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin-bottom:0.7rem;">The six things that earn their slot every cycle</h4>
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.55rem;">
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Headline KPI tiles.</strong> Revenue, gross margin, EBITDA, cash, bonding capacity, backlog. Period-stamped, vs. budget, vs. prior period.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Active job one-liner.</strong> One row per project: status, % complete, GM, material change orders, schedule. The whole book on a single page.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Pipeline + backlog deltas.</strong> What was added, won, or lost since last cycle, with a forward-look on the next 60 to 90 days.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Risk register.</strong> Low / medium / high per active job, with a one-line note on what moved.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Bonding wedge.</strong> Capacity used and available, current cost spread, and the path to LV-direct bonding (this is the lever that ties to the SPC Extended BD plan).
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">CEO message.</strong> Short narrative that ties the numbers to what the team is actually doing. The story, not the metrics.
+          </li>
+        </ul>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.55rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); position:relative;">
+        <div style="position:absolute; top:0; left:0; height:4px; width:64px; background:var(--gray); border-radius:0 0 4px 0;"></div>
+        <div style="display:inline-block; font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; padding:3px 9px; border-radius:4px; background:rgba(94,123,155,0.14); color:var(--gray-dk); margin:0.4rem 0 0.55rem;">Trim · Revisit on Material Change</div>
+        <h4 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin-bottom:0.7rem;">Comes back when it has news, not on a schedule</h4>
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.55rem;">
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--gray); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">LV 2.0 strategic direction.</strong> Revisit annually or when a target moves materially, not every cycle.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--gray); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Market &amp; operating environment.</strong> Refresh when conditions shift (rates, ICE, AB 2011), otherwise summarized in the CEO message.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--gray); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Prior-quarter commitments scorecard.</strong> Useful right after the period; lower-priority on standing cycles.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--gray); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Detailed safety scorecard.</strong> One headline line on standing cycles; full deep-dive only on incident or annual review.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--gray); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Org chart / staff allocation.</strong> Refresh when org changes, not standing.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--gray); border-radius:2px;"></span>
+            <strong style="color:var(--denim);">Full P&amp;L, balance sheet, cash flow statements.</strong> Stay in financials backup. The standing deck carries a one-page summary; the detail is available on request.
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- MONTHLY DELIVERY -->
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.5rem;">Between Quarters · Monthly Delivery</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:920px; margin-bottom:1rem;">No second deck. The monthly delivery is the financial package, plus a small set of operating outputs that ride alongside it for visibility on what moved between quarters.</p>
+
+    <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.6rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); position:relative; margin-bottom:1.5rem;">
+      <div style="position:absolute; top:0; left:0; height:4px; width:64px; background:var(--rust); border-radius:0 0 4px 0;"></div>
+      <div style="display:grid; grid-template-columns:1fr 1.4fr; gap:1.5rem; align-items:start; padding-top:0.4rem;">
+        <div>
+          <div style="display:inline-block; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; padding:3px 9px; border-radius:4px; background:rgba(196,88,26,0.14); color:var(--rust); margin-bottom:0.55rem;">Monthly · Financials</div>
+          <h4 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin-bottom:0.5rem;">The standing financial package</h4>
+          <p style="font-size:0.86rem; color:var(--gray-dk); line-height:1.6; margin:0;">P&amp;L vs. budget, balance sheet, and cash position. The same statements LV's controller already produces for IC and accounting, sent through unchanged. No reformatting, no narrative wrap.</p>
+        </div>
+        <div>
+          <div style="display:inline-block; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; padding:3px 9px; border-radius:4px; background:rgba(196,88,26,0.14); color:var(--rust); margin-bottom:0.55rem;">Plus · Few Key Outputs</div>
+          <h4 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin-bottom:0.5rem;">A short list of operating metrics alongside the financials</h4>
+          <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.4rem;">
+            <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;"><span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>Backlog snapshot, with what was added or burned since last month</li>
+            <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;"><span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>Active job statuses, with any project that flipped status</li>
+            <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;"><span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>Bonding utilization, with any bond posted or released</li>
+            <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--gray-dk); line-height:1.55;"><span style="position:absolute; left:0; top:10px; width:10px; height:2px; background:var(--rust); border-radius:2px;"></span>Pipeline movement, with any new win, loss, or contracted award</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPEN QUESTIONS · CALIBRATE WITH STEYN -->
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.5rem;">Calibrate With Steyn · Four Open Questions</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:920px; margin-bottom:1rem;">The cuts above are LV's working view. The cleaner this lands the better the standing reports get, so we'd rather walk through these in the room than guess.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem;">
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.2rem 1.4rem 1.25rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; color:var(--rust); margin-bottom:0.4rem;">Question 01 · Monthly Outputs</div>
+        <p style="font-size:0.86rem; color:var(--gray-dk); line-height:1.6; margin:0;">Are the four operating outputs above (backlog, job statuses, bonding utilization, pipeline movement) the right set to ride alongside the monthly financials? Add, drop, or swap until it is the smallest set Steyn would actually read each month.</p>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.2rem 1.4rem 1.25rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; color:var(--rust); margin-bottom:0.4rem;">Question 02 · Definitions</div>
+        <p style="font-size:0.86rem; color:var(--gray-dk); line-height:1.6; margin:0;">Where do we want shared definitions versus LV-internal ones? Backlog, pipeline, hit rate, and bonding utilization were all defined slightly differently in the Q1 walkthrough; one set of definitions makes every future cycle cleaner.</p>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.2rem 1.4rem 1.25rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; color:var(--rust); margin-bottom:0.4rem;">Question 03 · Threshold for Commentary</div>
+        <p style="font-size:0.86rem; color:var(--gray-dk); line-height:1.6; margin:0;">At what variance does a metric earn a written explanation versus just a number on a tile? Setting a clear bar (for example, ±10% vs. budget or prior period) keeps the standing deck from drowning in commentary on noise.</p>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.2rem 1.4rem 1.25rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; color:var(--rust); margin-bottom:0.4rem;">Question 04 · Format</div>
+        <p style="font-size:0.86rem; color:var(--gray-dk); line-height:1.6; margin:0;">Is a tiles-plus-light-commentary format the right ongoing shape, or would Steyn rather see a written narrative with the numbers in line? We can produce either; the one we don't pick disappears.</p>
+      </div>
+    </div>
+
+    <!-- SUSTAINABILITY NOTE -->
+    <div class="callout" style="margin-top:1.5rem;">
+      <strong>The sustainability test:</strong> every metric in the standing set has to be cheap enough to maintain that we'll still be running it in two years without a heroic effort. Anything that fails that test should not be in the standing set, even if it would be nice to have. The reductions above are a forcing function on that.
+    </div>
+  </section>
+
+  </div>
+</main>
+
+<!-- DECK FOOTER CONTROLS -->
+<div class="deck-controls">
+  <div class="crumb">
+    <span class="ix" id="crumbIx">01 / 06</span>
+    <span class="name" id="crumbName">Team Update</span>
+  </div>
+  <div class="kbd-hint">
+    Use <kbd>←</kbd> <kbd>→</kbd> arrows to advance
+  </div>
+  <div class="arrows">
+    <button class="arrow-btn" id="prevBtn" onclick="goPrev()" disabled><span class="arr">←</span> Previous</button>
+    <button class="arrow-btn primary" id="nextBtn" onclick="goNext()">Next <span class="arr">→</span></button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const navBtns = document.querySelectorAll('.deck-nav button');
+const slideNames = ['Team Update', 'Marketing & Website', 'Project Buyout', 'Pending Closings', 'Extended BD', 'Reporting Outputs'];
+let cur = 0;
+
+function goSlide(i) {
+  if (i < 0 || i >= slides.length) return;
+  cur = i;
+  slides.forEach((s, ix) => s.classList.toggle('active', ix === i));
+  navBtns.forEach((b, ix) => b.classList.toggle('active', ix === i));
+  document.getElementById('counterCur').textContent = String(i+1).padStart(2,'0');
+  document.getElementById('progressFill').style.width = ((i+1)/slides.length*100) + '%';
+  document.getElementById('crumbIx').textContent = String(i+1).padStart(2,'0') + ' / ' + String(slides.length).padStart(2,'0');
+  document.getElementById('crumbName').textContent = slideNames[i];
+  document.getElementById('topbarName').textContent = slideNames[i];
+  document.getElementById('prevBtn').disabled = (i === 0);
+  document.getElementById('nextBtn').disabled = (i === slides.length - 1);
+  document.getElementById('nextBtn').innerHTML = (i === slides.length - 1) ? 'End <span class="arr">·</span>' : 'Next <span class="arr">→</span>';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goNext() { if (cur < slides.length - 1) goSlide(cur + 1); }
+function goPrev() { if (cur > 0) goSlide(cur - 1); }
+
+navBtns.forEach((b, ix) => b.addEventListener('click', () => goSlide(ix)));
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); goNext(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   { e.preventDefault(); goPrev(); }
+  if (e.key === 'Home') { e.preventDefault(); goSlide(0); }
+  if (e.key === 'End')  { e.preventDefault(); goSlide(slides.length - 1); }
+});
+
+goSlide(0);
+</script>
+</body>
+</html>

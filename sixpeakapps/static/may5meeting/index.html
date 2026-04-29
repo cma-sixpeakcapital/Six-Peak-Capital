@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steyn Group · Pre-Read Portal · May 5, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --denim:#0B1833; --denim-light:#111E3D;
+  --space:#2C3A51; --space-light:#384862; --space-muted:#1E2C44;
+  --steel:#BFC7DA; --steel-light:#E2E7F0;
+  --ghost:#F8F9F4; --ghost-warm:#FAFAF6;
+  --rust:#C4581A; --rust-glow:#E8935A; --rust-light:rgba(196,88,26,0.12); --rust-subtle:rgba(196,88,26,0.06);
+  --gray:#94A3B8; --gray-dk:#475569;
+  --success:#10B981; --warning:#F59E0B;
+  --font-primary:'Aptos','DM Sans',Calibri,'Segoe UI',sans-serif;
+  --font-display:'DM Sans','Aptos','Segoe UI',sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { font-family:var(--font-primary); color:var(--ghost-warm); background:var(--denim); min-height:100vh; }
+body { background:linear-gradient(135deg, var(--space-light) 0%, var(--space-muted) 60%, var(--denim) 100%); }
+.wrap { max-width:1180px; margin:0 auto; padding:3rem 2rem; }
+
+/* HERO */
+.hero { text-align:center; padding:1rem 0 2.5rem; border-bottom:1px solid rgba(191,199,218,0.12); margin-bottom:3rem; position:relative; }
+.hero .label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.3em; color:var(--rust); margin-bottom:0.9rem; }
+.hero .label::after { content:''; display:block; width:64px; height:2px; background:linear-gradient(90deg,var(--rust),transparent); margin:0.55rem auto 0; }
+.hero h1 { font-family:var(--font-display); font-size:2.4rem; font-weight:700; letter-spacing:-0.015em; color:var(--ghost-warm); margin-bottom:0.6rem; }
+.hero h1 em { color:var(--rust-glow); font-style:normal; }
+.hero p { font-size:1.02rem; color:var(--steel); opacity:0.92; max-width:740px; margin:0 auto; line-height:1.7; }
+.hero .meta-row { display:flex; gap:2.5rem; justify-content:center; align-items:center; flex-wrap:wrap; margin-top:1.4rem; font-size:0.78rem; color:var(--steel); opacity:0.75; }
+.hero .meta-row span { display:flex; align-items:center; gap:6px; }
+.hero .meta-row strong { color:var(--ghost-warm); font-weight:600; }
+.hero .dot { width:4px; height:4px; background:var(--rust); border-radius:50%; opacity:0.7; }
+
+/* AGENDA TIMELINE */
+.agenda-section { margin-bottom:3.5rem; }
+.section-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; color:var(--rust); margin-bottom:0.75rem; }
+.section-label::after { content:''; display:block; width:60px; height:2px; background:linear-gradient(90deg,var(--rust),transparent); margin-top:0.55rem; }
+.section-title { font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:var(--ghost-warm); margin-bottom:1.25rem; }
+
+.agenda-strip { display:grid; grid-template-columns:repeat(5, 1fr); gap:0; background:rgba(11,24,51,0.4); border:1px solid rgba(191,199,218,0.12); border-radius:12px; overflow:hidden; }
+.agenda-strip .slot { padding:1.1rem 1.2rem; border-right:1px solid rgba(191,199,218,0.1); position:relative; }
+.agenda-strip .slot:last-child { border-right:none; }
+.agenda-strip .slot .time { font-family:var(--font-display); font-size:0.72rem; font-weight:700; color:var(--rust); letter-spacing:0.08em; }
+.agenda-strip .slot .topic { font-family:var(--font-display); font-size:0.92rem; font-weight:600; color:var(--ghost-warm); margin-top:5px; line-height:1.35; }
+.agenda-strip .slot .dur { font-size:0.66rem; color:var(--steel); opacity:0.7; margin-top:6px; text-transform:uppercase; letter-spacing:0.12em; }
+@media(max-width:900px) { .agenda-strip { grid-template-columns:1fr; } .agenda-strip .slot { border-right:none; border-bottom:1px solid rgba(191,199,218,0.1); } .agenda-strip .slot:last-child { border-bottom:none; } }
+
+/* CARD GRID */
+.cards { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:2.5rem; }
+.cards.full { grid-template-columns:1fr; }
+@media(max-width:900px) { .cards { grid-template-columns:1fr; } }
+
+.card {
+  background:var(--ghost-warm);
+  color:var(--denim);
+  border-radius:12px;
+  padding:1.75rem 1.75rem 1.5rem;
+  border:1px solid rgba(11,24,51,0.08);
+  text-decoration:none;
+  display:flex; flex-direction:column;
+  position:relative;
+  transition:all 0.25s ease;
+  box-shadow:0 4px 20px rgba(0,0,0,0.18);
+  min-height:280px;
+  cursor:pointer;
+}
+.card:hover { transform:translateY(-4px); border-color:rgba(196,88,26,0.4); box-shadow:0 12px 40px rgba(11,24,51,0.32); }
+.card .num { position:absolute; top:1.25rem; right:1.4rem; font-family:var(--font-display); font-size:2.4rem; font-weight:700; color:var(--rust-light); line-height:1; }
+.card .badge-row { display:flex; gap:8px; margin-bottom:0.85rem; flex-wrap:wrap; }
+.card .badge { display:inline-block; font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; padding:4px 10px; border-radius:4px; background:rgba(196,88,26,0.12); color:var(--rust); }
+.card .badge.ops { background:rgba(44,58,81,0.1); color:var(--space); }
+.card .badge.warn { background:rgba(245,158,11,0.14); color:#92670a; }
+.card .badge.ready { background:rgba(16,185,129,0.12); color:#0b6e54; }
+.card h3 { font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:var(--denim); margin-bottom:0.6rem; line-height:1.25; }
+.card .lede { font-size:0.92rem; color:var(--gray-dk); line-height:1.62; margin-bottom:1.1rem; }
+.card .bullets { list-style:none; padding:0; margin:0 0 1.1rem; }
+.card .bullets li { font-size:0.82rem; color:var(--gray-dk); padding:4px 0 4px 20px; position:relative; line-height:1.5; }
+.card .bullets li::before { content:''; position:absolute; left:0; top:11px; width:10px; height:2px; background:var(--rust); border-radius:2px; }
+.card .footer-row { display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(11,24,51,0.08); padding-top:0.9rem; margin-top:auto; }
+.card .footer-row .duration { font-size:0.72rem; color:var(--gray-dk); font-weight:600; text-transform:uppercase; letter-spacing:0.1em; }
+.card .cta { font-family:var(--font-display); font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; color:var(--rust); display:flex; align-items:center; gap:6px; }
+.card:hover .cta { color:var(--rust-glow); }
+.card .cta::after { content:'→'; font-size:1rem; }
+
+/* PRE-READ APPENDIX */
+.appendix { background:rgba(11,24,51,0.45); border:1px solid rgba(191,199,218,0.1); border-radius:12px; padding:1.75rem 2rem; margin-top:1rem; }
+.appendix .section-title { font-size:1.05rem; color:var(--ghost-warm); margin-bottom:1rem; }
+.appendix .small { font-size:0.86rem; color:var(--steel); opacity:0.85; margin-bottom:1rem; line-height:1.65; }
+.attach-list { display:grid; grid-template-columns:1fr 1fr; gap:0.6rem 1.5rem; }
+@media(max-width:700px) { .attach-list { grid-template-columns:1fr; } }
+.attach-list a { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; background:rgba(191,199,218,0.04); border:1px solid rgba(191,199,218,0.1); color:var(--ghost-warm); text-decoration:none; font-size:0.85rem; transition:all 0.15s ease; }
+.attach-list a:hover { background:rgba(196,88,26,0.08); border-color:var(--rust); color:var(--rust-glow); }
+.attach-list a .ico { width:28px; height:28px; border-radius:6px; background:var(--rust-light); color:var(--rust); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.7rem; flex-shrink:0; }
+.attach-list a .meta { font-size:0.7rem; opacity:0.55; margin-left:auto; }
+
+/* FOOTER */
+footer { text-align:center; margin-top:3rem; padding-top:2rem; border-top:1px solid rgba(191,199,218,0.1); font-size:0.74rem; color:var(--steel); opacity:0.7; letter-spacing:0.12em; text-transform:uppercase; }
+footer span { color:var(--rust); }
+
+@media (max-width:640px) {
+  .wrap { padding:1.5rem 1rem; }
+  .hero h1 { font-size:1.6rem; }
+  .hero p { font-size:0.9rem; }
+  .card { min-height:0; padding:1.4rem 1.4rem 1.2rem; }
+  .card h3 { font-size:1.15rem; }
+  .card .num { font-size:1.8rem; top:1rem; right:1.1rem; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="label">Steyn Group · Pre-Read Portal</div>
+  <h1>Six Peak Capital × LV Construction <em>·</em> May 5, 2026</h1>
+  <p>This portal is the working pre-read for our board session on Tuesday, May 5 (1:00–4:45 PT). Each section below opens into a self-contained slide deck. Use the chip nav at the top or the prev/next arrows at the bottom to walk through.</p>
+  <div class="meta-row">
+    <span><strong>1:00 – 4:45 PT</strong> · 3h 45m</span>
+    <span class="dot"></span>
+    <span><strong>4 decks</strong> · 27 slides total</span>
+    <span class="dot"></span>
+    <span><strong>Authorization required</strong> · Uplifters JV</span>
+  </div>
+</header>
+
+<section class="agenda-section">
+  <div class="section-label">Meeting Flow</div>
+  <h2 class="section-title">Agenda for Tuesday, May 5</h2>
+  <div class="agenda-strip">
+    <div class="slot">
+      <div class="time">1:00 – 2:15 PT</div>
+      <div class="topic">SPC + LV Broad Update</div>
+      <div class="dur">75 min</div>
+    </div>
+    <div class="slot">
+      <div class="time">2:15 – 2:30 PT</div>
+      <div class="topic">Break</div>
+      <div class="dur">15 min</div>
+    </div>
+    <div class="slot">
+      <div class="time">2:30 – 3:30 PT</div>
+      <div class="topic">LV Construction · AI Discussion</div>
+      <div class="dur">60 min</div>
+    </div>
+    <div class="slot">
+      <div class="time">3:30 – 4:30 PT</div>
+      <div class="topic">Uplifters Foundation JV (with Schuyler)</div>
+      <div class="dur">60 min</div>
+    </div>
+    <div class="slot">
+      <div class="time">4:30 – 4:45 PT</div>
+      <div class="topic">Open Discussion · Authorizations</div>
+      <div class="dur">15 min</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-label">Pre-Read Sections</div>
+  <h2 class="section-title">Open each section below to review</h2>
+  <div class="cards">
+
+    <a class="card" href="spc-update/">
+      <div class="num">01</div>
+      <div class="badge-row">
+        <span class="badge">Update</span>
+        <span class="badge ops">SPC</span>
+        <span class="badge ready">6-slide deck</span>
+      </div>
+      <h3>SPC Broad Update</h3>
+      <p class="lede">Steyn-tailored snapshot of where Six Peak stands today: FY26 + FY27 numbers from the Base Case, the Steyn debt facility schedule, the LIHTC portfolio framing, scenario plan, and the three pillars driving the next 12 months.</p>
+      <ul class="bullets">
+        <li>FY 2026 + FY 2027 KPIs · Base Case v25, with Reseda flagged as the FY27 gating item</li>
+        <li>Steyn debt facility schedule and the LIHTC portfolio framing</li>
+        <li>Base Case vs. Extended BD scenario plan, plus the breakeven floor without Uplifters</li>
+        <li>Three pillars: LV roster · BD · AI</li>
+      </ul>
+      <div class="footer-row">
+        <span class="duration">~75 min combined · w/ Section 02</span>
+        <span class="cta">Open</span>
+      </div>
+    </a>
+
+    <a class="card" href="lv-update/">
+      <div class="num">02</div>
+      <div class="badge-row">
+        <span class="badge">Operations</span>
+        <span class="badge ops">LV</span>
+        <span class="badge ready">6-slide deck</span>
+      </div>
+      <h3>LV Construction Update</h3>
+      <p class="lede">Operating update across LV: team build, marketing &amp; new website, existing project buyout, the four pending closings, the Extended BD plan, and a working proposal to reduce the standing reporting set with Steyn.</p>
+      <ul class="bullets">
+        <li>Team additions and trigger hires for the four pending closings</li>
+        <li>Marketing posture, new website, and project buyout (where in-flight GMP risk sits)</li>
+        <li>Four pending closings · 510 units · ~$78M+ · breaking ground Jun–Sep 2026</li>
+        <li>Extended BD: HVN anchor + 5 recently sourced leads (939 units pipeline)</li>
+        <li>Reporting outputs: working proposal to reduce the standing set with Steyn</li>
+      </ul>
+      <div class="footer-row">
+        <span class="duration">~75 min combined · w/ Section 01</span>
+        <span class="cta">Open</span>
+      </div>
+    </a>
+
+    <a class="card" href="ai/">
+      <div class="num">03</div>
+      <div class="badge-row">
+        <span class="badge">Strategy</span>
+        <span class="badge ops">LV · AI</span>
+        <span class="badge ready">6-slide deck</span>
+      </div>
+      <h3>LV · AI Discussion</h3>
+      <p class="lede">Why the AI investment, where the manual workflows break, what Jonah and the team are capturing and building, and two distinct paths the program could take.</p>
+      <ul class="bullets">
+        <li>Thesis: manual workflow, not capital, is the constraint</li>
+        <li>Current-state walkthroughs and workflow capture · Jonah and the engineering bench</li>
+        <li>Live demo and Mission Control phase library</li>
+        <li><strong>Discussion:</strong> two paths, internal margin lever vs. external capital platform</li>
+      </ul>
+      <div class="footer-row">
+        <span class="duration">~60 min · Deep dive</span>
+        <span class="cta">Open</span>
+      </div>
+    </a>
+
+    <a class="card" href="uplifters/">
+      <div class="num">04</div>
+      <div class="badge-row">
+        <span class="badge">Authorization</span>
+        <span class="badge ready">IC-ready · 9-slide deck</span>
+      </div>
+      <h3>Uplifters Foundation JV</h3>
+      <p class="lede">Development management &amp; owner's representative engagement with Uplifters Foundation for the Pacific Palisades disaster rebuild. To be presented by Schuyler. Authorization ask at the end.</p>
+      <ul class="bullets">
+        <li>~60 single-family homes · $200M program · 5-year operating window</li>
+        <li>$9.0M gross fees · $4.1M projected net to Six Peak · fee-based, no equity</li>
+        <li>701 Radcliffe sample deal walkthrough plus full IC memo (exhibits A–E)</li>
+      </ul>
+      <div class="footer-row">
+        <span class="duration">~60 min · Authorization ask</span>
+        <span class="cta">Open</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<section class="appendix">
+  <div class="section-label">Reference</div>
+  <h3 class="section-title">Live Board Portal &amp; Models</h3>
+  <p class="small">Several sections of this pre-read link directly into the live Six Peak Board Portal for full scenario tabs, the Mission Control library, and the working models.</p>
+  <div class="attach-list">
+    <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/board/" target="_blank">
+      <span class="ico">↗</span>
+      <span>Six Peak Board Portal · Scenarios &amp; financials</span>
+      <span class="meta">External</span>
+    </a>
+    <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/" target="_blank">
+      <span class="ico">↗</span>
+      <span>AI Mission Control · Phase library</span>
+      <span class="meta">External</span>
+    </a>
+    <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_BaseCase_v25.xlsx" target="_blank">
+      <span class="ico">XL</span>
+      <span>Base Case model · v25</span>
+      <span class="meta">.xlsx</span>
+    </a>
+    <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_ExtendedBD_v25.xlsx" target="_blank">
+      <span class="ico">XL</span>
+      <span>Extended BD model · v25</span>
+      <span class="meta">.xlsx</span>
+    </a>
+    <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_BreakevenBD_v25.xlsx" target="_blank">
+      <span class="ico">XL</span>
+      <span>Breakeven BD model · v25</span>
+      <span class="meta">.xlsx</span>
+    </a>
+    <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_Uplifters_v25.xlsx" target="_blank">
+      <span class="ico">XL</span>
+      <span>Uplifters program model · v25</span>
+      <span class="meta">.xlsx</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <span>Confidential</span> · Six Peak Capital · LV Construction · Prepared for Steyn Group · May 5, 2026
+</footer>
+
+</div>
+</body>
+</html>

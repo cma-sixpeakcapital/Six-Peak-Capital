@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPC + LV Broad Update · Steyn Pre-Read · May 5, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --denim:#0B1833; --denim-light:#111E3D;
+  --space:#2C3A51; --space-light:#384862; --space-muted:#1E2C44;
+  --steel:#BFC7DA; --steel-light:#E2E7F0;
+  --ghost:#F8F9F4; --ghost-warm:#FAFAF6;
+  --rust:#C4581A; --rust-glow:#E8935A; --rust-light:rgba(196,88,26,0.12); --rust-subtle:rgba(196,88,26,0.06);
+  --gray:#94A3B8; --gray-dk:#475569;
+  --success:#10B981; --warning:#F59E0B; --error:#EF4444;
+  --font-primary:'Aptos','DM Sans',Calibri,'Segoe UI',sans-serif;
+  --font-display:'DM Sans','Aptos','Segoe UI',sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { font-family:var(--font-primary); background:var(--steel-light); color:var(--denim); line-height:1.6; }
+
+/* DECK SHELL */
+.deck { min-height:100vh; display:flex; flex-direction:column; }
+.topbar { background:linear-gradient(135deg, var(--space-light) 0%, var(--space-muted) 60%, var(--denim) 100%); padding:2rem 0 1.6rem; border-bottom:3px solid var(--rust); }
+.topbar .inner { max-width:1180px; margin:0 auto; padding:0 2rem; display:flex; justify-content:space-between; align-items:flex-end; gap:2rem; flex-wrap:wrap; }
+.topbar a.back { color:var(--steel); text-decoration:none; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.18em; font-weight:600; opacity:0.85; }
+.topbar a.back:hover { color:var(--rust-glow); opacity:1; }
+.topbar .label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; color:var(--rust); margin-bottom:0.5rem; }
+.topbar h1 { font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--ghost-warm); letter-spacing:-0.01em; }
+.topbar .sub { color:var(--steel); font-size:0.85rem; opacity:0.85; margin-top:0.4rem; max-width:760px; line-height:1.55; }
+.topbar .meta { display:flex; flex-direction:column; align-items:flex-end; gap:0.7rem; min-width:240px; }
+.topbar .meta .progress { display:flex; align-items:center; gap:0.85rem; width:100%; }
+.topbar .meta .bar { flex:1; height:3px; background:rgba(191,199,218,0.2); border-radius:2px; overflow:hidden; }
+.topbar .meta .fill { height:100%; background:linear-gradient(90deg, var(--rust), var(--rust-glow)); border-radius:2px; transition:width 0.3s ease; }
+.topbar .meta .counter { font-family:var(--font-display); font-size:0.78rem; font-weight:700; color:var(--ghost-warm); letter-spacing:0.1em; white-space:nowrap; }
+.topbar .meta .counter .cur { color:var(--rust-glow); }
+.topbar .meta .now-showing { font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.16em; color:var(--steel); opacity:0.7; }
+.topbar .meta .now-showing .name { color:var(--ghost-warm); opacity:1; margin-left:6px; }
+
+/* SLIDE NAV CHIPS */
+.deck-nav { background:#FFFFFF; border-bottom:1px solid rgba(11,24,51,0.08); padding:0; position:sticky; top:0; z-index:40; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
+.deck-nav-inner { max-width:1280px; margin:0 auto; padding:0 1.5rem; display:flex; gap:0; overflow-x:auto; }
+.deck-nav button { background:none; border:none; cursor:pointer; padding:13px 16px; font-family:inherit; font-size:0.72rem; font-weight:600; color:var(--gray-dk); text-transform:uppercase; letter-spacing:0.12em; white-space:nowrap; border-bottom:3px solid transparent; transition:all 0.15s ease; display:flex; align-items:center; gap:8px; }
+.deck-nav button .ix { color:var(--rust); font-weight:700; opacity:0.6; font-size:0.66rem; }
+.deck-nav button:hover { color:var(--rust); }
+.deck-nav button:hover .ix { opacity:1; }
+.deck-nav button.active { color:var(--rust); border-bottom-color:var(--rust); }
+.deck-nav button.active .ix { opacity:1; }
+
+/* SLIDE STAGE */
+.stage { flex:1; padding:2.5rem 2rem 8rem; overflow-x:hidden; }
+.stage-inner { max-width:1180px; margin:0 auto; }
+
+.slide { display:none; animation:slideIn 0.35s ease; }
+.slide.active { display:block; }
+@keyframes slideIn {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* SLIDE COVER */
+.slide .slide-cover { margin-bottom:2rem; }
+.slide .slide-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; color:var(--rust); margin-bottom:0.75rem; }
+.slide .slide-label::after { content:''; display:block; width:60px; height:2px; background:linear-gradient(90deg, var(--rust), transparent); margin-top:0.6rem; }
+.slide h1.title { font-family:var(--font-display); font-size:1.85rem; font-weight:700; color:var(--denim); letter-spacing:-0.012em; line-height:1.2; margin-bottom:0.6rem; max-width:920px; }
+.slide h1.title em { color:var(--rust); font-style:normal; }
+.slide .lede { font-size:1rem; color:var(--gray-dk); line-height:1.7; max-width:880px; }
+
+/* SHARED COMPONENTS */
+.kpi-row { display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-bottom:1.25rem; }
+@media(max-width:900px) { .kpi-row { grid-template-columns:1fr 1fr; } }
+.kpi { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.kpi .lbl { font-size:0.66rem; color:var(--gray-dk); font-weight:600; text-transform:uppercase; letter-spacing:0.14em; }
+.kpi .val { font-family:var(--font-display); font-size:1.95rem; font-weight:700; color:var(--rust); margin-top:0.55rem; line-height:1.05; }
+.kpi .val.denim { color:var(--denim); }
+.kpi .val.sm { font-size:1.2rem; padding-top:0.5rem; }
+.kpi .delta { font-size:0.78rem; color:var(--gray-dk); margin-top:7px; }
+.kpi .delta.up { color:#0b6e54; font-weight:600; }
+.kpi .delta.dn { color:#a13b3b; font-weight:600; }
+
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+@media(max-width:900px) { .grid2,.grid3 { grid-template-columns:1fr; } }
+
+.card { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.5rem 1.6rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.card.dark { background:var(--denim); color:var(--ghost-warm); border-color:rgba(191,199,218,0.1); }
+.card.dark h3 { color:var(--ghost-warm); }
+.card.dark p, .card.dark li { color:var(--steel); }
+.card h3 { font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin-bottom:0.6rem; }
+.card p { font-size:0.92rem; color:var(--gray-dk); line-height:1.65; }
+.card ul { list-style:none; padding:0; margin:0.6rem 0 0; }
+.card ul li { font-size:0.88rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55; }
+.card ul li::before { content:''; position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px; }
+
+.callout { background:rgba(196,88,26,0.05); border-left:3px solid var(--rust); padding:1rem 1.25rem; border-radius:0 8px 8px 0; font-size:0.92rem; color:var(--gray-dk); line-height:1.7; margin:1.25rem 0; }
+.callout strong { color:var(--rust); font-weight:700; }
+.callout.warn { border-left-color:var(--warning); }
+.callout.warn strong { color:#92670a; }
+
+/* PIPELINE SEQUENCING TIMELINE (Slide 05) */
+.pipeline-timeline { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.6rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04); margin-top:1rem; }
+.pipeline-timeline .axis { position:relative; height:22px; margin:0 0 0.5rem 270px; border-bottom:1px solid rgba(11,24,51,0.12); }
+.pipeline-timeline .axis span { position:absolute; bottom:5px; font-size:0.65rem; font-weight:700; color:var(--gray-dk); text-transform:uppercase; letter-spacing:0.1em; transform:translateX(-50%); white-space:nowrap; }
+.pipeline-timeline .axis span::after { content:''; position:absolute; left:50%; top:100%; width:1px; height:6px; background:rgba(11,24,51,0.2); transform:translateX(-50%); }
+.pipeline-timeline .row { display:flex; align-items:center; margin-top:0.85rem; gap:1rem; }
+.pipeline-timeline .row-lbl { width:260px; flex-shrink:0; font-size:0.78rem; font-weight:600; color:var(--denim); display:flex; align-items:center; gap:8px; line-height:1.4; }
+.pipeline-timeline .row-lbl .swatch { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+.pipeline-timeline .row-lbl .count { color:var(--gray-dk); font-weight:500; }
+.pipeline-timeline .track { position:relative; flex:1; height:24px; background:rgba(11,24,51,0.04); border-radius:4px; }
+.pipeline-timeline .dot { position:absolute; top:50%; width:10px; height:10px; border-radius:50%; transform:translate(-50%, -50%); box-shadow:0 0 0 1.5px #FFFFFF; }
+.pipeline-timeline .swatch.denim, .pipeline-timeline .dot.denim { background:var(--denim); }
+.pipeline-timeline .swatch.warn, .pipeline-timeline .dot.warn { background:var(--warning); }
+.pipeline-timeline .swatch.rust, .pipeline-timeline .dot.rust { background:var(--rust); }
+.pipeline-timeline .key-row { font-size:0.78rem; color:var(--gray-dk); margin-top:1rem; padding-top:0.85rem; border-top:1px solid rgba(11,24,51,0.08); line-height:1.6; }
+.pipeline-timeline .key-row strong { color:var(--denim); font-weight:700; }
+
+/* TABLES */
+.tbl { background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+.tbl table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+.tbl thead { background:var(--denim); }
+.tbl th { color:var(--rust-glow); font-family:var(--font-display); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; padding:13px 14px; text-align:right; }
+.tbl th:first-child { text-align:left; }
+.tbl td { padding:10px 14px; text-align:right; border-bottom:1px solid rgba(11,24,51,0.06); color:var(--gray-dk); font-variant-numeric:tabular-nums; }
+.tbl td:first-child { text-align:left; color:var(--denim); font-weight:600; }
+.tbl tr:last-child td { border-bottom:none; }
+.tbl tr:hover td { background:rgba(196,88,26,0.04); }
+.tbl .row-section td { background:rgba(11,24,51,0.04); color:var(--rust); font-weight:700; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.14em; padding:8px 14px; }
+.tbl .row-total td { background:rgba(196,88,26,0.06); color:var(--rust); font-weight:700; border-top:2px solid var(--rust); }
+.tbl .row-total td:first-child { color:var(--rust); }
+.tbl .row-payoff td { background:rgba(16,185,129,0.06); color:#0b6e54; font-weight:700; border-top:2px solid #10B981; }
+.tbl .row-payoff td:first-child { color:#0b6e54; }
+.tbl .pos { color:#0b6e54; }
+.tbl .neg { color:#a13b3b; }
+.tbl .muted { color:var(--gray); }
+
+/* PNL FLOW */
+.pnl-flow { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0; background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+@media(max-width:900px) { .pnl-flow { grid-template-columns:1fr; } }
+.pnl-flow .step { padding:1.4rem 1.6rem; border-right:1px solid rgba(11,24,51,0.08); }
+.pnl-flow .step:last-child { border-right:none; }
+@media(max-width:900px) { .pnl-flow .step { border-right:none; border-bottom:1px solid rgba(11,24,51,0.08); } .pnl-flow .step:last-child { border-bottom:none; } }
+.pnl-flow .step.hi { background:rgba(196,88,26,0.04); }
+.pnl-flow .step .lbl { font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--gray-dk); margin-bottom:8px; }
+.pnl-flow .step.hi .lbl { color:var(--rust); }
+.pnl-flow .step .val { font-family:var(--font-display); font-size:1.95rem; font-weight:700; color:var(--denim); line-height:1.05; }
+.pnl-flow .step.hi .val { color:var(--rust); font-size:2.1rem; }
+.pnl-flow .step.muted .val { color:var(--gray); }
+.pnl-flow .step .desc { font-size:0.83rem; color:var(--gray-dk); margin-top:8px; line-height:1.55; }
+
+/* PILL LINKS */
+.pills { display:flex; flex-wrap:wrap; gap:0.55rem; margin-top:1rem; }
+.pills a { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; background:#FFFFFF; border:1px solid rgba(11,24,51,0.1); border-radius:999px; text-decoration:none; color:var(--denim); font-size:0.78rem; font-weight:600; transition:all 0.15s ease; }
+.pills a:hover { background:var(--rust); color:#fff; border-color:var(--rust); }
+.pills a .arr { color:var(--rust); }
+.pills a:hover .arr { color:#fff; }
+
+/* BADGE */
+.badge { display:inline-block; font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; padding:3px 9px; border-radius:4px; }
+.badge.attn { background:rgba(245,158,11,0.14); color:#92670a; }
+.badge.ready { background:rgba(16,185,129,0.12); color:#0b6e54; }
+.badge.bd { background:rgba(196,88,26,0.14); color:var(--rust); }
+
+/* ATTACHMENT LIST */
+.attach-list { display:grid; grid-template-columns:1fr 1fr; gap:0.6rem 1.2rem; }
+@media(max-width:700px) { .attach-list { grid-template-columns:1fr; } }
+.attach-list a { display:flex; align-items:center; gap:12px; padding:13px 16px; background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:8px; color:var(--denim); text-decoration:none; font-size:0.88rem; transition:all 0.15s ease; box-shadow:0 2px 6px rgba(0,0,0,0.02); }
+.attach-list a:hover { border-color:var(--rust); background:rgba(196,88,26,0.04); }
+.attach-list a .ico { width:32px; height:32px; border-radius:6px; background:var(--rust-light); color:var(--rust); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.7rem; flex-shrink:0; }
+.attach-list a .meta { font-size:0.7rem; opacity:0.6; margin-left:auto; }
+
+/* DECK FOOTER NAV (fixed) */
+.deck-controls {
+  position:fixed; bottom:0; left:0; right:0;
+  background:rgba(255,255,255,0.96); backdrop-filter:blur(8px);
+  border-top:1px solid rgba(11,24,51,0.1);
+  padding:1rem 2rem;
+  display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;
+  z-index:50;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.06);
+}
+.deck-controls .crumb { font-size:0.78rem; color:var(--gray-dk); display:flex; align-items:center; gap:10px; }
+.deck-controls .crumb .ix { font-family:var(--font-display); font-weight:700; color:var(--rust); }
+.deck-controls .crumb .name { font-weight:600; color:var(--denim); }
+.deck-controls .arrows { display:flex; gap:0.6rem; align-items:center; }
+.arrow-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 22px; border-radius:8px;
+  font-family:var(--font-display); font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;
+  border:none; cursor:pointer; transition:all 0.15s ease;
+  background:#FFFFFF; color:var(--denim); border:1px solid rgba(11,24,51,0.12);
+}
+.arrow-btn:hover:not(:disabled) { border-color:var(--rust); color:var(--rust); }
+.arrow-btn.primary { background:var(--rust); color:#fff; border-color:var(--rust); }
+.arrow-btn.primary:hover:not(:disabled) { background:var(--rust-glow); border-color:var(--rust-glow); color:#fff; }
+.arrow-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.arrow-btn .arr { font-size:1rem; }
+.kbd-hint { font-size:0.68rem; color:var(--gray); display:flex; gap:6px; align-items:center; }
+.kbd-hint kbd { background:#fff; border:1px solid rgba(11,24,51,0.15); border-bottom-width:2px; border-radius:4px; padding:1px 6px; font-family:'JetBrains Mono', monospace; font-size:0.66rem; color:var(--denim); }
+
+@media(max-width:640px) {
+  .stage { padding:1.5rem 1rem 7rem; }
+  .slide h1.title { font-size:1.4rem; }
+  .deck-controls { padding:0.85rem 1rem; }
+  .arrow-btn { padding:9px 16px; font-size:0.72rem; }
+  .kbd-hint { display:none; }
+  .deck-controls .crumb .name { display:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="inner">
+    <div>
+      <a class="back" href="../">← Back to portal</a>
+      <div style="height:1rem;"></div>
+      <div class="label">Section 01 · Pre-Read</div>
+      <h1>SPC + LV Broad Update</h1>
+      <p class="sub">A Steyn-focused snapshot of where Six Peak stands today: scenario delta vs. plan, capital position, Steyn debt facility, LIHTC portfolio, and the strategic pillars driving the next 12 months.</p>
+    </div>
+    <div class="meta">
+      <div class="now-showing">Now showing<span class="name" id="topbarName">Numbers at a Glance</span></div>
+      <div class="progress">
+        <div class="bar"><div class="fill" id="progressFill" style="width:16.7%;"></div></div>
+        <div class="counter"><span class="cur" id="counterCur">01</span> / <span id="counterTot">06</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SECTION CHIPS NAV -->
+<nav class="deck-nav">
+  <div class="deck-nav-inner">
+    <button data-slide="0" class="active"><span class="ix">01</span>Numbers at a Glance</button>
+    <button data-slide="1"><span class="ix">02</span>Steyn Debt Facility</button>
+    <button data-slide="2"><span class="ix">03</span>LIHTC Portfolio</button>
+    <button data-slide="3"><span class="ix">04</span>Scenario Plan</button>
+    <button data-slide="4"><span class="ix">05</span>Strategy</button>
+    <button data-slide="5"><span class="ix">06</span>References</button>
+  </div>
+</nav>
+
+<!-- STAGE -->
+<main class="stage">
+  <div class="stage-inner">
+
+  <!-- SLIDE 01 · NUMBERS AT A GLANCE -->
+  <section class="slide active" id="slide-0">
+    <div class="slide-cover">
+      <div class="slide-label">01 · Headline · FY 2026 + FY 2027 · Base Case v25</div>
+      <h1 class="title">The Numbers at a Glance</h1>
+      <p class="lede">FY 2026 and FY 2027 projection for the consolidated business (LV Construction GC operations plus Six Peak Capital). Pulled from the live Base Case model. FY 2026 is a partial year (Q2 2026 – Q4 2026, the in-model fiscal year start); FY 2027 is the first full year and the expected revenue peak.</p>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:14px; margin:0.5rem 0 0.85rem;">
+      <span style="font-family:var(--font-display); font-size:0.78rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--rust);">FY 2026</span>
+      <span style="flex:1; height:2px; background:linear-gradient(90deg, var(--rust), transparent);"></span>
+      <span style="font-size:0.7rem; color:var(--gray-dk); font-weight:600;">In-model partial year (Q2–Q4)</span>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="lbl">Total Revenue · Consolidated</div><div class="val">$6.98M</div><div class="delta">GC $6.61M · SP $0.37M</div></div>
+      <div class="kpi"><div class="lbl">Total Expenses · Consolidated</div><div class="val denim">$5.28M</div><div class="delta">GC $4.24M · SP $1.03M</div></div>
+      <div class="kpi"><div class="lbl">Net Income · Consolidated</div><div class="val">$1.70M</div><div class="delta up">GC $2.37M · SP −$0.66M</div></div>
+      <div class="kpi"><div class="lbl">Construction Billing</div><div class="val denim">$52.4M</div><div class="delta">FY 2026 throughput</div></div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="lbl">Beginning Cash</div><div class="val denim">$1.26M</div><div class="delta">LV $1.03M · SP $0.24M</div></div>
+      <div class="kpi"><div class="lbl">Ending Cash</div><div class="val denim">$2.58M</div><div class="delta up">LV $3.39M · SP −$0.82M</div></div>
+      <div class="kpi"><div class="lbl">Bonding Outstanding</div><div class="val">$90.2M</div><div class="delta">Year-end balance</div></div>
+      <div class="kpi"><div class="lbl">Active Scenario</div><div class="val denim sm">Base Case · v25</div><div class="delta"><a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_BaseCase_v25.xlsx" target="_blank" style="color:var(--rust); text-decoration:none; font-weight:600;">Open model ↓</a></div></div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:14px; margin:1.75rem 0 0.85rem;">
+      <span style="font-family:var(--font-display); font-size:0.78rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--rust);">FY 2027</span>
+      <span style="flex:1; height:2px; background:linear-gradient(90deg, var(--rust), transparent);"></span>
+      <span style="font-size:0.7rem; color:var(--gray-dk); font-weight:600;">First full year · Base Case revenue peak · contingent on new project starts</span>
+    </div>
+
+    <div class="callout warn" style="margin:0 0 1rem;">
+      <strong>What it takes to hit the FY 2027 numbers:</strong> The $87.4M of construction billing assumes new projects step in to replace the FY 2026 book as it draws down. The largest of these is <strong style="color:#92670a;">Reseda, a $45.3M contract scheduled to start April 2027</strong>, which is <strong style="color:#92670a;">not yet funded</strong>. Reseda alone is roughly half the FY 2027 throughput. If Reseda's financing slips, the FY 2027 picture compresses materially: revenue, GC NI, and ending cash all step down. The Reseda funding milestone is the single biggest gating item between today's plan and the headline FY 2027 numbers below.
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="lbl">Total Revenue · Consolidated</div><div class="val">$10.00M</div><div class="delta">GC $9.69M · SP $0.31M</div></div>
+      <div class="kpi"><div class="lbl">Total Expenses · Consolidated</div><div class="val denim">$8.41M</div><div class="delta">GC $7.04M · SP $1.37M</div></div>
+      <div class="kpi"><div class="lbl">Net Income · Consolidated</div><div class="val">$1.60M</div><div class="delta up">GC $2.65M · SP −$1.05M</div></div>
+      <div class="kpi"><div class="lbl">Construction Billing</div><div class="val denim">$87.4M</div><div class="delta">FY 2027 throughput · peak</div></div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="lbl">Beginning Cash</div><div class="val denim">$2.58M</div><div class="delta">Roll-forward from FY26</div></div>
+      <div class="kpi"><div class="lbl">Ending Cash</div><div class="val denim">$2.43M</div><div class="delta up">LV $6.04M · SP −$3.61M</div></div>
+      <div class="kpi"><div class="lbl">Bonding Outstanding</div><div class="val">$56.5M</div><div class="delta">Drawing down as projects close</div></div>
+      <div class="kpi"><div class="lbl">Steyn Debt Payoff</div><div class="val denim sm">Dec 2027</div><div class="delta">$1.50M paid in FY27 · final payment</div></div>
+    </div>
+
+    <div class="callout">
+      <strong>Read of FY26 → FY27:</strong> Consolidated net income holds nearly flat from $1.70M to $1.60M as the construction billing pipeline ramps from $52.4M to $87.4M. The new GC personnel base and the Tier 2 bonding shift in FY27 absorb the volume gain. The GC carries the year ($2.65M positive in FY27), offset by SP corporate overhead (−$1.05M). Bonding outstanding drops from $90.2M to $56.5M as in-flight projects close. Cash builds modestly to $2.43M after the $1.50M Steyn debt payoff in December 2027.
+    </div>
+  </section>
+
+  <!-- SLIDE 02 · STEYN DEBT FACILITY -->
+  <section class="slide" id="slide-1">
+    <div class="slide-cover">
+      <div class="slide-label">02 · Steyn Debt Facility</div>
+      <h1 class="title">$1.5M Steyn loan <em>·</em> paid in full by December 2027</h1>
+      <p class="lede">$1.5M principal-balance loan with $115K of accrued interest at the start of the model (April 2026 balance: $1,615,485). Carries a 15% annual rate and amortizes via fixed $130K monthly payments beginning October 2026, with a small final payment in December 2027 to clear the balance.</p>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="lbl">Principal</div><div class="val">$1.50M</div><div class="delta">Original loan balance</div></div>
+      <div class="kpi"><div class="lbl">Accrued Interest at Apr 2026</div><div class="val denim">$115K</div><div class="delta">Capitalized into balance</div></div>
+      <div class="kpi"><div class="lbl">Apr 2026 Balance</div><div class="val denim">$1.62M</div><div class="delta">Principal + accrued interest</div></div>
+      <div class="kpi"><div class="lbl">Annual Rate</div><div class="val">15.0%</div><div class="delta">3.75% quarterly</div></div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="lbl">Monthly Payment</div><div class="val denim">$130K</div><div class="delta">Starting Oct 2026</div></div>
+      <div class="kpi"><div class="lbl">FY 2026 Total Payments</div><div class="val denim">$390K</div><div class="delta">3 payments · Oct/Nov/Dec</div></div>
+      <div class="kpi"><div class="lbl">FY 2027 Total Payments</div><div class="val denim">$1.50M</div><div class="delta">Final payment Dec 2027</div></div>
+      <div class="kpi"><div class="lbl">Total Interest Paid</div><div class="val">~$271K</div><div class="delta">Over the life of the facility</div></div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.7rem;">Projected Payment Schedule</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Month</th><th>Beginning Balance</th><th>Interest Accrual</th><th>Payment</th><th>Ending Balance</th></tr></thead>
+        <tbody>
+          <tr><td>Apr 2026</td><td>$1,615,485</td><td>$20,194</td><td class="muted">—</td><td>$1,635,679</td></tr>
+          <tr><td>May 2026</td><td>$1,635,679</td><td>$20,446</td><td class="muted">—</td><td>$1,656,125</td></tr>
+          <tr><td>Jun 2026</td><td>$1,656,125</td><td>$20,702</td><td class="muted">—</td><td>$1,676,827</td></tr>
+          <tr><td>Jul 2026</td><td>$1,676,827</td><td>$20,960</td><td class="muted">—</td><td>$1,697,787</td></tr>
+          <tr><td>Aug 2026</td><td>$1,697,787</td><td>$21,222</td><td class="muted">—</td><td>$1,719,009</td></tr>
+          <tr><td>Sep 2026</td><td>$1,719,009</td><td>$21,488</td><td class="muted">—</td><td>$1,740,497</td></tr>
+          <tr style="background:rgba(196,88,26,0.04);"><td style="color:var(--rust); font-weight:700;">Oct 2026 · 1st payment</td><td>$1,740,497</td><td>$21,756</td><td style="color:var(--rust); font-weight:700;">−$130,000</td><td>$1,632,253</td></tr>
+          <tr><td>Nov 2026</td><td>$1,632,253</td><td>$20,403</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$1,522,656</td></tr>
+          <tr><td>Dec 2026</td><td>$1,522,656</td><td>$19,033</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$1,411,690</td></tr>
+          <tr class="row-section"><td colspan="5" style="text-align:center;">FY 2026 ends · $1,411,690 outstanding</td></tr>
+          <tr><td>Jan 2027</td><td>$1,411,690</td><td>$17,646</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$1,299,336</td></tr>
+          <tr><td>Feb 2027</td><td>$1,299,336</td><td>$16,242</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$1,185,578</td></tr>
+          <tr><td>Mar 2027</td><td>$1,185,578</td><td>$14,820</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$1,070,398</td></tr>
+          <tr><td>Apr 2027</td><td>$1,070,398</td><td>$13,380</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$953,778</td></tr>
+          <tr><td>May 2027</td><td>$953,778</td><td>$11,922</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$835,701</td></tr>
+          <tr><td>Jun 2027</td><td>$835,701</td><td>$10,446</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$716,147</td></tr>
+          <tr><td>Jul 2027</td><td>$716,147</td><td>$8,952</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$595,099</td></tr>
+          <tr><td>Aug 2027</td><td>$595,099</td><td>$7,439</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$472,538</td></tr>
+          <tr><td>Sep 2027</td><td>$472,538</td><td>$5,907</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$348,444</td></tr>
+          <tr><td>Oct 2027</td><td>$348,444</td><td>$4,356</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$222,800</td></tr>
+          <tr><td>Nov 2027</td><td>$222,800</td><td>$2,785</td><td style="color:var(--rust); font-weight:600;">−$130,000</td><td>$95,585</td></tr>
+          <tr class="row-payoff"><td>Dec 2027 · payoff</td><td>$95,585</td><td>$1,195</td><td style="color:#0b6e54; font-weight:700;">−$96,780</td><td>$0</td></tr>
+          <tr class="row-total"><td>Total · 15 payments</td><td>—</td><td>$271,295 interest</td><td>−$1,886,780</td><td>$0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>Note on the schedule:</strong> Interest accrues monthly at 1.25% (15% annual). The first six months (Apr–Sep 2026) are interest-only with no payments, which adds ~$125K to the starting balance. Beginning October 2026, fixed $130K monthly payments amortize the loan over 15 months, with a final $96,780 payment in December 2027 to clear the balance. Total interest paid over the life: ~$271K.
+    </div>
+  </section>
+
+  <!-- SLIDE 03 · LIHTC PORTFOLIO -->
+  <section class="slide" id="slide-2">
+    <div class="slide-cover">
+      <div class="slide-label">03 · LIHTC Portfolio · Three Projects</div>
+      <h1 class="title">The development fee income from the LIHTC deals is <em>all post-2033</em></h1>
+      <p class="lede">Three LIHTC projects sit in the SPC book today: Francis, 3rd Street, and Reseda. Combined economics show near-zero net contribution inside the FY26–FY33 modeled window, with the bulk of development fee income materializing after 2033 as the LIHTC payment streams continue and the PIK / Steyn balances roll off.</p>
+    </div>
+
+    <div class="pnl-flow">
+      <div class="step muted">
+        <div class="lbl">In-Model · FY 2026 – 2033</div>
+        <div class="val">−$50K</div>
+        <div class="desc">Combined net to Six Peak across all three deals during the in-model period rounds to zero (-$50K). GMP fees, liquidity fees, and PIK interest fully offset LIHTC revenue earned in window.</div>
+      </div>
+      <div class="step hi">
+        <div class="lbl">Post-Model · Post-2033</div>
+        <div class="val">$6.58M</div>
+        <div class="desc"><strong style="color:var(--rust);">All meaningful net income</strong> from the LIHTC portfolio is here. Quarterly LIHTC payments continue past 2033 with all Steyn fees and most PIK obligations already extinguished.</div>
+      </div>
+      <div class="step">
+        <div class="lbl">Lifetime · Combined Net to SPC</div>
+        <div class="val">$6.53M</div>
+        <div class="desc">Total LIHTC revenue across the three deals: <strong>$9.86M</strong>. After GMP fees ($1.30M), liquidity fees ($0.45M), and PIK interest ($1.58M), $6.53M lands at SPC over the life, with 99% of it after 2033.</div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.7rem;">By Project</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Project</th><th>LIHTC Revenue (Lifetime)</th><th>In-Model NI</th><th>Post-Model NI</th><th>Lifetime NI</th></tr></thead>
+        <tbody>
+          <tr><td>Francis</td><td>$2,976,456</td><td>$484,297</td><td style="color:var(--rust); font-weight:600;">$1,912,475</td><td>$2,396,772</td></tr>
+          <tr><td>3rd Street</td><td>$2,926,201</td><td class="neg">−$874,766</td><td style="color:var(--rust); font-weight:600;">$2,393,454</td><td>$1,518,688</td></tr>
+          <tr><td>Reseda</td><td>$3,959,425</td><td>$340,608</td><td style="color:var(--rust); font-weight:600;">$2,278,136</td><td>$2,618,744</td></tr>
+          <tr class="row-total"><td>Combined</td><td>$9,862,082</td><td>−$49,861</td><td>$6,584,065</td><td>$6,534,204</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>Read of the table:</strong> The LIHTC portfolio is not a near-term P&amp;L driver. Inside FY26–FY33, GMP fees, liquidity fees, and PIK interest roughly offset the LIHTC revenue earned in period (combined NI ≈ −$50K). The $6.58M of net income to Six Peak <strong>materializes after 2033</strong>, when LIHTC payments continue but the Steyn-related fees and PIK obligations are already extinguished. The deals are deferred-income assets, not in-window contributors, which is worth flagging clearly when Steyn reads the FY26–FY33 P&amp;L.
+    </div>
+
+    <div class="grid3" style="margin-top:1.25rem;">
+      <div class="card"><h3>Francis</h3><p style="font-size:0.85rem;">Modest in-window contribution ($484K) plus ~$1.9M post-model. Steyn fees fully cleared in-model.</p></div>
+      <div class="card"><h3>3rd Street</h3><p style="font-size:0.85rem;">In-window net is negative (−$875K) due to PIK accrual; 36 quarterly LIHTC payments at $73K continue post-model with PIK ($570K) repaid out of those proceeds.</p></div>
+      <div class="card"><h3>Reseda</h3><p style="font-size:0.85rem;">28 in-window and 28 post-window quarterly LIHTC payments at $81K; PIK and Steyn balances fully extinguished in-window. The cleanest of the three.</p></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 04 · SCENARIO PLAN -->
+  <section class="slide" id="slide-3">
+    <div class="slide-cover">
+      <div class="slide-label">04 · Scenario Plan · All figures in $ millions</div>
+      <h1 class="title">Base Case <em>vs.</em> Extended BD <em>·</em> FY 2026 – 2031</h1>
+      <p class="lede">Two scenarios on the table for Steyn's discussion: the Base Case (current book burning down) and Extended BD (sustained pipeline). Uplifters is presented separately in Section 04 of the portal and is not included in either scenario below. <strong style="color:var(--denim);">All figures in the tables and KPIs below are in $ millions.</strong></p>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:0.5rem 0 0.7rem;">Base Case · v25</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:0.7rem;">The current book of work runs off through FY29; without sustained BD, construction billing trends to zero by FY31. Consolidated net income turns negative in FY28 and total ending cash goes negative in FY29.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>$ in millions</th><th>FY 2026</th><th>FY 2027</th><th>FY 2028</th><th>FY 2029</th><th>FY 2030</th><th>FY 2031</th></tr></thead>
+        <tbody>
+          <tr><td>Construction Billing</td><td>$52.4</td><td>$87.4</td><td>$51.7</td><td>$32.9</td><td>$13.3</td><td class="muted">$0.0</td></tr>
+          <tr><td>Total GC Revenue</td><td>$6.6</td><td>$9.7</td><td>$7.3</td><td>$3.8</td><td>$1.8</td><td class="muted">$0.0</td></tr>
+          <tr><td>GC Net Income</td><td>$2.4</td><td>$2.6</td><td>$0.4</td><td class="neg">−$1.8</td><td class="neg">−$3.9</td><td class="neg">−$5.6</td></tr>
+          <tr><td>Six Peak Net Income</td><td class="neg">−$0.7</td><td class="neg">−$1.1</td><td class="neg">−$1.2</td><td class="neg">−$1.4</td><td class="neg">−$1.4</td><td class="neg">−$1.3</td></tr>
+          <tr class="row-total"><td>Consolidated Net Income</td><td>$1.70</td><td>$1.60</td><td class="neg" style="color:#a13b3b;">−$0.80</td><td class="neg" style="color:#a13b3b;">−$3.18</td><td class="neg" style="color:#a13b3b;">−$5.24</td><td class="neg" style="color:#a13b3b;">−$6.92</td></tr>
+          <tr><td>Bonding Outstanding</td><td>$90.2</td><td>$56.5</td><td>$46.2</td><td>$13.3</td><td class="muted">$0.0</td><td class="muted">$0.0</td></tr>
+          <tr><td>Total Ending Cash</td><td>$2.58</td><td>$2.43</td><td>$1.38</td><td class="neg">−$1.81</td><td class="neg">−$7.05</td><td class="neg">−$13.97</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.75rem 0 0.7rem;">Extended BD · v25</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:0.7rem;">Sustained BD effort fills the post-FY27 pipeline at ~$94–101M/yr of construction billing. Consolidated net income holds in the $3–4M range from FY28 onward and cash compounds to ~$18.4M by FY31.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>$ in millions</th><th>FY 2026</th><th>FY 2027</th><th>FY 2028</th><th>FY 2029</th><th>FY 2030</th><th>FY 2031</th></tr></thead>
+        <tbody>
+          <tr><td>Construction Billing</td><td>$52.4</td><td>$94.6</td><td>$101.0</td><td>$93.8</td><td>$99.3</td><td>$95.9</td></tr>
+          <tr><td>Total GC Revenue</td><td>$6.6</td><td>$10.6</td><td>$12.5</td><td>$11.0</td><td>$11.3</td><td>$10.9</td></tr>
+          <tr><td>GC Net Income</td><td>$2.4</td><td>$3.5</td><td>$5.3</td><td>$5.2</td><td>$5.5</td><td>$5.1</td></tr>
+          <tr><td>Six Peak Net Income</td><td class="neg">−$0.7</td><td class="neg">−$1.1</td><td class="neg">−$1.2</td><td class="neg">−$1.4</td><td class="neg">−$1.4</td><td class="neg">−$1.3</td></tr>
+          <tr class="row-total"><td>Consolidated Net Income</td><td>$1.70</td><td>$2.43</td><td>$4.16</td><td>$3.84</td><td>$4.08</td><td>$3.84</td></tr>
+          <tr><td>Bonding Outstanding</td><td>$90.2</td><td>$56.5</td><td>$46.2</td><td>$13.3</td><td class="muted">$0.0</td><td class="muted">$0.0</td></tr>
+          <tr><td>Total Ending Cash</td><td>$2.58</td><td>$3.26</td><td>$7.17</td><td>$10.76</td><td>$14.59</td><td>$18.42</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn" style="margin-top:1rem;">
+      <strong>Bonding assumption in the Extended BD plan:</strong> The new BD pipeline projects that fill FY 2028 onward have not yet been won, so we don't know whether they'll require surety bonding. The Extended BD model assumes <strong style="color:#92670a;">bonding revenue and bonding costs are neutral</strong> from FY 2029 forward (i.e., they net to zero in the P&amp;L). This presupposes that by then LV has stood up its own bonding capacity, so any bonded jobs we take on don't carry a third-party bond cost (and don't generate the small bonding revenue line either). If we instead remain reliant on third-party surety, the model will need a corresponding bonding-cost line added back.
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.75rem 0 0.7rem;">Breakeven Construction Billing · No Uplifters</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:0.9rem;">If Uplifters does not close, the floor of new construction billing required to hold consolidated net income roughly neutral and keep cash positive. The Breakeven BD scenario sits between Base and Extended.</p>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="lbl">Breakeven · FY 2028</div><div class="val">~$53M</div><div class="delta">Construction billing required</div></div>
+      <div class="kpi"><div class="lbl">Breakeven · FY 2029</div><div class="val">~$62M</div><div class="delta">Construction billing required</div></div>
+      <div class="kpi"><div class="lbl">Breakeven · FY 2030</div><div class="val">~$73M</div><div class="delta">Construction billing required</div></div>
+      <div class="kpi"><div class="lbl">Breakeven · FY 2031</div><div class="val">~$68M</div><div class="delta">Construction billing required</div></div>
+    </div>
+
+    <div class="callout warn">
+      <strong>Read of the breakeven:</strong> Without Uplifters, LV needs to land approximately <strong style="color:#92670a;">$53–73M of new construction billing per year</strong> in FY28 onward to keep the consolidated business cash-positive. That's roughly two-thirds the pace of the Extended BD plan. The Extended BD pursuit list and Tom + Chris's BD push (Strategy slide) are what fills this hole. Without it, and without Uplifters, the firm runs the Base Case path and burns through cash in FY29.
+    </div>
+
+    <div class="pills">
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_BaseCase_v25.xlsx" target="_blank">Base Case · v25 <span class="arr">↓</span></a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_ExtendedBD_v25.xlsx" target="_blank">Extended BD · v25 <span class="arr">↓</span></a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_BreakevenBD_v25.xlsx" target="_blank">Breakeven BD · v25 <span class="arr">↓</span></a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/board/" target="_blank">Open live board portal <span class="arr">↗</span></a>
+    </div>
+  </section>
+
+  <!-- SLIDE 05 · STRATEGY -->
+  <section class="slide" id="slide-4">
+    <div class="slide-cover">
+      <div class="slide-label">05 · Strategy</div>
+      <h1 class="title">Three pillars driving the next 12 months</h1>
+      <p class="lede">The strategic pillars we'd like Steyn aware of and aligned on. Uplifters has its own dedicated section in this portal (Section 04) and is not duplicated here.</p>
+    </div>
+
+    <div class="grid3">
+      <div class="card">
+        <span class="badge ready">In motion</span>
+        <h3 style="margin-top:0.6rem;">LV expansion complete · stabilizing the roster</h3>
+        <p>The next four closings (Francis, Acama, Riverton, Lexington) wrap the LV expansion effort. Closing them stabilizes the go-forward team and locks in the operating capacity we'll build the BD pipeline against. With the roster steady, every dollar of new construction billing Tom &amp; Chris bring in lands on a known cost base instead of triggering another hiring cycle.</p>
+        <div class="pills" style="margin-top:0.9rem;">
+          <a href="../lv-update/">LV update <span class="arr">→</span></a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="badge bd">BD Build-Out</span>
+        <h3 style="margin-top:0.6rem;">Building out the BD plan · Tom &amp; Chris leading</h3>
+        <p>Sustaining $50M+/yr of new construction billing post-FY27 is the difference between the Base Case (cash burn) and Extended BD (compounding cash). Tom and Chris are leading the BD build-out, covering outbound pursuit, target list, and pipeline cadence, to put the Extended BD numbers within reach.</p>
+        <div class="pills" style="margin-top:0.9rem;">
+          <a href="#" onclick="event.preventDefault(); goSlide(3);">Scenario plan <span class="arr">→</span></a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="badge attn">Active</span>
+        <h3 style="margin-top:0.6rem;">AI-native operations at LV</h3>
+        <p>LV's manual workflows for Pay Apps, Subcontractor Contracts, draws, and field reporting are the constraint on scaling the GC. The AI Mission Control program is the rebuild; current-state visuals are in Section 03.</p>
+        <div class="pills" style="margin-top:0.9rem;">
+          <a href="../ai/">AI discussion <span class="arr">→</span></a>
+          <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/" target="_blank">Mission Control library <span class="arr">↗</span></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>How the three pillars connect:</strong> Wrapping the four closings (Pillar #1) stabilizes the LV roster: the PMs, supers, and back-office that the Extended BD pipeline (Pillar #2) will fill with work. The AI investment (Pillar #3) is what makes that roster capable of carrying $90–100M/yr of construction billing without another headcount step-up. The three pillars chain in order: stabilize the team, fill it with work, scale it with AI.
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.75rem 0 0.5rem;">When the Deals Sign · Pillar #2 sequencing</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:880px; margin-bottom:0.85rem;">The current book runs through FY27. From there, Pillar #2 (BD build-out) decides whether the line stays at the Breakeven floor (15 signings starting Oct 2028) or hits the Extended BD target (25 signings, ~bimonthly cadence starting a year earlier in Jul 2027).</p>
+
+    <div class="pipeline-timeline">
+      <div class="axis">
+        <span style="left:0%;">FY 2026</span>
+        <span style="left:14.5%;">FY 2027</span>
+        <span style="left:28.9%;">FY 2028</span>
+        <span style="left:43.4%;">FY 2029</span>
+        <span style="left:57.8%;">FY 2030</span>
+        <span style="left:72.3%;">FY 2031</span>
+        <span style="left:86.7%;">FY 2032</span>
+      </div>
+
+      <div class="row">
+        <div class="row-lbl">
+          <span class="swatch denim"></span>
+          <div>In place + 4 pending closings<br><span class="count">9 starts · Apr–Nov 2026</span></div>
+        </div>
+        <div class="track">
+          <span class="dot denim" style="left:0%;" title="Crenshaw · Apr 2026"></span>
+          <span class="dot denim" style="left:0%;" title="Ramsgate · Apr 2026"></span>
+          <span class="dot denim" style="left:0%;" title="Califa · Apr 2026"></span>
+          <span class="dot denim" style="left:0%;" title="Whipple · Apr 2026"></span>
+          <span class="dot denim" style="left:0%;" title="Nelrose · Apr 2026"></span>
+          <span class="dot denim" style="left:3.6%;" title="Francis · Jul 2026"></span>
+          <span class="dot denim" style="left:7.2%;" title="Lexington · Oct 2026"></span>
+          <span class="dot denim" style="left:7.2%;" title="Denny (Riverton) · Oct 2026"></span>
+          <span class="dot denim" style="left:8.4%;" title="Acama · Nov 2026"></span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-lbl">
+          <span class="swatch warn"></span>
+          <div>Breakeven plan · 15 signings<br><span class="count">Oct 2028 → Jun 2032 · holds NI ±$1M of zero</span></div>
+        </div>
+        <div class="track">
+          <span class="dot warn" style="left:36.1%;" title="BE-01 · Oct 2028"></span>
+          <span class="dot warn" style="left:41.0%;" title="BE-02 · Feb 2029"></span>
+          <span class="dot warn" style="left:45.8%;" title="BE-03 · Jun 2029"></span>
+          <span class="dot warn" style="left:50.6%;" title="BE-04 · Oct 2029"></span>
+          <span class="dot warn" style="left:55.4%;" title="BE-05 · Feb 2030"></span>
+          <span class="dot warn" style="left:56.6%;" title="BE-06 · Mar 2030"></span>
+          <span class="dot warn" style="left:60.2%;" title="BE-07 · Jun 2030"></span>
+          <span class="dot warn" style="left:62.7%;" title="BE-08 · Aug 2030"></span>
+          <span class="dot warn" style="left:65.1%;" title="BE-09 · Oct 2030"></span>
+          <span class="dot warn" style="left:69.9%;" title="BE-10 · Feb 2031"></span>
+          <span class="dot warn" style="left:74.7%;" title="BE-11 · Jun 2031"></span>
+          <span class="dot warn" style="left:79.5%;" title="BE-12 · Oct 2031"></span>
+          <span class="dot warn" style="left:81.9%;" title="BE-13 · Dec 2031"></span>
+          <span class="dot warn" style="left:84.3%;" title="BE-14 · Feb 2032"></span>
+          <span class="dot warn" style="left:89.2%;" title="BE-15 · Jun 2032"></span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-lbl">
+          <span class="swatch rust"></span>
+          <div>Extended BD target · 25 signings<br><span class="count">Jul 2027 → Mar 2032 · ~bimonthly cadence</span></div>
+        </div>
+        <div class="track">
+          <span class="dot rust" style="left:18.1%;" title="BD-01 · Jul 2027"></span>
+          <span class="dot rust" style="left:20.5%;" title="BD-02 · Sep 2027"></span>
+          <span class="dot rust" style="left:24.1%;" title="BD-03 · Dec 2027"></span>
+          <span class="dot rust" style="left:27.7%;" title="BD-04 · Mar 2028"></span>
+          <span class="dot rust" style="left:31.3%;" title="BD-05 · Jun 2028"></span>
+          <span class="dot rust" style="left:36.1%;" title="BD-06 · Oct 2028"></span>
+          <span class="dot rust" style="left:39.8%;" title="BD-07 · Jan 2029"></span>
+          <span class="dot rust" style="left:43.4%;" title="BD-08 · Apr 2029"></span>
+          <span class="dot rust" style="left:47.0%;" title="BD-09 · Jul 2029"></span>
+          <span class="dot rust" style="left:49.4%;" title="BD-10 · Sep 2029"></span>
+          <span class="dot rust" style="left:51.8%;" title="BD-11 · Nov 2029"></span>
+          <span class="dot rust" style="left:54.2%;" title="BD-12 · Jan 2030"></span>
+          <span class="dot rust" style="left:56.6%;" title="BD-13 · Mar 2030"></span>
+          <span class="dot rust" style="left:59.0%;" title="BD-14 · May 2030"></span>
+          <span class="dot rust" style="left:61.4%;" title="BD-15 · Jul 2030"></span>
+          <span class="dot rust" style="left:63.9%;" title="BD-16 · Sep 2030"></span>
+          <span class="dot rust" style="left:66.3%;" title="BD-17 · Nov 2030"></span>
+          <span class="dot rust" style="left:68.7%;" title="BD-18 · Jan 2031"></span>
+          <span class="dot rust" style="left:71.1%;" title="BD-19 · Mar 2031"></span>
+          <span class="dot rust" style="left:73.5%;" title="BD-20 · May 2031"></span>
+          <span class="dot rust" style="left:75.9%;" title="BD-21 · Jul 2031"></span>
+          <span class="dot rust" style="left:78.3%;" title="BD-22 · Sep 2031"></span>
+          <span class="dot rust" style="left:80.7%;" title="BD-23 · Nov 2031"></span>
+          <span class="dot rust" style="left:83.1%;" title="BD-24 · Jan 2032"></span>
+          <span class="dot rust" style="left:85.5%;" title="BD-25 · Mar 2032"></span>
+        </div>
+      </div>
+
+      <div class="key-row">
+        <strong>Read across:</strong> Extended BD posts five signings (BD-01 through BD-05, Jul 2027 through Jun 2028) before the Breakeven plan kicks off its first deal in Oct 2028. That earlier ramp is the difference between consolidated NI in the $3–4M range from FY28 onward (Extended BD) and consolidated NI hovering around zero (Breakeven). Aggregate GMP: <strong>$240M (Breakeven, 15 deals)</strong> vs. <strong>$402M (Extended BD, 25 deals)</strong>. Hover any dot for the deal label and signing month.
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 06 · REFERENCES -->
+  <section class="slide" id="slide-5">
+    <div class="slide-cover">
+      <div class="slide-label">06 · Reference</div>
+      <h1 class="title">Deep dives &amp; live resources</h1>
+      <p class="lede">The working models and the live board portal, for Steyn members who want to drill into a specific scenario or scrub the assumptions.</p>
+    </div>
+
+    <div class="attach-list">
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/board/" target="_blank">
+        <span class="ico">↗</span><span>Board Portal · full scenario tabs &amp; commentary</span><span class="meta">External</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/" target="_blank">
+        <span class="ico">↗</span><span>AI Mission Control · phase library</span><span class="meta">External</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_BaseCase_v25.xlsx" target="_blank">
+        <span class="ico">XL</span><span>Base Case · v25</span><span class="meta">.xlsx</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_ExtendedBD_v25.xlsx" target="_blank">
+        <span class="ico">XL</span><span>Extended BD · v25</span><span class="meta">.xlsx</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_BreakevenBD_v25.xlsx" target="_blank">
+        <span class="ico">XL</span><span>Breakeven BD · v25</span><span class="meta">.xlsx</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/models/SixPeak_KlumpScott_v25.xlsx" target="_blank">
+        <span class="ico">XL</span><span>Klump Scott · v25</span><span class="meta">.xlsx</span>
+      </a>
+    </div>
+
+    <div style="margin-top:2rem; padding:1.5rem 1.6rem; background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px;">
+      <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin-bottom:0.5rem;">Continue the meeting →</h3>
+      <p style="font-size:0.92rem; color:var(--gray-dk); margin-bottom:1rem;">Sections 02–04 of the portal cover the LV operating update, the AI discussion, and the Uplifters JV authorization ask.</p>
+      <div class="pills">
+        <a href="../lv-update/">Section 02 · LV Update <span class="arr">→</span></a>
+        <a href="../ai/">Section 03 · AI Discussion <span class="arr">→</span></a>
+        <a href="../uplifters/">Section 04 · Uplifters JV <span class="arr">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  </div>
+</main>
+
+<!-- DECK FOOTER CONTROLS -->
+<div class="deck-controls">
+  <div class="crumb">
+    <span class="ix" id="crumbIx">01 / 06</span>
+    <span class="name" id="crumbName">Numbers at a Glance</span>
+  </div>
+  <div class="kbd-hint">
+    Use <kbd>←</kbd> <kbd>→</kbd> arrows to advance
+  </div>
+  <div class="arrows">
+    <button class="arrow-btn" id="prevBtn" onclick="goPrev()" disabled><span class="arr">←</span> Previous</button>
+    <button class="arrow-btn primary" id="nextBtn" onclick="goNext()">Next <span class="arr">→</span></button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const navBtns = document.querySelectorAll('.deck-nav button');
+const slideNames = ['Numbers at a Glance', 'Steyn Debt Facility', 'LIHTC Portfolio', 'Scenario Plan', 'Strategy', 'References'];
+let cur = 0;
+
+function goSlide(i) {
+  if (i < 0 || i >= slides.length) return;
+  cur = i;
+  slides.forEach((s, ix) => s.classList.toggle('active', ix === i));
+  navBtns.forEach((b, ix) => b.classList.toggle('active', ix === i));
+  document.getElementById('counterCur').textContent = String(i+1).padStart(2,'0');
+  document.getElementById('progressFill').style.width = ((i+1)/slides.length*100) + '%';
+  document.getElementById('topbarName').textContent = slideNames[i];
+  document.getElementById('crumbIx').textContent = String(i+1).padStart(2,'0') + ' / ' + String(slides.length).padStart(2,'0');
+  document.getElementById('crumbName').textContent = slideNames[i];
+  document.getElementById('prevBtn').disabled = (i === 0);
+  document.getElementById('nextBtn').disabled = (i === slides.length - 1);
+  document.getElementById('nextBtn').innerHTML = (i === slides.length - 1) ? 'End <span class="arr">·</span>' : 'Next <span class="arr">→</span>';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goNext() { if (cur < slides.length - 1) goSlide(cur + 1); }
+function goPrev() { if (cur > 0) goSlide(cur - 1); }
+
+navBtns.forEach((b, ix) => b.addEventListener('click', () => goSlide(ix)));
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); goNext(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   { e.preventDefault(); goPrev(); }
+  if (e.key === 'Home') { e.preventDefault(); goSlide(0); }
+  if (e.key === 'End')  { e.preventDefault(); goSlide(slides.length - 1); }
+});
+
+goSlide(0);
+</script>
+</body>
+</html>

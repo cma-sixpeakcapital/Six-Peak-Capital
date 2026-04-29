@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LV · AI Discussion · Steyn Pre-Read · May 5, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --denim:#0B1833; --denim-light:#111E3D;
+  --space:#2C3A51; --space-light:#384862; --space-muted:#1E2C44;
+  --steel:#BFC7DA; --steel-light:#E2E7F0;
+  --ghost:#F8F9F4; --ghost-warm:#FAFAF6;
+  --rust:#C4581A; --rust-glow:#E8935A; --rust-light:rgba(196,88,26,0.12); --rust-subtle:rgba(196,88,26,0.06);
+  --gray:#94A3B8; --gray-dk:#475569;
+  --success:#10B981; --warning:#F59E0B; --error:#EF4444;
+  --font-primary:'Aptos','DM Sans',Calibri,'Segoe UI',sans-serif;
+  --font-display:'DM Sans','Aptos','Segoe UI',sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { font-family:var(--font-primary); background:var(--steel-light); color:var(--denim); line-height:1.6; }
+
+/* DECK SHELL */
+.deck { min-height:100vh; display:flex; flex-direction:column; }
+.topbar { background:linear-gradient(135deg, var(--space-light) 0%, var(--space-muted) 60%, var(--denim) 100%); padding:2rem 0 1.6rem; border-bottom:3px solid var(--rust); }
+.topbar .inner { max-width:1180px; margin:0 auto; padding:0 2rem; display:flex; justify-content:space-between; align-items:flex-end; gap:2rem; flex-wrap:wrap; }
+.topbar a.back { color:var(--steel); text-decoration:none; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.18em; font-weight:600; opacity:0.85; }
+.topbar a.back:hover { color:var(--rust-glow); opacity:1; }
+.topbar .label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; color:var(--rust); margin-bottom:0.5rem; }
+.topbar h1 { font-family:var(--font-display); font-size:1.7rem; font-weight:700; color:var(--ghost-warm); letter-spacing:-0.01em; }
+.topbar .sub { color:var(--steel); font-size:0.85rem; opacity:0.85; margin-top:0.4rem; max-width:760px; line-height:1.55; }
+.topbar .meta { display:flex; flex-direction:column; align-items:flex-end; gap:0.7rem; min-width:240px; }
+.topbar .meta .progress { display:flex; align-items:center; gap:0.85rem; width:100%; }
+.topbar .meta .bar { flex:1; height:3px; background:rgba(191,199,218,0.2); border-radius:2px; overflow:hidden; }
+.topbar .meta .fill { height:100%; background:linear-gradient(90deg, var(--rust), var(--rust-glow)); border-radius:2px; transition:width 0.3s ease; }
+.topbar .meta .counter { font-family:var(--font-display); font-size:0.78rem; font-weight:700; color:var(--ghost-warm); letter-spacing:0.1em; white-space:nowrap; }
+.topbar .meta .counter .cur { color:var(--rust-glow); }
+.topbar .meta .now-showing { font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.16em; color:var(--steel); opacity:0.7; }
+.topbar .meta .now-showing .name { color:var(--ghost-warm); opacity:1; margin-left:6px; }
+
+/* SLIDE NAV CHIPS */
+.deck-nav { background:#FFFFFF; border-bottom:1px solid rgba(11,24,51,0.08); padding:0; position:sticky; top:0; z-index:40; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
+.deck-nav-inner { max-width:1280px; margin:0 auto; padding:0 1.5rem; display:flex; gap:0; overflow-x:auto; }
+.deck-nav button { background:none; border:none; cursor:pointer; padding:13px 16px; font-family:inherit; font-size:0.72rem; font-weight:600; color:var(--gray-dk); text-transform:uppercase; letter-spacing:0.12em; white-space:nowrap; border-bottom:3px solid transparent; transition:all 0.15s ease; display:flex; align-items:center; gap:8px; }
+.deck-nav button .ix { color:var(--rust); font-weight:700; opacity:0.6; font-size:0.66rem; }
+.deck-nav button:hover { color:var(--rust); }
+.deck-nav button:hover .ix { opacity:1; }
+.deck-nav button.active { color:var(--rust); border-bottom-color:var(--rust); }
+.deck-nav button.active .ix { opacity:1; }
+
+/* SLIDE STAGE */
+.stage { flex:1; padding:2.5rem 2rem 8rem; overflow-x:hidden; }
+.stage-inner { max-width:1180px; margin:0 auto; }
+
+.slide { display:none; animation:slideIn 0.35s ease; }
+.slide.active { display:block; }
+@keyframes slideIn {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* SLIDE COVER */
+.slide .slide-cover { margin-bottom:2rem; }
+.slide .slide-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; color:var(--rust); margin-bottom:0.75rem; }
+.slide .slide-label::after { content:''; display:block; width:60px; height:2px; background:linear-gradient(90deg, var(--rust), transparent); margin-top:0.6rem; }
+.slide h1.title { font-family:var(--font-display); font-size:1.85rem; font-weight:700; color:var(--denim); letter-spacing:-0.012em; line-height:1.2; margin-bottom:0.6rem; max-width:920px; }
+.slide h1.title em { color:var(--rust); font-style:normal; }
+.slide .lede { font-size:1rem; color:var(--gray-dk); line-height:1.7; max-width:880px; }
+
+/* THESIS HERO */
+.thesis-hero {
+  background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%);
+  color:var(--ghost-warm);
+  border-radius:14px;
+  padding:2.5rem 2.5rem 2rem;
+  position:relative; overflow:hidden;
+  box-shadow:0 10px 40px rgba(11,24,51,0.15);
+}
+.thesis-hero::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--rust) 0%, var(--rust-glow) 50%, transparent 100%);
+}
+.thesis-hero .label { color:var(--rust-glow); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.25em; margin-bottom:0.7rem; }
+.thesis-hero h2 { font-family:var(--font-display); font-size:1.9rem; font-weight:700; color:var(--ghost-warm); letter-spacing:-0.015em; margin-bottom:0.85rem; line-height:1.25; max-width:880px; }
+.thesis-hero h2 em { color:var(--rust-glow); font-style:normal; }
+.thesis-hero p { color:var(--steel); font-size:1rem; line-height:1.75; max-width:820px; }
+.thesis-hero p strong { color:var(--rust-glow); font-weight:600; }
+.thesis-hero .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; margin-top:1.85rem; padding-top:1.75rem; border-top:1px solid rgba(191,199,218,0.15); }
+@media(max-width:700px) { .thesis-hero .stats { grid-template-columns:1fr; } .thesis-hero h2 { font-size:1.45rem; } }
+.thesis-hero .stat .num { font-family:var(--font-display); font-size:1.95rem; font-weight:700; color:var(--rust-glow); line-height:1.05; }
+.thesis-hero .stat .lbl { font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.16em; color:var(--steel); margin-top:6px; opacity:0.85; line-height:1.45; }
+
+/* WORKFLOW PREVIEW TILES */
+.workflow-tiles { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+@media(max-width:900px) { .workflow-tiles { grid-template-columns:1fr; } }
+.wf-tile {
+  background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px;
+  overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04);
+  transition:all 0.25s ease;
+  display:flex; flex-direction:column;
+}
+.wf-tile:hover { transform:translateY(-3px); border-color:rgba(196,88,26,0.4); box-shadow:0 12px 40px rgba(11,24,51,0.1); }
+.wf-tile .preview {
+  background:#F2EBDC;
+  padding:1.5rem;
+  text-align:center;
+  border-bottom:1px solid rgba(11,24,51,0.06);
+  position:relative;
+  min-height:200px;
+  display:flex; align-items:center; justify-content:center;
+}
+.wf-tile .preview svg { width:100%; max-width:280px; height:auto; }
+.wf-tile .preview .badge-corner { position:absolute; top:1rem; left:1rem; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; padding:4px 10px; background:rgba(196,88,26,0.15); color:var(--rust); border-radius:4px; }
+.wf-tile .body { padding:1.25rem 1.4rem 1.4rem; flex:1; display:flex; flex-direction:column; }
+.wf-tile h3 { font-family:var(--font-display); font-size:1.2rem; font-weight:700; color:var(--denim); margin-bottom:0.4rem; }
+.wf-tile .meta { font-size:0.74rem; font-weight:600; text-transform:uppercase; letter-spacing:0.12em; color:var(--rust); margin-bottom:0.7rem; }
+.wf-tile p { font-size:0.88rem; color:var(--gray-dk); line-height:1.6; flex:1; margin-bottom:1.1rem; }
+.wf-tile .open {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:9px 16px; background:var(--rust); color:#fff; border-radius:8px;
+  text-decoration:none; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;
+  align-self:flex-start;
+  transition:all 0.15s ease;
+}
+.wf-tile .open:hover { background:var(--rust-glow); }
+
+/* PHASES TIMELINE */
+.phases { display:grid; grid-template-columns:repeat(4,1fr); gap:0; background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04); }
+@media(max-width:900px) { .phases { grid-template-columns:1fr; } }
+.phases .phase { padding:1.4rem 1.5rem; border-right:1px solid rgba(11,24,51,0.06); position:relative; }
+.phases .phase:last-child { border-right:none; }
+@media(max-width:900px) { .phases .phase { border-right:none; border-bottom:1px solid rgba(11,24,51,0.06); } .phases .phase:last-child { border-bottom:none; } }
+.phases .phase .ix { font-family:var(--font-display); font-size:0.7rem; font-weight:700; color:var(--rust); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:0.4rem; }
+.phases .phase .name { font-family:var(--font-display); font-size:1rem; font-weight:700; color:var(--denim); margin-bottom:0.4rem; line-height:1.3; }
+.phases .phase .desc { font-size:0.82rem; color:var(--gray-dk); line-height:1.55; margin-bottom:0.85rem; }
+.phases .phase .pdf { display:inline-flex; align-items:center; gap:6px; font-size:0.7rem; font-weight:700; color:var(--rust); text-decoration:none; text-transform:uppercase; letter-spacing:0.1em; }
+.phases .phase .pdf:hover { color:var(--rust-glow); }
+
+/* ATTACHMENT LIST */
+.attach-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.6rem 1.2rem; }
+@media(max-width:700px) { .attach-grid { grid-template-columns:1fr; } }
+.attach-grid a {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px; background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:8px;
+  color:var(--denim); text-decoration:none; font-size:0.86rem; transition:all 0.15s ease;
+  box-shadow:0 2px 6px rgba(0,0,0,0.02);
+}
+.attach-grid a:hover { border-color:var(--rust); background:rgba(196,88,26,0.04); }
+.attach-grid a .ico { width:32px; height:32px; border-radius:6px; background:var(--rust-light); color:var(--rust); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.7rem; flex-shrink:0; }
+.attach-grid a .meta { font-size:0.7rem; opacity:0.55; margin-left:auto; }
+
+/* PLACEHOLDER STYLING */
+.ph-banner {
+  background:linear-gradient(135deg, rgba(196,88,26,0.08), rgba(232,147,90,0.04));
+  border:1px dashed rgba(196,88,26,0.4); border-radius:10px;
+  padding:1rem 1.25rem; margin-bottom:1.5rem;
+  display:flex; align-items:center; gap:1rem;
+  font-size:0.86rem; color:var(--space);
+}
+.ph-banner .ic { width:32px; height:32px; border-radius:8px; background:var(--rust); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; }
+.ph-banner strong { color:var(--rust); }
+
+.ph-slot {
+  background:rgba(94,123,155,0.05); border:1px dashed rgba(94,123,155,0.4); border-radius:10px;
+  padding:1.4rem 1.5rem; font-size:0.88rem; color:var(--space); line-height:1.7;
+  text-align:center; min-height:200px;
+  display:flex; flex-direction:column; justify-content:center;
+}
+.ph-slot .ph-tag { display:inline-block; font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; padding:4px 10px; border-radius:4px; background:rgba(94,123,155,0.2); color:var(--space); margin-bottom:0.7rem; }
+.ph-slot strong { color:var(--rust); font-weight:700; }
+.ph-slot p { margin-top:0.4rem; max-width:540px; margin-left:auto; margin-right:auto; }
+
+/* DECK FOOTER CONTROLS */
+.deck-controls {
+  position:fixed; bottom:0; left:0; right:0;
+  background:rgba(255,255,255,0.96); backdrop-filter:blur(8px);
+  border-top:1px solid rgba(11,24,51,0.1);
+  padding:1rem 2rem;
+  display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;
+  z-index:50;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.06);
+}
+.deck-controls .crumb { font-size:0.78rem; color:var(--gray-dk); display:flex; align-items:center; gap:10px; }
+.deck-controls .crumb .ix { font-family:var(--font-display); font-weight:700; color:var(--rust); }
+.deck-controls .crumb .name { font-weight:600; color:var(--denim); }
+.deck-controls .arrows { display:flex; gap:0.6rem; align-items:center; }
+.arrow-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 22px; border-radius:8px;
+  font-family:var(--font-display); font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;
+  border:none; cursor:pointer; transition:all 0.15s ease;
+  background:#FFFFFF; color:var(--denim); border:1px solid rgba(11,24,51,0.12);
+}
+.arrow-btn:hover:not(:disabled) { border-color:var(--rust); color:var(--rust); }
+.arrow-btn.primary { background:var(--rust); color:#fff; border-color:var(--rust); }
+.arrow-btn.primary:hover:not(:disabled) { background:var(--rust-glow); border-color:var(--rust-glow); color:#fff; }
+.arrow-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.arrow-btn .arr { font-size:1rem; }
+.kbd-hint { font-size:0.68rem; color:var(--gray); display:flex; gap:6px; align-items:center; }
+.kbd-hint kbd { background:#fff; border:1px solid rgba(11,24,51,0.15); border-bottom-width:2px; border-radius:4px; padding:1px 6px; font-family:'JetBrains Mono', monospace; font-size:0.66rem; color:var(--denim); }
+
+@media(max-width:640px) {
+  .stage { padding:1.5rem 1rem 7rem; }
+  .slide h1.title { font-size:1.4rem; }
+  .deck-controls { padding:0.85rem 1rem; }
+  .arrow-btn { padding:9px 16px; font-size:0.72rem; }
+  .kbd-hint { display:none; }
+  .deck-controls .crumb .name { display:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="inner">
+    <div>
+      <a class="back" href="../">← Back to portal</a>
+      <div style="height:1rem;"></div>
+      <div class="label">Section 03 · Pre-Read</div>
+      <h1>LV Construction · AI Discussion</h1>
+      <p class="sub">Why LV is investing in AI now, where the manual workflows break, and how the Mission Control program is being staged.</p>
+    </div>
+    <div class="meta">
+      <div class="now-showing">Now showing<span class="name" id="topbarName">Thesis</span></div>
+      <div class="progress">
+        <div class="bar"><div class="fill" id="progressFill" style="width:16.7%;"></div></div>
+        <div class="counter"><span class="cur" id="counterCur">01</span> / <span id="counterTot">06</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SECTION CHIPS NAV -->
+<nav class="deck-nav">
+  <div class="deck-nav-inner">
+    <button data-slide="0" class="active"><span class="ix">01</span>Thesis</button>
+    <button data-slide="1"><span class="ix">02</span>Jonah &amp; Current State</button>
+    <button data-slide="2"><span class="ix">03</span>Workflow Capture</button>
+    <button data-slide="3"><span class="ix">04</span>Demo</button>
+    <button data-slide="4"><span class="ix">05</span>Phases &amp; Library</button>
+    <button data-slide="5"><span class="ix">06</span>Paths Forward</button>
+  </div>
+</nav>
+
+<!-- STAGE -->
+<main class="stage">
+  <div class="stage-inner">
+
+  <!-- SLIDE 01 · THESIS -->
+  <section class="slide active" id="slide-0">
+    <div class="slide-cover">
+      <div class="slide-label">01 · Thesis</div>
+      <h1 class="title"><em>Manual workflow</em>, not capital, is the constraint on scaling the GC</h1>
+      <p class="lede">LV's growth ceiling today is set by how much paper, email, and back-and-forth a human-shaped back-office can absorb. Pay applications, subcontractor contracts, draws, and field reporting all live in document-and-thread workflows that don't compose.</p>
+    </div>
+
+    <div class="thesis-hero">
+      <div class="label">The investment thesis</div>
+      <h2>The AI Mission Control program is the rebuild, taking each of these flows from <em>chat-and-PDF</em> to a system that proposes, validates, and produces.</h2>
+      <p>The same back-office that today caps LV at ~$50M of construction billing needs to carry <strong>$90–100M/yr</strong> under the Extended BD plan. Hiring proportionally is not the path. That's the manual scaling that already broke. AI Mission Control is what makes the roster stabilization (Pillar #2 in the SPC update) capable of absorbing the BD pipeline (Pillar #3) without another headcount step-up.</p>
+      <div class="stats">
+        <div class="stat"><div class="num">2 of 4</div><div class="lbl">Phases mapped today<br>(Pre-con · Field Ops · Project Controls · Office Admin)</div></div>
+        <div class="stat"><div class="num">~12</div><div class="lbl">Discrete workflow surfaces<br>identified across LV</div></div>
+        <div class="stat"><div class="num">v5</div><div class="lbl">Mission Control business plan<br>(in the live library)</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 02 · CURRENT STATE WALKTHROUGHS -->
+  <section class="slide" id="slide-1">
+    <div class="slide-cover">
+      <div class="slide-label">02 · Jonah &amp; Current State</div>
+      <h1 class="title">Where the workflows break today</h1>
+      <p class="lede">Jonah Dobkin leads LV's AI initiative. Below the bio sits the live reference set of five interactive walkthroughs of the workflows as they run today. Open each walkthrough in a new tab to navigate; we'll return to this deck to discuss. The engineering bench supporting Jonah on the build appears alongside the demo on Slide 04.</p>
+    </div>
+
+    <!-- JONAH BIO PANEL -->
+    <div style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); color:var(--ghost-warm); border-radius:14px; padding:1.75rem 2rem; margin-bottom:1.5rem; position:relative; overflow:hidden; box-shadow:0 10px 40px rgba(11,24,51,0.15); display:grid; grid-template-columns:180px 1fr; gap:1.75rem; align-items:center;">
+      <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--rust) 0%, var(--rust-glow) 50%, transparent 100%);"></div>
+      <div>
+        <div style="width:160px; height:160px; border-radius:50%; overflow:hidden; border:3px solid rgba(232,147,90,0.4); box-shadow:0 8px 24px rgba(0,0,0,0.25);">
+          <img src="Jonah%20photo.jpg" alt="Jonah Dobkin" style="width:100%; height:100%; object-fit:cover; display:block;">
+        </div>
+      </div>
+      <div>
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.22em; color:var(--rust-glow); margin-bottom:0.55rem;">Driving the build</div>
+        <h3 style="font-family:var(--font-display); font-size:1.55rem; font-weight:700; color:var(--ghost-warm); line-height:1.2; margin-bottom:0.3rem;">Jonah Dobkin</h3>
+        <div style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--rust-glow); margin-bottom:0.85rem;">Assistant Project Manager · LV / AI Mission Control Lead</div>
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.55rem;">
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--steel); line-height:1.6;">
+            <span style="position:absolute; left:0; top:9px; width:10px; height:2px; background:var(--rust-glow); border-radius:2px;"></span>
+            <strong style="color:var(--ghost-warm);">Industry pedigree.</strong> Father Eric Dobkin is a Los Angeles GC and developer (high-end hillside custom homes); Jonah joined that business after college as owner's representative, development manager, and superintendent on a 15-unit ground-up multifamily project in Valley Village.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--steel); line-height:1.6;">
+            <span style="position:absolute; left:0; top:9px; width:10px; height:2px; background:var(--rust-glow); border-radius:2px;"></span>
+            <strong style="color:var(--ghost-warm);">Finance &amp; economics</strong> from the University of Oregon; previously interned in wealth management. He brings a financial-control lens to the operational and technology work he now drives at LV.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--steel); line-height:1.6;">
+            <span style="position:absolute; left:0; top:9px; width:10px; height:2px; background:var(--rust-glow); border-radius:2px;"></span>
+            <strong style="color:var(--ghost-warm);">APM scope at LV</strong> across buyout, RFIs, submittals, scheduling, budget tracking, and project correspondence. This gives him daily exposure to the workflows the AI program is rebuilding.
+          </li>
+          <li style="padding-left:18px; position:relative; font-size:0.86rem; color:var(--steel); line-height:1.6;">
+            <span style="position:absolute; left:0; top:9px; width:10px; height:2px; background:var(--rust-glow); border-radius:2px;"></span>
+            <strong style="color:var(--ghost-warm);">Leads LV's AI initiative.</strong> Pairs daily hands-on work in the Claude ecosystem and ongoing self-directed coursework with first-hand workflow knowledge to spot the workflows where automation actually compresses the work.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- WORKFLOW WALKTHROUGHS -->
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.5rem;">Current-State Walkthroughs · Five Workflows</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:1rem;">Click any tile to open the walkthrough in a new tab.</p>
+
+    <div class="workflow-tiles" style="grid-template-columns:repeat(3, 1fr); gap:1.1rem;">
+
+      <div class="wf-tile">
+        <div class="preview" style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); min-height:auto; padding:1.4rem 1.3rem; justify-content:flex-start; align-items:flex-start; flex-direction:column; text-align:left;">
+          <span class="badge-corner" style="background:rgba(232,147,90,0.18); color:var(--rust-glow);">Current State</span>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:1.4rem; color:var(--ghost-warm); letter-spacing:-0.01em; line-height:1.15; margin-top:1.6rem;">Pay Applications</div>
+          <div style="font-size:0.66rem; color:var(--rust-glow); font-weight:700; text-transform:uppercase; letter-spacing:0.18em; margin-top:0.5rem;">Workflow 01</div>
+        </div>
+        <div class="body">
+          <p>Walk the GC pay-app flow as it runs today: subs submit, the office reviews, the lender signs off, and the draw posts. Every step is a paper-handoff with a manual reconciliation behind it.</p>
+          <a class="open" href="pay-apps-master-reference.html" target="_blank">Open walkthrough →</a>
+        </div>
+      </div>
+
+      <div class="wf-tile">
+        <div class="preview" style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); min-height:auto; padding:1.4rem 1.3rem; justify-content:flex-start; align-items:flex-start; flex-direction:column; text-align:left;">
+          <span class="badge-corner" style="background:rgba(232,147,90,0.18); color:var(--rust-glow);">Current State</span>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:1.4rem; color:var(--ghost-warm); letter-spacing:-0.01em; line-height:1.15; margin-top:1.6rem;">Subcontractor Contracts</div>
+          <div style="font-size:0.66rem; color:var(--rust-glow); font-weight:700; text-transform:uppercase; letter-spacing:0.18em; margin-top:0.5rem;">Workflow 02</div>
+        </div>
+        <div class="body">
+          <p>Trace the subcontractor onboarding and contracting path as it operates today. Watch where context gets lost between estimating, project management, and accounts payable.</p>
+          <a class="open" href="contracts-master-reference.html" target="_blank">Open walkthrough →</a>
+        </div>
+      </div>
+
+      <div class="wf-tile">
+        <div class="preview" style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); min-height:auto; padding:1.4rem 1.3rem; justify-content:flex-start; align-items:flex-start; flex-direction:column; text-align:left;">
+          <span class="badge-corner" style="background:rgba(232,147,90,0.18); color:var(--rust-glow);">Current State</span>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:1.4rem; color:var(--ghost-warm); letter-spacing:-0.01em; line-height:1.15; margin-top:1.6rem;">RFIs</div>
+          <div style="font-size:0.66rem; color:var(--rust-glow); font-weight:700; text-transform:uppercase; letter-spacing:0.18em; margin-top:0.5rem;">Workflow 03</div>
+        </div>
+        <div class="body">
+          <p>Walk the RFI loop from field question to designer response and back into the field. Watch how unresolved threads queue against the schedule and where the same question gets re-asked.</p>
+          <a class="open" href="rfis-master-reference.html" target="_blank">Open walkthrough →</a>
+        </div>
+      </div>
+
+      <div class="wf-tile">
+        <div class="preview" style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); min-height:auto; padding:1.4rem 1.3rem; justify-content:flex-start; align-items:flex-start; flex-direction:column; text-align:left;">
+          <span class="badge-corner" style="background:rgba(232,147,90,0.18); color:var(--rust-glow);">Current State</span>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:1.4rem; color:var(--ghost-warm); letter-spacing:-0.01em; line-height:1.15; margin-top:1.6rem;">Submittals</div>
+          <div style="font-size:0.66rem; color:var(--rust-glow); font-weight:700; text-transform:uppercase; letter-spacing:0.18em; margin-top:0.5rem;">Workflow 04</div>
+        </div>
+        <div class="body">
+          <p>Trace the submittal flow from sub package through review, mark-ups, and resubmission. Watch how revision history fragments across email and where product approvals stall the buyout sequence.</p>
+          <a class="open" href="submittals-master-reference.html" target="_blank">Open walkthrough →</a>
+        </div>
+      </div>
+
+      <div class="wf-tile">
+        <div class="preview" style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); min-height:auto; padding:1.4rem 1.3rem; justify-content:flex-start; align-items:flex-start; flex-direction:column; text-align:left;">
+          <span class="badge-corner" style="background:rgba(232,147,90,0.18); color:var(--rust-glow);">Current State</span>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:1.4rem; color:var(--ghost-warm); letter-spacing:-0.01em; line-height:1.15; margin-top:1.6rem;">CR · CO · PCCO</div>
+          <div style="font-size:0.66rem; color:var(--rust-glow); font-weight:700; text-transform:uppercase; letter-spacing:0.18em; margin-top:0.5rem;">Workflow 05</div>
+        </div>
+        <div class="body">
+          <p>Trace how change requests move from field discovery into a priced change order and on to a Prime Contract Change Order with the owner. Watch where document threads, pricing rounds, and approvals fan out across roles.</p>
+          <a class="open" href="cr-co-pcco-master-reference.html" target="_blank">Open walkthrough →</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SLIDE 03 · WORKFLOW CAPTURE -->
+  <section class="slide" id="slide-2">
+    <div class="slide-cover">
+      <div class="slide-label">03 · Workflow Capture · Bottoms-Up Discovery</div>
+      <h1 class="title">Capturing every recurring workflow at LV, so we build against <em>real work</em>, not assumed work</h1>
+      <p class="lede">Slide 02 holds the five flows we've already mapped end-to-end (Pay Apps, Contracts, RFIs, Submittals, and CR · CO · PCCO). To find the rest, Grady stood up an internal capture tool the entire LV team is filling in over the next few weeks. The output is the prioritized backlog Mission Control builds against.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="background:var(--denim); color:var(--ghost-warm); padding:1.1rem 1.4rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+          <div>
+            <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; color:var(--rust-glow); margin-bottom:0.3rem;">Live tool</div>
+            <div style="font-family:var(--font-display); font-size:1rem; font-weight:700;">workflowcapture.vercel.app</div>
+          </div>
+          <a href="https://workflowcapture.vercel.app/" target="_blank" style="display:inline-flex; align-items:center; gap:8px; padding:9px 16px; background:var(--rust); color:#fff; border-radius:8px; text-decoration:none; font-size:0.74rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em;">Open <span style="font-size:1rem;">↗</span></a>
+        </div>
+        <div style="padding:0; background:#F4F6FA; height:380px; position:relative;">
+          <iframe src="https://workflowcapture.vercel.app/" style="width:100%; height:100%; border:0; display:block;" loading="lazy" title="Workflow Capture tool"></iframe>
+        </div>
+        <div style="padding:0.85rem 1.2rem; font-size:0.74rem; color:var(--gray-dk); background:#FFFFFF; border-top:1px solid rgba(11,24,51,0.06);">
+          Live preview. If the embed doesn't load, use the <strong>Open ↗</strong> button above to view in a new tab.
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:1rem;">
+        <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+          <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.55rem;">The Ask</div>
+          <p style="font-size:0.92rem; color:var(--gray-dk); line-height:1.65;">Grady sent the team-wide note on April 23 asking every member of the LV org to log their recurring workflows: daily, weekly, or monthly tasks with defined steps, inputs, and outputs.</p>
+        </div>
+        <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+          <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.55rem;">The Goal</div>
+          <p style="font-size:0.92rem; color:var(--gray-dk); line-height:1.65;">Three things at once: see where the team's time is actually going, identify processes to streamline or automate, and shrink the manual work that caps the GC's throughput.</p>
+        </div>
+        <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.3rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+          <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.55rem;">Where It Feeds</div>
+          <p style="font-size:0.92rem; color:var(--gray-dk); line-height:1.65;">The captured workflows become the backlog Jonah and the engineering bench (Slide 04) prioritize against, and the source list for the Phase 02–04 build sequence (Slide 05).</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.7rem;">The Capture Format</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:1rem;">Each workflow gets logged with the same structured fields so the inventory is comparable across roles and surfaces the right candidates for automation.</p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="font-family:var(--font-display); font-size:0.95rem; font-weight:700; color:var(--denim); margin-bottom:0.7rem;">Header Fields</div>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Workflow:</strong> [Title]</li>
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Internal Responsible Parties:</strong> who owns it</li>
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Applications Used:</strong> Outlook, Box, Excel, Autodesk, Yardi, etc.</li>
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Frequency:</strong> daily / weekly / monthly / as-needed</li>
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Critical Assumptions:</strong> the dependencies that have to hold</li>
+        </ul>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="font-family:var(--font-display); font-size:0.95rem; font-weight:700; color:var(--denim); margin-bottom:0.7rem;">Per-Step Detail</div>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Step #:</strong> Title · Owner · Estimated time</li>
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Full Step Description</strong></li>
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Data Input:</strong> what comes in, in what format</li>
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Tech Application Used</strong></li>
+          <li style="font-size:0.85rem; color:var(--gray-dk); padding:5px 0 5px 18px; position:relative; line-height:1.55;"><span style="position:absolute; left:0; top:13px; width:8px; height:2px; background:var(--rust); border-radius:2px;"></span><strong style="color:var(--denim);">Output:</strong> what gets produced, in what format</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.7rem;">Worked Example · From Grady's Note</h3>
+    <div style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); color:var(--ghost-warm); border-radius:12px; padding:1.5rem 1.7rem; box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+      <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust-glow); margin-bottom:0.55rem;">Workflow</div>
+      <div style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--ghost-warm); margin-bottom:0.85rem;">Creation of an Official Subcontractor Change Request Form</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem 2rem; font-size:0.85rem; color:var(--steel);">
+        <div><span style="color:var(--rust-glow); font-weight:700;">Internal Responsible Team Members:</span> Grady (President), Pedro/Greg (PMs), Dorian/Jonah/Lucy (APMs), Alina/Brisa (Project Coordinators)</div>
+        <div><span style="color:var(--rust-glow); font-weight:700;">Applications Used:</span> Outlook, Box, Excel, Box Sign</div>
+        <div><span style="color:var(--rust-glow); font-weight:700;">Frequency:</span> As needed</div>
+        <div><span style="color:var(--rust-glow); font-weight:700;">Type:</span> Cross-functional document workflow with multi-party sign-off, exactly the kind of flow that compresses well under structured automation.</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:1.25rem;">
+      <strong>Why this matters for the AI investment:</strong> The discipline of "if you catch yourself thinking 'I do this the same way every time,' that's the one to log" produces a credible, evidence-based backlog. We're building Mission Control against the workflows the team actually does, not the ones we assume from the outside. The capture period closes in the next couple of weeks; results feed directly into Phase 02–04 prioritization (Slide 05).
+    </div>
+  </section>
+
+  <!-- SLIDE 04 · DEMO -->
+  <section class="slide" id="slide-3">
+    <div class="slide-cover">
+      <div class="slide-label">04 · Demo</div>
+      <h1 class="title">Live demo <em>·</em> what's been built against the workflows in Slide 02</h1>
+      <p class="lede">What Jonah and the engineering bench have built against the workflows in Slide 02. Watch the recorded walk-through below, or launch the app directly to walk through it end to end in the room.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.5rem;">
+
+      <!-- RECORDED DEMO VIDEO -->
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.04); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); padding:1.4rem 1.55rem 1.3rem; position:relative;">
+          <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--rust) 0%, var(--rust-glow) 50%, transparent 100%);"></div>
+          <div style="font-size:0.64rem; font-weight:700; text-transform:uppercase; letter-spacing:0.22em; color:var(--rust-glow); margin-bottom:0.55rem;">Recorded Demo · Video</div>
+          <div style="font-family:var(--font-display); font-size:1.35rem; font-weight:700; color:var(--ghost-warm); line-height:1.2;">Walk-through of what's been built</div>
+        </div>
+        <div style="padding:1.25rem 1.55rem 1.4rem; flex:1; display:flex; flex-direction:column;">
+          <p style="font-size:0.9rem; color:var(--gray-dk); line-height:1.65; margin-bottom:1.2rem; flex:1;">Recorded walk-through of the workflows Jonah and the engineering bench have stood up. Hosted on LV's SharePoint; opens in a new tab.</p>
+          <a href="https://netorg6073083-my.sharepoint.com/:v:/g/personal/jonah_lvllc_com/IQBj7PbQYP4wT5tBcLAvf9ThAQW6QqMdz8IHMX7RlWa9xO4" target="_blank" style="align-self:flex-start; display:inline-flex; align-items:center; gap:9px; padding:12px 22px; background:var(--rust); color:#FFFFFF; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; transition:all 0.15s ease;">
+            <span style="font-size:0.95rem; line-height:1;">▶</span>
+            Watch the demo
+            <span style="font-size:1rem;">↗</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- LIVE APP -->
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.04); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="background:linear-gradient(135deg, var(--denim) 0%, var(--space-muted) 100%); padding:1.4rem 1.55rem 1.3rem; position:relative;">
+          <div style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--rust) 0%, var(--rust-glow) 50%, transparent 100%);"></div>
+          <div style="font-size:0.64rem; font-weight:700; text-transform:uppercase; letter-spacing:0.22em; color:var(--rust-glow); margin-bottom:0.55rem;">Live App · For Jonah</div>
+          <div style="font-family:var(--font-display); font-size:1.35rem; font-weight:700; color:var(--ghost-warm); line-height:1.2;">Construction Optimization Tool</div>
+        </div>
+        <div style="padding:1.25rem 1.55rem 1.4rem; flex:1; display:flex; flex-direction:column;">
+          <p style="font-size:0.9rem; color:var(--gray-dk); line-height:1.65; margin-bottom:1.2rem; flex:1;">For the May 5 meeting demo only. The app sits behind a login for now; Jonah will run it live in the room.</p>
+          <a href="https://v0-construction-optimization.vercel.app/" target="_blank" style="align-self:flex-start; display:inline-flex; align-items:center; gap:9px; padding:12px 22px; background:var(--rust); color:#FFFFFF; border-radius:8px; text-decoration:none; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; transition:all 0.15s ease;">
+            <span style="font-size:0.95rem; line-height:1;">⏵</span>
+            Launch the app
+            <span style="font-size:1rem;">↗</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ENGINEERING BENCH -->
+    <h3 style="font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.5rem;">Engineering Bench Behind the Demo</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:1rem;">The engineers who helped Jonah stand up what's in the demo above: who's on the team, what each owns, and how the bench scales with the Mission Control phase rollout.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem;">
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.25rem 1.4rem 1.35rem; position:relative; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="position:absolute; top:0; left:0; height:3px; width:42px; background:var(--rust); border-radius:0 0 4px 0;"></div>
+        <h4 style="font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--denim); margin:0.25rem 0 0.2rem;">Aydin Chagal</h4>
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.85rem;">Forward Deployed Engineer · Palantir</div>
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.45rem;">
+          <li style="padding-left:16px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:9px; width:9px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            Leads Palantir's engagement with the largest home healthcare company in New York State, building AI-driven systems that automate manual referral intake and other operational bottlenecks for clinical staff.
+          </li>
+          <li style="padding-left:16px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:9px; width:9px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            Computer science, University of Michigan; previously at Booz Allen building software for U.S. naval submarines.
+          </li>
+          <li style="padding-left:16px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:9px; width:9px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            Customer-facing engineer by training. He sits with end users, hears their pain points first-hand, and ships software that solves the problem in front of them rather than the one on paper.
+          </li>
+        </ul>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.25rem 1.4rem 1.35rem; position:relative; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="position:absolute; top:0; left:0; height:3px; width:42px; background:var(--rust); border-radius:0 0 4px 0;"></div>
+        <h4 style="font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--denim); margin:0.25rem 0 0.2rem;">Naveen Mirapuri</h4>
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.85rem;">Forward Deployed Engineer · Palantir</div>
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.45rem;">
+          <li style="padding-left:16px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:9px; width:9px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            Industrials &amp; Manufacturing team. He embeds on factory floors to build AI tooling and deploy it across plants alongside the technicians who use it.
+          </li>
+          <li style="padding-left:16px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:9px; width:9px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            Previously on Palantir's healthcare team; earlier at Amazon, building High Performance Computing systems on AWS.
+          </li>
+          <li style="padding-left:16px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:9px; width:9px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            Track record in shipping production software where the end user is non-technical and the cost of getting it wrong is operational, not theoretical.
+          </li>
+        </ul>
+      </div>
+
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.25rem 1.4rem 1.35rem; position:relative; box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        <div style="position:absolute; top:0; left:0; height:3px; width:42px; background:var(--rust); border-radius:0 0 4px 0;"></div>
+        <h4 style="font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:var(--denim); margin:0.25rem 0 0.2rem;">Leo Emmanuel</h4>
+        <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.85rem;">Product Manager · Apple Maps</div>
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.45rem;">
+          <li style="padding-left:16px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:9px; width:9px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            PM at Apple Maps, with experience spanning roadmap buildout, implementation planning, and business development.
+          </li>
+          <li style="padding-left:16px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:9px; width:9px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            Economics, University of Michigan, with a minor in Computer Science.
+          </li>
+          <li style="padding-left:16px; position:relative; font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">
+            <span style="position:absolute; left:0; top:9px; width:9px; height:2px; background:var(--rust); border-radius:2px;"></span>
+            Previously at a startup focused on script optimization for Hollywood studios and agencies. The platform he helped shape cut clients' script-management time by 30%.
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SLIDE 05 · PHASES + LIBRARY (CONSOLIDATED) -->
+  <section class="slide" id="slide-4">
+    <div class="slide-cover">
+      <div class="slide-label">05 · Roadmap &amp; Deep Dives</div>
+      <h1 class="title">Mission Control phases <em>·</em> deep-dive library</h1>
+      <p class="lede">The full phase plan and the strategy &amp; business-plan library together. Tiles open the deep-dive PDFs from the live Mission Control site.</p>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:0.5rem 0 0.7rem;">The Four Phases</h3>
+    <div class="phases" style="margin-bottom:1.5rem;">
+      <div class="phase">
+        <div class="ix">Phase 01</div>
+        <div class="name">Preconstruction</div>
+        <div class="desc">Estimating, takeoffs, bid coordination, subcontractor onboarding.</div>
+        <a class="pdf" href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_phase1_preconstruction.pdf" target="_blank">PDF ↗</a>
+      </div>
+      <div class="phase">
+        <div class="ix">Phase 02</div>
+        <div class="name">Field Operations</div>
+        <div class="desc">Daily logs, RFIs, submittals, schedule updates, safety.</div>
+        <a class="pdf" href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_phase2_field_operations.pdf" target="_blank">PDF ↗</a>
+      </div>
+      <div class="phase">
+        <div class="ix">Phase 03</div>
+        <div class="name">Project Controls</div>
+        <div class="desc">Pay apps, draws, change orders, contingency, forecasting.</div>
+        <a class="pdf" href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_phase3_project_controls.pdf" target="_blank">PDF ↗</a>
+      </div>
+      <div class="phase">
+        <div class="ix">Phase 04</div>
+        <div class="name">Office &amp; Admin</div>
+        <div class="desc">Accounting automation, contract admin, reporting, comms.</div>
+        <a class="pdf" href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_phase4_office_admin.pdf" target="_blank">PDF ↗</a>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:var(--denim); margin:1.5rem 0 0.7rem;">Strategy &amp; Business Plan Library</h3>
+    <p style="font-size:0.88rem; color:var(--gray-dk); max-width:820px; margin-bottom:1rem;">For Steyn members who want to drill in before or after the meeting: every working document on the Mission Control thesis.</p>
+
+    <div class="attach-grid">
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_business_plan_v5.pdf" target="_blank">
+        <span class="ico">PDF</span><span><strong>Business Plan · v5</strong></span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_competitive_imperative.pdf" target="_blank">
+        <span class="ico">PDF</span><span>Competitive Imperative</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_financial_analysis_v2.pdf" target="_blank">
+        <span class="ico">PDF</span><span>Financial Analysis · v2</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_hiring_plan_v2.pdf" target="_blank">
+        <span class="ico">PDF</span><span>Hiring Plan · v2</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_job_descriptions.pdf" target="_blank">
+        <span class="ico">PDF</span><span>Job Descriptions</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_system_evaluation_v2.pdf" target="_blank">
+        <span class="ico">PDF</span><span>System Evaluation · v2</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_accounting_automation.pdf" target="_blank">
+        <span class="ico">PDF</span><span>Accounting Automation</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_entity_valuation_incentives.pdf" target="_blank">
+        <span class="ico">PDF</span><span>Entity Valuation &amp; Incentives</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/six_peak_ccorp_qsbs_analysis.pdf" target="_blank">
+        <span class="ico">PDF</span><span>C-Corp / QSBS Analysis</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/ai_mc_teaser_deck.pdf" target="_blank">
+        <span class="ico">PDF</span><span>Teaser Deck</span><span class="meta">.pdf</span>
+      </a>
+      <a href="https://cma-sixpeakcapital.github.io/SixPeak-Board-Portal/mission-control/" target="_blank">
+        <span class="ico">↗</span><span>Live Mission Control library, all phases</span><span class="meta">External</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- SLIDE 06 · PATHS FORWARD (DISCUSSION) -->
+  <section class="slide" id="slide-5">
+    <div class="slide-cover">
+      <div class="slide-label">06 · Paths Forward · For Discussion</div>
+      <h1 class="title">Two paths · two different investment shapes</h1>
+      <p class="lede">Both paths assume the AI build delivers real workflow compression. They differ in <strong style="color:var(--denim);">how that compressed capability is monetized</strong>, and in the size, source, and structure of the capital required. These are presented in parallel as a brainstorm, not a sequence. Steyn is being asked to react to two distinct strategic options.</p>
+    </div>
+
+    <div class="grid2">
+
+      <!-- PATH 1 -->
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.04); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="background:var(--denim); color:var(--ghost-warm); padding:1.4rem 1.6rem 1.25rem; border-bottom:3px solid var(--rust);">
+          <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.2em; color:var(--rust-glow); margin-bottom:0.55rem;">Path 1</div>
+          <h3 style="font-family:var(--font-display); font-size:1.3rem; font-weight:700; color:var(--ghost-warm); line-height:1.25; margin-bottom:0.45rem;">Internal margin lever</h3>
+          <p style="color:var(--steel); font-size:0.86rem; line-height:1.55;">Compress LV's own back-office; let the savings drop straight to GC margins as the Extended BD pipeline ramps.</p>
+        </div>
+        <div style="padding:1.4rem 1.6rem 1.6rem; flex:1;">
+          <div style="margin-bottom:1.1rem;">
+            <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.35rem;">The Investment</div>
+            <p style="font-size:0.88rem; color:var(--gray-dk); line-height:1.6;">Modest, internally funded, focused on the workflows that bottleneck LV today: pay apps, contracts, draws, accounting, reporting. Sized to the Mission Control phase plan; no external capital required.</p>
+          </div>
+          <div style="margin-bottom:1.1rem;">
+            <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.35rem;">The Mechanism</div>
+            <p style="font-size:0.88rem; color:var(--gray-dk); line-height:1.6;">A 50% time reduction on non-site processes lets the same back-office team carry roughly 2× the construction billing. Only field bodies (PMs, supers, foremen) scale linearly with project count, because those are real labor, not workflow.</p>
+          </div>
+          <div style="margin-bottom:1.1rem;">
+            <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.35rem;">The Outcome</div>
+            <p style="font-size:0.88rem; color:var(--gray-dk); line-height:1.6;">Margin expansion of <strong style="color:var(--denim);">~25–40%</strong> on the same revenue base, captured directly in LV's GC P&amp;L. Shows up in the SPC scenario tables as a multiplier on whatever construction billing the Extended BD plan lands.</p>
+          </div>
+          <div style="background:rgba(245,158,11,0.06); border-left:3px solid var(--warning); padding:0.85rem 1rem; border-radius:0 6px 6px 0;">
+            <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:#92670a; margin-bottom:0.3rem;">Honest Constraints</div>
+            <p style="font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">The 50% time reduction has to be earned. Only valuable if Extended BD materializes; scaling capacity you don't need is just overhead. Sequencing matters: deploy ahead of the BD ramp.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATH 2 -->
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:14px; box-shadow:0 4px 20px rgba(0,0,0,0.04); overflow:hidden; display:flex; flex-direction:column;">
+        <div style="background:var(--denim); color:var(--ghost-warm); padding:1.4rem 1.6rem 1.25rem; border-bottom:3px solid var(--rust);">
+          <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.2em; color:var(--rust-glow); margin-bottom:0.55rem;">Path 2</div>
+          <h3 style="font-family:var(--font-display); font-size:1.3rem; font-weight:700; color:var(--ghost-warm); line-height:1.25; margin-bottom:0.45rem;">External capital · AI-enabled GC platform</h3>
+          <p style="color:var(--steel); font-size:0.86rem; line-height:1.55;">Stand up a sister company funded by outside capital; LV is the lighthouse customer; the platform powers acquisition of margin-squeezed GCs in good markets.</p>
+        </div>
+        <div style="padding:1.4rem 1.6rem 1.6rem; flex:1;">
+          <div style="margin-bottom:1.1rem;">
+            <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.35rem;">The Investment</div>
+            <p style="font-size:0.88rem; color:var(--gray-dk); line-height:1.6;">Substantial outside capital raise into a sister company. Sized for venture-scale platform build, the engineering bench to run it, and acquisition capacity. LV operates as an anchor / proof customer, potentially as a loss-leader to seed adoption.</p>
+          </div>
+          <div style="margin-bottom:1.1rem;">
+            <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.35rem;">The Mechanism</div>
+            <p style="font-size:0.88rem; color:var(--gray-dk); line-height:1.6;">The platform restores margin in acquired GCs that operate in <strong style="color:var(--denim);">good markets but are seeing margin compression from manual processes</strong>. The combination of LV's operating know-how + the AI platform is what AI-only competitors can't replicate. Only LV's existing GC pipeline and team can produce that combination.</p>
+          </div>
+          <div style="margin-bottom:1.1rem;">
+            <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.16em; color:var(--rust); margin-bottom:0.35rem;">The Outcome</div>
+            <p style="font-size:0.88rem; color:var(--gray-dk); line-height:1.6;">Real margin improvement across an acquired portfolio of GCs, with value creation rooted in operational change, <strong style="color:var(--denim);">not multiple expansion</strong>. Improvement is achievable irrespective of valuation environment, which makes the thesis durable across market cycles.</p>
+          </div>
+          <div style="background:rgba(245,158,11,0.06); border-left:3px solid var(--warning); padding:0.85rem 1rem; border-radius:0 6px 6px 0;">
+            <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:#92670a; margin-bottom:0.3rem;">Honest Constraints</div>
+            <p style="font-size:0.82rem; color:var(--gray-dk); line-height:1.55;">Brings outside investors, governance change, and dilution. Requires software / SaaS leadership LV doesn't have in-house today. The integration playbook for acquired GCs has to be built and proven.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="background:linear-gradient(135deg, rgba(11,24,51,0.03), rgba(196,88,26,0.03)); border:1px solid rgba(11,24,51,0.08); border-radius:12px; padding:1.4rem 1.6rem; margin-top:1.5rem;">
+      <div style="font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.18em; color:var(--rust); margin-bottom:0.7rem;">How to read these together</div>
+      <p style="font-size:0.92rem; color:var(--gray-dk); line-height:1.7; max-width:920px;">These are <strong style="color:var(--denim);">two different bets, not two stages</strong>. Path 1 keeps the value of the AI work internal; it shows up as expanded GC margin in LV's own P&amp;L. Path 2 capitalizes the AI work externally and aims it at a much larger universe of GCs that need the same fix LV does. They differ across capital source, team, governance, timeline, and risk shape. Today's discussion isn't an approval; it's a brainstorm on which direction (or which mix) Steyn wants SPC to lean into when the AI build hits the proof-out milestone.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.25rem;">
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:10px; padding:1.1rem 1.3rem;">
+        <div style="font-family:var(--font-display); font-size:0.82rem; font-weight:700; color:var(--denim); margin-bottom:0.5rem;">Discussion question · Path 1</div>
+        <p style="font-size:0.85rem; color:var(--gray-dk); line-height:1.6;">Is the LV margin expansion alone enough to justify the AI investment on a stand-alone basis, independent of any external commercialization?</p>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid rgba(11,24,51,0.08); border-radius:10px; padding:1.1rem 1.3rem;">
+        <div style="font-family:var(--font-display); font-size:0.82rem; font-weight:700; color:var(--denim); margin-bottom:0.5rem;">Discussion question · Path 2</div>
+        <p style="font-size:0.85rem; color:var(--gray-dk); line-height:1.6;">Is the LV operating asset + team something Steyn would want to capitalize externally, and what kind of outside partner would fit the firm's stance on dilution and governance?</p>
+      </div>
+    </div>
+  </section>
+
+  </div>
+</main>
+
+<!-- DECK FOOTER CONTROLS -->
+<div class="deck-controls">
+  <div class="crumb">
+    <span class="ix" id="crumbIx">01 / 06</span>
+    <span class="name" id="crumbName">Thesis</span>
+  </div>
+  <div class="kbd-hint">
+    Use <kbd>←</kbd> <kbd>→</kbd> arrows to advance
+  </div>
+  <div class="arrows">
+    <button class="arrow-btn" id="prevBtn" onclick="goPrev()" disabled><span class="arr">←</span> Previous</button>
+    <button class="arrow-btn primary" id="nextBtn" onclick="goNext()">Next <span class="arr">→</span></button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const navBtns = document.querySelectorAll('.deck-nav button');
+const slideNames = ['Thesis', 'Jonah & Current State', 'Workflow Capture', 'Demo', 'Phases & Library', 'Paths Forward'];
+let cur = 0;
+
+function goSlide(i) {
+  if (i < 0 || i >= slides.length) return;
+  cur = i;
+  slides.forEach((s, ix) => s.classList.toggle('active', ix === i));
+  navBtns.forEach((b, ix) => b.classList.toggle('active', ix === i));
+  document.getElementById('counterCur').textContent = String(i+1).padStart(2,'0');
+  document.getElementById('progressFill').style.width = ((i+1)/slides.length*100) + '%';
+  document.getElementById('crumbIx').textContent = String(i+1).padStart(2,'0') + ' / ' + String(slides.length).padStart(2,'0');
+  document.getElementById('crumbName').textContent = slideNames[i];
+  document.getElementById('topbarName').textContent = slideNames[i];
+  document.getElementById('prevBtn').disabled = (i === 0);
+  document.getElementById('nextBtn').disabled = (i === slides.length - 1);
+  document.getElementById('nextBtn').innerHTML = (i === slides.length - 1) ? 'End <span class="arr">·</span>' : 'Next <span class="arr">→</span>';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function goNext() { if (cur < slides.length - 1) goSlide(cur + 1); }
+function goPrev() { if (cur > 0) goSlide(cur - 1); }
+
+navBtns.forEach((b, ix) => b.addEventListener('click', () => goSlide(ix)));
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); goNext(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   { e.preventDefault(); goPrev(); }
+  if (e.key === 'Home') { e.preventDefault(); goSlide(0); }
+  if (e.key === 'End')  { e.preventDefault(); goSlide(slides.length - 1); }
+});
+
+goSlide(0);
+</script>
+</body>
+</html>
