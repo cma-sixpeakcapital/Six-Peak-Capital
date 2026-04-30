@@ -35,6 +35,6 @@ class Config:
             summarizer_model=os.environ.get("SUMMARIZER_MODEL", "claude-haiku-4-5-20251001"),
             ingest_title_pattern=os.environ.get(
                 "INGEST_TITLE_PATTERN",
-                r"(?i)LV\s*(Construction|Exec)|Executive|Bi-?Weekly LV",
+                r"(?i)\bLV\s+Exec(?:utive)?\b|\bBi-?Weekly\s+LV\b",
             ),
         )
