@@ -147,7 +147,7 @@ def test_ingest_webhook_filters_non_matching(client, storage: Storage):
 
 def test_ingest_webhook_accepts_lv(client, storage: Storage):
     payload = {"meeting": {
-        "id": "lv1", "title": "LV Construction Executive",
+        "id": "lv1", "title": "LV Executive meeting",
         "start_time": "2026-04-22T15:00:00Z",
         "summary": "Notes.", "action_items": [{"owner": "Chris", "task": "x"}],
     }}
@@ -163,7 +163,7 @@ def test_ingest_webhook_accepts_lv(client, storage: Storage):
 def test_ingest_maps_readai_text_to_task(client, storage: Storage):
     """Read.ai sends action items as {id, text, completed}; ingest should populate task."""
     payload = {"meeting": {
-        "id": "rai1", "title": "LV Construction Executive",
+        "id": "rai1", "title": "LV Executive meeting",
         "start_time": "2026-04-28T15:00:00Z",
         "summary": "s",
         "action_items": [
@@ -193,9 +193,35 @@ def test_extract_owner_simple():
     assert _extract_owner("It will be reviewed") == ""
 
 
+def test_ingest_filter_rejects_oac_construction_mentions(client, storage: Storage):
+    """The Weekly OAC call mentions 'LV Construction' but is not an LV Exec meeting."""
+    payload = {"meeting": {
+        "id": "oac-1",
+        "title": "Weekly OAC Meeting: BBC, Six Peak, LV Construction, AERO, Nelson Ashdown, Dana Studio",
+        "date": "2026-04-29",
+    }}
+    r = client.post("/api/ingest/readai", json=payload, headers={"X-API-Key": "test-key"})
+    assert r.status_code == 200
+    assert r.get_json()["status"] == "ignored"
+    assert storage.get_meeting("oac-1") is None
+
+
+def test_ingest_filter_accepts_lv_executive(client, storage: Storage):
+    payload = {"meeting": {
+        "id": "lv-exec-1",
+        "title": "LV Executive meeting - bi-weekly",
+        "start_time": "2026-04-28T15:00:00Z",
+        "summary": "s",
+        "action_items": [],
+    }}
+    r = client.post("/api/ingest/readai", json=payload, headers={"X-API-Key": "test-key"})
+    assert r.status_code == 200
+    assert r.get_json()["status"] == "ok"
+
+
 def test_ingest_extracts_owner(client, storage: Storage):
     payload = {"meeting": {
-        "id": "owner1", "title": "LV Construction Executive",
+        "id": "owner1", "title": "LV Executive meeting",
         "start_time": "2026-04-28T15:00:00Z",
         "summary": "s",
         "action_items": [

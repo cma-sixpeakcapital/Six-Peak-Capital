@@ -13,7 +13,10 @@ class Config:
     database_url: str = ""
     readai_base_url: str = "https://api.read.ai/v1"
     summarizer_model: str = "claude-haiku-4-5-20251001"
-    ingest_title_pattern: str = r"(?i)LV\s*(Construction|Exec)|Executive|Bi-?Weekly LV"
+    # Match the LV Executive call titles only — NOT generic "LV Construction"
+    # mentions in unrelated meeting titles (e.g. "Weekly OAC Meeting: BBC, Six
+    # Peak, LV Construction, AERO, ..." should be ignored).
+    ingest_title_pattern: str = r"(?i)\bLV\s+Exec(?:utive)?\b|\bBi-?Weekly\s+LV\b"
 
     @classmethod
     def from_env(cls) -> "Config":
