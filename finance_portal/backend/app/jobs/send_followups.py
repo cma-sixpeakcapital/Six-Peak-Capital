@@ -71,6 +71,59 @@ def build_calendar_service(cfg) -> Any:
 
 # --- Calendar invitee lookup ----------------------------------------------
 
+def _find_instance_via_instances(cal_service: Any, calendar_id: str,
+                                  recurring_event_id: str,
+                                  time_min: str, time_max: str) -> dict[str, Any] | None:
+    """Primary lookup path: events.instances(eventId=master).
+
+    Real API errors (auth, network, etc.) bubble up to the caller, which
+    treats them as run-level errors. An empty ``items`` list (e.g. expired
+    RRULE) returns None so the caller can try the fallback.
+    """
+    result = cal_service.events().instances(
+        calendarId=calendar_id,
+        eventId=recurring_event_id,
+        timeMin=time_min,
+        timeMax=time_max,
+        maxResults=5,
+        showDeleted=False,
+    ).execute()
+    items = result.get("items", []) if isinstance(result, dict) else []
+    for inst in items:
+        if inst.get("status") == "cancelled":
+            continue
+        return inst
+    return None
+
+
+def _find_instance_via_list_scan(cal_service: Any, calendar_id: str,
+                                  recurring_event_id: str,
+                                  time_min: str, time_max: str) -> dict[str, Any] | None:
+    """Fallback lookup: events.list with the day window, then filter for
+    events whose id or recurringEventId references our master event.
+
+    Needed when the master recurrence has an expired UNTIL clause; Google
+    refuses to expand instances after that date even though the events
+    physically exist on the calendar.
+    """
+    result = cal_service.events().list(
+        calendarId=calendar_id,
+        timeMin=time_min,
+        timeMax=time_max,
+        singleEvents=True,
+        maxResults=50,
+        showDeleted=False,
+    ).execute()
+    for evt in result.get("items", []) or []:
+        if evt.get("status") == "cancelled":
+            continue
+        eid = evt.get("id", "") or ""
+        rid = evt.get("recurringEventId", "") or ""
+        if eid.startswith(recurring_event_id + "_") or rid.startswith(recurring_event_id):
+            return evt
+    return None
+
+
 def lookup_invitees(cal_service: Any, *, calendar_id: str, recurring_event_id: str,
                     meeting_date: str, sender_email: str) -> list[str]:
     """Find the calendar instance for this meeting date and extract the
@@ -80,6 +133,15 @@ def lookup_invitees(cal_service: Any, *, calendar_id: str, recurring_event_id: s
 
     Returns [] if no instance is found — caller should treat as "skip and
     retry next cron" rather than swallowing.
+
+    Two-stage lookup:
+      1. ``events.instances(eventId)`` — fast, the canonical path.
+      2. Fallback: ``events.list(timeMin, timeMax, singleEvents=True)`` and
+         filter for events whose ``id`` or ``recurringEventId`` references our
+         master event. This handles the edge case where the recurring rule
+         has an UNTIL clause in the past but individual instances still exist
+         (Google's instances() API treats those as "expired" and returns
+         empty even though the events are clearly on the calendar).
     """
     if not recurring_event_id or not meeting_date:
         return []
@@ -93,25 +155,13 @@ def lookup_invitees(cal_service: Any, *, calendar_id: str, recurring_event_id: s
     time_min = f"{meeting_date}T00:00:00Z"
     time_max = f"{meeting_date}T23:59:59Z"
 
-    result = cal_service.events().instances(
-        calendarId=calendar_id,
-        eventId=recurring_event_id,
-        timeMin=time_min,
-        timeMax=time_max,
-        maxResults=5,
-        showDeleted=False,
-    ).execute()
-
-    instances = result.get("items", []) if isinstance(result, dict) else []
-    if not instances:
-        return []
-    # Pick the first non-cancelled instance in the window
-    instance = None
-    for inst in instances:
-        if inst.get("status") == "cancelled":
-            continue
-        instance = inst
-        break
+    instance = _find_instance_via_instances(
+        cal_service, calendar_id, recurring_event_id, time_min, time_max
+    )
+    if instance is None:
+        instance = _find_instance_via_list_scan(
+            cal_service, calendar_id, recurring_event_id, time_min, time_max
+        )
     if instance is None:
         return []
 

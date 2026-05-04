@@ -91,28 +91,60 @@ def _decode_raw(raw_b64: str) -> dict[str, Any]:
 
 
 class FakeCalendar:
-    """Returns a configurable list of attendees for events.instances() calls."""
+    """Returns a configurable list of attendees for events.instances() calls.
+
+    Also serves events.list() with the same data so the fallback path used
+    by lookup_invitees (for expired-RRULE edge cases) can be exercised.
+    """
     def __init__(self, attendees: list[dict[str, Any]] | None = None,
                  raise_error: Exception | None = None,
-                 return_empty: bool = False) -> None:
+                 return_empty: bool = False,
+                 instances_only: bool = True) -> None:
         self.attendees = attendees or []
         self.raise_error = raise_error
         self.return_empty = return_empty
+        # When instances_only is False, instances() returns empty (simulating
+        # an expired RRULE), and list() returns the data. This exercises the
+        # fallback path. Default True preserves existing test behavior.
+        self.instances_only = instances_only
         self.calls: list[dict[str, Any]] = []
 
     def events(self):
         return self
 
     def instances(self, **kwargs):
-        self.calls.append(kwargs)
+        self.calls.append({"method": "instances", **kwargs})
         return _Exec(self._return_instance)
+
+    def list(self, **kwargs):
+        self.calls.append({"method": "list", **kwargs})
+        return _Exec(self._return_list)
 
     def _return_instance(self) -> dict[str, Any]:
         if self.raise_error:
             raise self.raise_error
         if self.return_empty:
             return {"items": []}
+        if not self.instances_only:
+            return {"items": []}
         return {"items": [{"status": "confirmed", "attendees": self.attendees}]}
+
+    def _return_list(self) -> dict[str, Any]:
+        if self.raise_error:
+            raise self.raise_error
+        if self.return_empty:
+            return {"items": []}
+        if self.instances_only:
+            # Default mode — primary path served the data, list() shouldn't
+            # need to. But if called, return empty to avoid double-counting.
+            return {"items": []}
+        # Fallback mode: return an event matching the master event ID.
+        return {"items": [{
+            "id": "evt_recurring_20260428T153000Z",
+            "recurringEventId": "evt_recurring_R20260428T153000",
+            "status": "confirmed",
+            "attendees": self.attendees,
+        }]}
 
 
 # --- Fixtures ------------------------------------------------------------
@@ -395,6 +427,26 @@ def test_send_failure_releases_claim(storage, cfg):
     assert m.get("_followup_sent_at") is None
     # Error was logged
     assert "error" in (m.get("_followup_log") or {})
+
+
+def test_lookup_invitees_fallback_when_instances_returns_empty(storage, cfg):
+    """Expired-RRULE edge case: events.instances() returns empty even though
+    individual instances exist on the calendar. lookup_invitees should fall
+    back to events.list() and find the instance via id/recurringEventId match."""
+    _make_meeting(storage, hours_ago=25)
+    gmail = FakeGmail()
+    cal = FakeCalendar(
+        attendees=[{"email": "rak@sixpeakcapital.com", "responseStatus": "accepted"}],
+        instances_only=False,
+    )
+    result = run(storage=storage, cfg=cfg, dry_run=False,
+                 gmail_service=gmail, calendar_service=cal)
+    assert result["sent"] == ["2026-04-28"]
+    # Both lookup methods were attempted
+    methods = [c["method"] for c in cal.calls]
+    assert "instances" in methods
+    assert "list" in methods
+    assert "rak@sixpeakcapital.com" in gmail.sent[0]["to"]
 
 
 def test_lookup_invitees_picks_first_non_cancelled(cfg):
