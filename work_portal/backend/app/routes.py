@@ -266,3 +266,29 @@ def register_routes(app: Flask) -> None:
             abort(503, description="Read.ai client not configured")
         saved = service.refresh_from_readai()
         return jsonify({"status": "ok", "ingested": len(saved), "meetings": saved})
+
+    @app.route("/api/jobs/send_followups", methods=["POST"])
+    @require_api_key
+    def api_send_followups() -> Any:
+        # Local import so the rest of the app boots even if google libs
+        # aren't installed yet during partial deploys.
+        from .jobs.send_followups import run
+        cfg = current_app.config["APP_CONFIG"]
+        storage = _get_storage()
+        # Allow overriding dry_run via query param for ad-hoc testing
+        # (e.g., curl ...?dry_run=true). Defaults to the configured value.
+        dry_param = request.args.get("dry_run")
+        if dry_param is not None:
+            dry_run = dry_param.strip().lower() in {"1", "true", "yes", "on"}
+        else:
+            dry_run = cfg.followup_dry_run
+        gmail_override = current_app.config.get("FOLLOWUPS_GMAIL_SERVICE")
+        cal_override = current_app.config.get("FOLLOWUPS_CALENDAR_SERVICE")
+        result = run(
+            storage=storage,
+            cfg=cfg,
+            dry_run=dry_run,
+            gmail_service=gmail_override,
+            calendar_service=cal_override,
+        )
+        return jsonify({"status": "ok", "dry_run": dry_run, **result})

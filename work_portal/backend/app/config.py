@@ -1,6 +1,13 @@
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
+
+
+def _bool_env(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
 @dataclass
@@ -14,6 +21,20 @@ class Config:
     readai_base_url: str = "https://api.read.ai/v1"
     summarizer_model: str = "claude-haiku-4-5-20251001"
     ingest_title_pattern: str = r"(?i)\bL10\b|Weekly Six Peak|Level 10|Leadership"
+    # Follow-up email job — see app/jobs/send_followups.py
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_refresh_token: str = ""
+    google_calendar_id: str = "primary"
+    followup_sender_email: str = ""
+    followup_cal_event_id: str = ""
+    followup_subject_prefix: str = "L10 Follow-up"
+    followup_portal_name: str = "L10 Weekly"
+    followup_portal_url: str = "https://l10.sixpeakapps.com"
+    followup_cadence: str = "weekly"
+    followup_min_age_hours: int = 24
+    followup_max_age_days: int = 7
+    followup_dry_run: bool = True
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -34,4 +55,17 @@ class Config:
                 "INGEST_TITLE_PATTERN",
                 r"(?i)\bL10\b|Weekly Six Peak|Level 10|Leadership",
             ),
+            google_client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
+            google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
+            google_refresh_token=os.environ.get("GOOGLE_REFRESH_TOKEN", ""),
+            google_calendar_id=os.environ.get("GOOGLE_CALENDAR_ID", "primary"),
+            followup_sender_email=os.environ.get("FOLLOWUP_SENDER_EMAIL", ""),
+            followup_cal_event_id=os.environ.get("FOLLOWUP_CAL_EVENT_ID", ""),
+            followup_subject_prefix=os.environ.get("FOLLOWUP_SUBJECT_PREFIX", "L10 Follow-up"),
+            followup_portal_name=os.environ.get("FOLLOWUP_PORTAL_NAME", "L10 Weekly"),
+            followup_portal_url=os.environ.get("FOLLOWUP_PORTAL_URL", "https://l10.sixpeakapps.com"),
+            followup_cadence=os.environ.get("FOLLOWUP_CADENCE", "weekly"),
+            followup_min_age_hours=int(os.environ.get("FOLLOWUP_MIN_AGE_HOURS", "24")),
+            followup_max_age_days=int(os.environ.get("FOLLOWUP_MAX_AGE_DAYS", "7")),
+            followup_dry_run=_bool_env("FOLLOWUP_DRY_RUN", True),
         )

@@ -31,6 +31,12 @@ CREATE TABLE IF NOT EXISTS meetings (
 );
 
 CREATE INDEX IF NOT EXISTS meetings_date_desc_idx ON meetings (date DESC, saved_at DESC);
+
+-- Follow-up email columns (added in v1 of automated recap feature).
+-- followup_sent_at: NULL = not yet sent. Set on successful send (or dry-run draft).
+-- followup_log:    JSONB record of {sent_at, recipients, dry_run, gmail_id, error}.
+ALTER TABLE meetings ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMPTZ NULL;
+ALTER TABLE meetings ADD COLUMN IF NOT EXISTS followup_log JSONB NULL;
 """
 
 CONNECT_TIMEOUT = 30  # seconds — covers Neon cold-start from idle
@@ -337,6 +343,85 @@ class PostgresStorage:
         data.setdefault("todos", []).append(todo)
         self.save_rocks(data)
         return todo
+
+    # --- follow-up email job ---------------------------------------------
+
+    def list_meetings_pending_followup(
+        self, *, min_age_hours: int = 24, max_age_days: int = 7
+    ) -> list[dict[str, Any]]:
+        """Meetings due for a follow-up email.
+
+        Filters:
+          - followup_sent_at IS NULL (not yet sent)
+          - data->>'saved_at' between max_age_days and min_age_hours ago
+            (anchored on JSONB.saved_at so user clicks don't reset the clock)
+          - summary is non-empty (don't send blank recaps)
+
+        Returns the meeting JSON dicts in saved_at ASC order so the oldest
+        gets sent first if there's a backlog.
+        """
+        sql = """
+            SELECT data
+            FROM meetings
+            WHERE followup_sent_at IS NULL
+              AND (now() - (data->>'saved_at')::timestamptz) >= make_interval(hours => %s)
+              AND (now() - (data->>'saved_at')::timestamptz) <= make_interval(days  => %s)
+              AND coalesce(trim(data->>'summary'), '') <> ''
+            ORDER BY data->>'saved_at' ASC
+        """
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (min_age_hours, max_age_days))
+                return [row[0] for row in cur.fetchall()]
+
+    def claim_followup(self, meeting_id: str) -> bool:
+        """Atomic claim. Returns True iff this caller now owns the send.
+
+        Concurrent crons can both call this; only one gets True. The other
+        gets False and skips the meeting.
+        """
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE meetings
+                       SET followup_sent_at = now()
+                     WHERE id = %s AND followup_sent_at IS NULL
+                    """,
+                    (meeting_id,),
+                )
+                claimed = cur.rowcount == 1
+            conn.commit()
+        return claimed
+
+    def release_followup(self, meeting_id: str) -> None:
+        """Undo a claim — used on error so the next cron retries.
+
+        Only resets if no successful log was recorded; if record_followup_log
+        wrote a success entry, we leave the claim in place (the send happened).
+        """
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE meetings
+                       SET followup_sent_at = NULL
+                     WHERE id = %s
+                       AND (followup_log IS NULL OR followup_log->>'error' IS NOT NULL)
+                    """,
+                    (meeting_id,),
+                )
+            conn.commit()
+
+    def record_followup_log(self, meeting_id: str, log: dict[str, Any]) -> None:
+        """Persist send metadata so we have a durable trail beyond stdout."""
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE meetings SET followup_log = %s WHERE id = %s",
+                    (Json(log), meeting_id),
+                )
+            conn.commit()
 
     def close(self) -> None:
         # Nothing to close — connections are per-request.

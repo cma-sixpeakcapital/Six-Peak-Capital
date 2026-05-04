@@ -26,6 +26,27 @@ services:
         sync: false
       - key: SUMMARIZER_MODEL
         value: claude-haiku-4-5-20251001
+      # --- follow-up email job ---
+      - key: FOLLOWUP_PORTAL_NAME
+        value: L10 Weekly
+      - key: FOLLOWUP_SUBJECT_PREFIX
+        value: L10 Follow-up
+      - key: FOLLOWUP_PORTAL_URL
+        value: https://l10.sixpeakapps.com
+      - key: FOLLOWUP_CADENCE
+        value: weekly
+      - key: FOLLOWUP_CAL_EVENT_ID
+        value: 7jb1kbiupq9ttrljuv3utu2km7
+      - key: FOLLOWUP_SENDER_EMAIL
+        value: cma@sixpeakcapital.com
+      - key: FOLLOWUP_DRY_RUN
+        sync: false           # default true; flip to false in dashboard after dry-run review
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
 
   - type: web
     name: lv-exec
@@ -44,6 +65,27 @@ services:
         sync: false
       - key: SUMMARIZER_MODEL
         value: claude-haiku-4-5-20251001
+      # --- follow-up email job ---
+      - key: FOLLOWUP_PORTAL_NAME
+        value: LV Executive
+      - key: FOLLOWUP_SUBJECT_PREFIX
+        value: LV Exec Follow-up
+      - key: FOLLOWUP_PORTAL_URL
+        value: https://lvexec.sixpeakapps.com
+      - key: FOLLOWUP_CADENCE
+        value: biweekly
+      - key: FOLLOWUP_CAL_EVENT_ID
+        value: 6epjj6rec5vn2kn3vekibvpf7t
+      - key: FOLLOWUP_SENDER_EMAIL
+        value: cma@sixpeakcapital.com
+      - key: FOLLOWUP_DRY_RUN
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
 
   - type: web
     name: sp-finance
@@ -62,6 +104,27 @@ services:
         sync: false
       - key: SUMMARIZER_MODEL
         value: claude-haiku-4-5-20251001
+      # --- follow-up email job ---
+      - key: FOLLOWUP_PORTAL_NAME
+        value: Six Peak Monthly Finance
+      - key: FOLLOWUP_SUBJECT_PREFIX
+        value: Finance Follow-up
+      - key: FOLLOWUP_PORTAL_URL
+        value: https://finance.sixpeakapps.com
+      - key: FOLLOWUP_CADENCE
+        value: monthly
+      - key: FOLLOWUP_CAL_EVENT_ID
+        value: 1l1dloedq4132mrt49ir33nmis
+      - key: FOLLOWUP_SENDER_EMAIL
+        value: cma@sixpeakcapital.com
+      - key: FOLLOWUP_DRY_RUN
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
 
   - type: web
     name: sixpeakapps

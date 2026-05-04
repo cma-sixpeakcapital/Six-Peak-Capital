@@ -1,0 +1,58 @@
+name: Send portal follow-up emails
+
+# Hourly cron that triggers each portal's POST /api/jobs/send_followups endpoint.
+# The portal app handles all the actual logic — checking which meetings are due,
+# looking up calendar invitees, rendering the email, and sending via Gmail API.
+# This workflow is a thin trigger; if a portal is down or returns 4xx/5xx,
+# the job for that portal turns red but the others still run.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   - L10_PORTAL_API_KEY      (matches PORTAL_API_KEY env var on work-portal-api)
+#   - LVEXEC_PORTAL_API_KEY   (matches PORTAL_API_KEY env var on lv-exec)
+#   - FINANCE_PORTAL_API_KEY  (matches PORTAL_API_KEY env var on sp-finance)
+#
+# Manual trigger: Actions tab → "Send portal follow-up emails" → "Run workflow".
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # hourly, top of the hour (UTC)
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false      # one portal failing shouldn't block the others
+      matrix:
+        portal:
+          - name: l10
+            url: https://l10.sixpeakapps.com/api/jobs/send_followups
+            secret: L10_PORTAL_API_KEY
+          - name: lvexec
+            url: https://lvexec.sixpeakapps.com/api/jobs/send_followups
+            secret: LVEXEC_PORTAL_API_KEY
+          - name: finance
+            url: https://finance.sixpeakapps.com/api/jobs/send_followups
+            secret: FINANCE_PORTAL_API_KEY
+    steps:
+      - name: Trigger ${{ matrix.portal.name }}
+        env:
+          API_KEY: ${{ secrets[matrix.portal.secret] }}
+        run: |
+          if [ -z "$API_KEY" ]; then
+            echo "::error::Missing secret ${{ matrix.portal.secret }} — set it in repo Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          # Render free-tier services spin down after 15 min idle, so the first
+          # request can take 30-60s to wake. --max-time 120 covers cold-start
+          # plus the actual job (which is fast — handful of API calls per
+          # meeting, and most hours there'll be 0 due meetings).
+          curl --fail-with-body \
+               --max-time 120 \
+               --retry 2 --retry-delay 30 \
+               --silent --show-error \
+               -X POST \
+               -H "X-API-Key: $API_KEY" \
+               -H "Content-Type: application/json" \
+               "${{ matrix.portal.url }}"
+          echo  # trailing newline for log readability

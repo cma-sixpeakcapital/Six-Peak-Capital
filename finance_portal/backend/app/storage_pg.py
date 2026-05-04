@@ -31,6 +31,12 @@ CREATE TABLE IF NOT EXISTS finance_meetings (
 );
 
 CREATE INDEX IF NOT EXISTS finance_meetings_date_desc_idx ON finance_meetings (date DESC, saved_at DESC);
+
+-- Follow-up email columns (added in v1 of automated recap feature).
+-- followup_sent_at: NULL = not yet sent. Set on successful send (or dry-run draft).
+-- followup_log:    JSONB record of {sent_at, recipients, dry_run, gmail_id, error}.
+ALTER TABLE finance_meetings ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMPTZ NULL;
+ALTER TABLE finance_meetings ADD COLUMN IF NOT EXISTS followup_log JSONB NULL;
 """
 
 CONNECT_TIMEOUT = 30
@@ -292,6 +298,63 @@ class PostgresStorage:
         data.setdefault("todos", []).append(todo)
         self.save_doc(data)
         return todo
+
+    # --- follow-up email job ---------------------------------------------
+
+    def list_meetings_pending_followup(
+        self, *, min_age_hours: int = 24, max_age_days: int = 7
+    ) -> list[dict[str, Any]]:
+        sql = """
+            SELECT data
+            FROM finance_meetings
+            WHERE followup_sent_at IS NULL
+              AND (now() - (data->>'saved_at')::timestamptz) >= make_interval(hours => %s)
+              AND (now() - (data->>'saved_at')::timestamptz) <= make_interval(days  => %s)
+              AND coalesce(trim(data->>'summary'), '') <> ''
+            ORDER BY data->>'saved_at' ASC
+        """
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (min_age_hours, max_age_days))
+                return [row[0] for row in cur.fetchall()]
+
+    def claim_followup(self, meeting_id: str) -> bool:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE finance_meetings
+                       SET followup_sent_at = now()
+                     WHERE id = %s AND followup_sent_at IS NULL
+                    """,
+                    (meeting_id,),
+                )
+                claimed = cur.rowcount == 1
+            conn.commit()
+        return claimed
+
+    def release_followup(self, meeting_id: str) -> None:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE finance_meetings
+                       SET followup_sent_at = NULL
+                     WHERE id = %s
+                       AND (followup_log IS NULL OR followup_log->>'error' IS NOT NULL)
+                    """,
+                    (meeting_id,),
+                )
+            conn.commit()
+
+    def record_followup_log(self, meeting_id: str, log: dict[str, Any]) -> None:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE finance_meetings SET followup_log = %s WHERE id = %s",
+                    (Json(log), meeting_id),
+                )
+            conn.commit()
 
     def close(self) -> None:
         pass

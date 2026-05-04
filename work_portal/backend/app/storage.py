@@ -305,6 +305,62 @@ class Storage:
         self.save_rocks(data)
         return todo
 
+    # --- follow-up email job ---------------------------------------------
+    # File-backed parity with PostgresStorage. The "columns" live as
+    # underscore-prefixed keys inside the meeting JSON so they don't
+    # accidentally surface in the API or template (which use the real fields).
+
+    def list_meetings_pending_followup(
+        self, *, min_age_hours: int = 24, max_age_days: int = 7
+    ) -> list[dict[str, Any]]:
+        now = datetime.now(timezone.utc)
+        out: list[dict[str, Any]] = []
+        for m in self.list_meetings():
+            if m.get("_followup_sent_at"):
+                continue
+            saved_raw = m.get("saved_at")
+            if not saved_raw:
+                continue
+            try:
+                saved = datetime.fromisoformat(saved_raw)
+            except (ValueError, TypeError):
+                continue
+            age = now - saved
+            if age.total_seconds() < min_age_hours * 3600:
+                continue
+            if age.total_seconds() > max_age_days * 86400:
+                continue
+            if not (m.get("summary") or "").strip():
+                continue
+            out.append(m)
+        out.sort(key=lambda m: m.get("saved_at", ""))
+        return out
+
+    def claim_followup(self, meeting_id: str) -> bool:
+        meeting = self.get_meeting(meeting_id)
+        if meeting is None or meeting.get("_followup_sent_at"):
+            return False
+        meeting["_followup_sent_at"] = datetime.now(timezone.utc).isoformat()
+        self.save_meeting(meeting)
+        return True
+
+    def release_followup(self, meeting_id: str) -> None:
+        meeting = self.get_meeting(meeting_id)
+        if meeting is None:
+            return
+        log = meeting.get("_followup_log") or {}
+        # Only release if the log doesn't show a successful send
+        if log.get("error") or not log:
+            meeting["_followup_sent_at"] = None
+            self.save_meeting(meeting)
+
+    def record_followup_log(self, meeting_id: str, log: dict[str, Any]) -> None:
+        meeting = self.get_meeting(meeting_id)
+        if meeting is None:
+            return
+        meeting["_followup_log"] = log
+        self.save_meeting(meeting)
+
 
 def today_iso() -> str:
     return date.today().isoformat()
