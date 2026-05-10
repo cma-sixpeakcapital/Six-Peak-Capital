@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meeting.title }} — L10 Portal{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <span class="section-label">{{ meeting.date }}</span>
+    <h1 class="hero-title">{{ meeting.title }}</h1>
+    <p class="hero-sub">
+        {% if meeting.attendees %}{{ meeting.attendees|join(", ") }}{% else %}<span class="muted">Attendees not captured</span>{% endif %}
+    </p>
+    <div class="divider"></div>
+</section>
+
+<section class="card">
+    <div class="card-head">
+        <span class="section-label">Summary</span>
+        <h2>What happened</h2>
+    </div>
+    {% if summary_bullets %}
+    <ul class="bullet-summary">
+        {% for b in summary_bullets %}<li>{{ b }}</li>{% endfor %}
+    </ul>
+    {% elif meeting.summary %}
+    <p class="lede">{{ meeting.summary }}</p>
+    {% else %}
+    <p class="muted">No summary available.</p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <div class="card-head">
+        <span class="section-label">Action Items</span>
+        <h2>Follow-ups</h2>
+    </div>
+    {% if meeting.action_items %}
+    <ul class="action-list">
+        {% for item in meeting.action_items %}
+        <li class="action-item action-{{ 'complete' if item.completed else 'incomplete' }}">
+            <button type="button" class="check" data-action-id="{{ item.id }}" data-meeting-id="{{ meeting.id }}"
+                    aria-label="Toggle complete"
+                    title="Click to toggle complete">{% if item.completed %}✓{% else %}◻{% endif %}</button>
+            <div class="action-body">
+                <span class="owner">{{ item.owner or "Unassigned" }}</span>
+                <span class="task">{{ item.task or item.text or "" }}</span>
+            </div>
+            <div class="action-right">
+                {% if item.due %}<span class="due">due {{ item.due }}</span>{% endif %}
+                <button type="button" class="pill-btn move-action-btn" data-action-id="{{ item.id }}" data-meeting-id="{{ meeting.id }}"
+                        title="Move to To-Dos">→ To-Dos</button>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">None.</p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <div class="card-head">
+        <span class="section-label">Files Referenced</span>
+        <h2>Referenced documents</h2>
+    </div>
+    {% if meeting.files %}
+    <ul class="files-list">
+        {% for f in meeting.files %}
+        <li>
+            {% if f.url %}<a href="{{ f.url }}">{{ f.name }}</a>{% else %}<span>{{ f.name }}</span>{% endif %}
+            {% if f.note %}<span class="file-note">— {{ f.note }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">None.</p>
+    {% endif %}
+</section>
+
+{% if meeting.source_url %}
+<section class="card">
+    <p><a class="btn-primary" href="{{ meeting.source_url }}" target="_blank" rel="noopener">Open in Read.ai</a></p>
+    <p class="meta">Ingested: {{ meeting.ingested_at or meeting.saved_at or "—" }}</p>
+</section>
+{% endif %}
+{% endblock %}

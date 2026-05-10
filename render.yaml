@@ -127,6 +127,45 @@ services:
         sync: false
 
   - type: web
+    name: sp-ic
+    runtime: python
+    pythonVersion: "3.11.11"
+    rootDir: ic_portal/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    plan: free
+    envVars:
+      - key: APP_SECRET_KEY
+        sync: false
+      - key: PORTAL_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUMMARIZER_MODEL
+        value: claude-haiku-4-5-20251001
+      # --- follow-up email job ---
+      - key: FOLLOWUP_PORTAL_NAME
+        value: Six Peak IC Weekly
+      - key: FOLLOWUP_SUBJECT_PREFIX
+        value: IC Follow-up
+      - key: FOLLOWUP_PORTAL_URL
+        value: https://ic.sixpeakapps.com
+      - key: FOLLOWUP_CADENCE
+        value: weekly
+      - key: FOLLOWUP_CAL_EVENT_ID
+        sync: false
+      - key: FOLLOWUP_SENDER_EMAIL
+        value: cma@sixpeakcapital.com
+      - key: FOLLOWUP_DRY_RUN
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
+
+  - type: web
     name: sixpeakapps
     runtime: python
     pythonVersion: "3.11.11"

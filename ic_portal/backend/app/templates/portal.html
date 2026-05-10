@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}IC Weekly Portal{% endblock %}
+
+{% macro goal_row(goal) -%}
+<li class="rock rock-{{ goal.status or 'incomplete' }}" data-goal-id="{{ goal.id }}">
+    <button type="button" class="check" data-goal-id="{{ goal.id }}"
+            aria-label="Toggle complete"
+            title="Click to toggle complete">{% if goal.status == 'complete' %}✓{% else %}◻{% endif %}</button>
+    <div class="rock-body">
+        <div class="rock-title">
+            {% if goal.link %}<a href="{{ goal.link }}" target="_blank" rel="noopener">{{ goal.title }}</a>
+            {% else %}{{ goal.title }}{% endif %}
+        </div>
+        {% if goal.notes %}<div class="rock-notes">{{ goal.notes }}</div>{% endif %}
+        <form class="add-form edit-goal-form hidden" data-goal-id="{{ goal.id }}" autocomplete="off">
+            <input type="text" name="title" placeholder="Title" value="{{ goal.title }}" required />
+            <input type="text" name="notes" placeholder="Notes" value="{{ goal.notes or '' }}" />
+            <input type="text" name="due" placeholder="Due" value="{{ goal.due or '' }}" />
+            <div class="form-actions">
+                <button type="submit" class="btn-primary small">Save</button>
+                <button type="button" class="pill-btn cancel-edit-goal">Cancel</button>
+            </div>
+        </form>
+    </div>
+    <div class="rock-right">
+        {% if goal.due %}<span class="rock-due">{{ goal.due }}</span>{% endif %}
+        <button type="button" class="pill-btn edit-goal-btn" data-goal-id="{{ goal.id }}" title="Edit">Edit</button>
+        <button type="button" class="pill-btn move-goal-btn" data-goal-id="{{ goal.id }}" title="Move to To-Dos">→ To-Dos</button>
+        <button type="button" class="pill-btn danger delete-goal-btn" data-goal-id="{{ goal.id }}" title="Delete">×</button>
+    </div>
+</li>
+{%- endmacro %}
+
+{% macro action_row(item, meeting_id) -%}
+<li class="action-item action-{{ 'complete' if item.completed else 'incomplete' }}" data-action-id="{{ item.id }}">
+    <button type="button" class="check" data-action-id="{{ item.id }}" data-meeting-id="{{ meeting_id }}"
+            aria-label="Toggle complete"
+            title="Click to toggle complete">{% if item.completed %}✓{% else %}◻{% endif %}</button>
+    <div class="action-body">
+        <span class="owner">{{ item.owner or "Unassigned" }}</span>
+        <span class="task">{{ item.task or item.text or "" }}</span>
+    </div>
+    <div class="action-right">
+        {% if item.due %}<span class="due">due {{ item.due }}</span>{% endif %}
+        <button type="button" class="pill-btn move-action-btn" data-action-id="{{ item.id }}" data-meeting-id="{{ meeting_id }}"
+                title="Move to To-Dos">→ To-Dos</button>
+    </div>
+</li>
+{%- endmacro %}
+
+{% block content %}
+<section class="hero">
+    <span class="section-label">This Week</span>
+    <h1 class="hero-title">Six Peak IC Weekly</h1>
+    {% if latest %}
+    <p class="hero-sub">Last meeting: <strong>{{ latest.date }}</strong> — {{ latest.title }}</p>
+    {% else %}
+    <p class="hero-sub muted">No meetings ingested yet. The next Read.ai call will populate this dashboard automatically.</p>
+    {% endif %}
+    <div class="divider"></div>
+</section>
+
+{% if latest %}
+<section class="card">
+    <div class="card-head">
+        <span class="section-label">Meeting Summary</span>
+        <h2>{{ latest.date }} — {{ latest.title }}</h2>
+    </div>
+    {% if summary_bullets %}
+    <ul class="bullet-summary">
+        {% for b in summary_bullets %}<li>{{ b }}</li>{% endfor %}
+    </ul>
+    {% elif latest.summary %}
+    <p class="lede">{{ latest.summary }}</p>
+    {% else %}
+    <p class="muted">No summary available.</p>
+    {% endif %}
+    {% if latest.source_url %}
+    <p class="source"><a href="{{ latest.source_url }}" target="_blank" rel="noopener">Open in Read.ai →</a></p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <div class="card-head">
+        <span class="section-label">Action Items</span>
+        <h2>From {{ latest.date }}</h2>
+    </div>
+    {% if latest.action_items %}
+    <ul class="action-list">
+        {% for item in latest.action_items %}{{ action_row(item, latest.id) }}{% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No action items remaining.</p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <div class="card-head">
+        <span class="section-label">Files Referenced</span>
+        <h2>Needed to keep moving</h2>
+    </div>
+    {% if latest.files %}
+    <ul class="files-list">
+        {% for f in latest.files %}
+        <li>
+            {% if f.url %}<a href="{{ f.url }}">{{ f.name }}</a>{% else %}<span>{{ f.name }}</span>{% endif %}
+            {% if f.note %}<span class="file-note">— {{ f.note }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No files referenced.</p>
+    {% endif %}
+</section>
+{% endif %}
+
+<section class="card">
+    <div class="card-head row-between">
+        <div>
+            <span class="section-label">To-Dos</span>
+            <h2>Active this cycle</h2>
+        </div>
+        <button type="button" class="btn-primary small" id="add-todo-open">+ Add To-Do</button>
+    </div>
+
+    <form class="add-form hidden" id="add-todo-form" autocomplete="off">
+        <input type="text" name="owner" placeholder="Owner" />
+        <input type="text" name="task" placeholder="Task (required)" required />
+        <input type="text" name="due" placeholder="Due (e.g. 2026-05-04)" />
+        <div class="form-actions">
+            <button type="submit" class="btn-primary small">Save</button>
+            <button type="button" class="pill-btn" id="add-todo-cancel">Cancel</button>
+        </div>
+    </form>
+
+    {% if todos %}
+    <ul class="todo-list">
+        {% for t in todos %}
+        <li class="todo todo-{{ 'complete' if t.completed else 'incomplete' }}" data-todo-id="{{ t.id }}">
+            <button type="button" class="check" data-todo-id="{{ t.id }}"
+                    aria-label="Toggle complete"
+                    title="Click to toggle complete">{% if t.completed %}✓{% else %}◻{% endif %}</button>
+            <div class="todo-body">
+                {% if t.owner %}<span class="owner">{{ t.owner }}</span>{% endif %}
+                <span class="task">{{ t.task }}</span>
+                {% if t.source and t.source.type and t.source.type != 'manual' %}
+                <span class="source-tag" title="{{ t.source.type }}">from {{ t.source.type.replace('_', ' ') }}</span>
+                {% endif %}
+            </div>
+            <div class="todo-right">
+                {% if t.due %}<span class="due">{{ t.due }}</span>{% endif %}
+                <button type="button" class="pill-btn danger delete-todo-btn" data-todo-id="{{ t.id }}" title="Delete">×</button>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No to-dos yet. Move action items or goals here, or click + Add To-Do.</p>
+    {% endif %}
+</section>
+
+<section class="rocks-section">
+    <div class="section-heading row-between">
+        <div>
+            <span class="section-label">Goals</span>
+            <h2>Organizational priorities</h2>
+        </div>
+        <button type="button" class="btn-primary small" id="add-goal-open">+ Add Goal</button>
+    </div>
+
+    <form class="add-form hidden" id="add-goal-form" autocomplete="off">
+        <input type="text" name="title" placeholder="Title (required)" required />
+        <input type="text" name="notes" placeholder="Notes" />
+        <input type="text" name="due" placeholder="Due" />
+        <div class="form-actions">
+            <button type="submit" class="btn-primary small">Save</button>
+            <button type="button" class="pill-btn" id="add-goal-cancel">Cancel</button>
+        </div>
+    </form>
+
+    <div class="card">
+        {% if goals %}
+        <ul class="rocks-list">
+            {% for goal in goals %}{{ goal_row(goal) }}{% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted">No goals set. Click + Add Goal to start the list.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="card">
+    <div class="card-head">
+        <span class="section-label">Recent Meetings</span>
+        <h2>History</h2>
+    </div>
+    {% if history %}
+    <ul class="history-list">
+        {% for m in history %}
+        <li>
+            <a href="{{ url_for('meeting_detail', meeting_id=m.id) }}">
+                <span class="hist-date">{{ m.date }}</span>
+                <span class="hist-title">{{ m.title }}</span>
+                <span class="hist-actions">{{ m.action_items|length }} actions</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No prior meetings yet.</p>
+    {% endif %}
+</section>
+{% endblock %}
