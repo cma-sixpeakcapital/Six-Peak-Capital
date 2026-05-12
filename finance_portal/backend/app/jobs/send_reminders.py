@@ -6,7 +6,7 @@ For each Finance meeting where:
   - ``reminder_sent_at`` is NULL
   - 14d ≤ (today - meeting.date) ≤ 21d
   - summary is non-empty
-  - there's at least one open to-do (silent-skip when zero)
+  - there's at least one open to-do OR open goal (silent-skip when both empty)
 
 we look up the calendar event's invitee list, render the mid-cycle reminder
 email, and send it via the Gmail API as cma@sixpeakcapital.com. Idempotency
@@ -24,7 +24,7 @@ import traceback
 from datetime import datetime, timezone
 from typing import Any, Callable, Protocol
 
-from .reminder_template import render_email
+from .reminder_template import render_email, _open_goals
 from .send_followups import (
     build_calendar_service,
     build_gmail_service,
@@ -40,6 +40,7 @@ class _CfgLike(Protocol):
     google_calendar_id: str
     followup_cal_event_id: str
     followup_sender_email: str
+    followup_portal_name: str
     followup_portal_url: str
     followup_reminder_subject_prefix: str
     followup_reminder_min_age_days: int
@@ -54,6 +55,7 @@ def run(
     gmail_service: Any | None = None,
     calendar_service: Any | None = None,
     open_todos_provider: Callable[[], list[dict[str, Any]]] | None = None,
+    open_goals_provider: Callable[[], list[dict[str, Any]]] | None = None,
 ) -> dict[str, Any]:
     """Process all due reminders.
 
@@ -83,17 +85,27 @@ def run(
         open_todos_provider = lambda: [
             t for t in storage.list_todos() if not t.get("completed")
         ]
+    if open_goals_provider is None:
+        # Finance stores goals on storage.list_goals(); fall back to [] for
+        # storage backends that don't have it (test fixtures, other portals).
+        def _default_goals() -> list[dict[str, Any]]:
+            lister = getattr(storage, "list_goals", None)
+            if lister is None:
+                return []
+            return _open_goals(lister())
+        open_goals_provider = _default_goals
 
     for meeting in pending:
         meeting_id = meeting.get("id", "")
         try:
-            # Silent skip if no open to-dos — no point nudging about an empty
-            # list. Doesn't claim, so we won't re-check this meeting until
-            # the next hourly run; once it's past the 21-day cutoff it falls
-            # out of the pending list anyway.
+            # Silent skip if both lists are empty — no point nudging about
+            # nothing. Doesn't claim, so we won't re-check this meeting
+            # until the next hourly run; once past the 21-day cutoff it
+            # falls out of the pending list anyway.
             open_todos = open_todos_provider()
-            if not open_todos:
-                result["skipped"].append((meeting_id, "no open to-dos"))
+            open_goals = open_goals_provider()
+            if not open_todos and not open_goals:
+                result["skipped"].append((meeting_id, "no open to-dos or goals"))
                 continue
 
             recipients = lookup_invitees(
@@ -114,7 +126,9 @@ def run(
             subject, html, text = render_email(
                 meeting,
                 open_todos,
+                open_goals,
                 subject_prefix=cfg.followup_reminder_subject_prefix,
+                portal_name=cfg.followup_portal_name,
                 portal_url=cfg.followup_portal_url,
             )
 
@@ -148,6 +162,7 @@ def run(
                     "dry_run": dry_run,
                     "gmail_id": gmail_id,
                     "open_todos_count": len(open_todos),
+                    "open_goals_count": len(open_goals),
                 })
             except Exception as exc:
                 storage.record_reminder_log(meeting_id, {
