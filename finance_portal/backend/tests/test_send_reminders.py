@@ -412,14 +412,21 @@ def test_excludes_sender_from_recipients(storage, cfg):
 
 
 def test_html_contains_portal_link(storage, cfg):
+    """Reminder links to the portal root (to-do list view), not the specific
+    meeting page — the reminder is forward-looking ("update your status")
+    so the to-do landing page is the relevant destination, not the recap."""
     _make_meeting(storage, days_ago=14)
     _add_open_todo(storage, "Bob", "Do thing")
     gmail = FakeGmail()
     cal = _calendar_with(["rak@sixpeakcapital.com"])
     run(storage=storage, cfg=cfg, dry_run=False, gmail_service=gmail, calendar_service=cal)
     sent = gmail.sent[0]
-    assert "https://finance.sixpeakapps.com/meetings/fin_2026_04_28" in sent["html"]
-    assert "https://finance.sixpeakapps.com/meetings/fin_2026_04_28" in sent["text"]
+    # Main portal page, NOT /meetings/<id>
+    assert "https://finance.sixpeakapps.com" in sent["html"]
+    assert "https://finance.sixpeakapps.com" in sent["text"]
+    assert "/meetings/" not in sent["html"]
+    assert "/meetings/" not in sent["text"]
+    assert "Update your to-dos in the portal" in sent["text"]
 
 
 def test_run_with_no_pending_meetings(storage, cfg):
