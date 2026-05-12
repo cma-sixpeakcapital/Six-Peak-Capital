@@ -69,6 +69,27 @@ def test_toggle_todo_missing(storage: Storage):
     assert storage.toggle_todo("nope") is None
 
 
+def test_update_todo_patches_allowed_fields(storage: Storage):
+    t = storage.add_todo({"owner": "Chris", "task": "old", "due": "2026-05-01"})
+    out = storage.update_todo(t["id"], {"owner": "Bob", "task": "new", "due": "2026-06-01"})
+    assert out["owner"] == "Bob"
+    assert out["task"] == "new"
+    assert out["due"] == "2026-06-01"
+
+
+def test_update_todo_ignores_protected_fields(storage: Storage):
+    t = storage.add_todo({"task": "t"})
+    out = storage.update_todo(t["id"], {"task": "new", "id": "hacked", "completed": True, "source": {"type": "x"}})
+    assert out["id"] == t["id"]
+    assert out["completed"] is False
+    assert out["source"]["type"] == "manual"
+    assert out["task"] == "new"
+
+
+def test_update_todo_missing(storage: Storage):
+    assert storage.update_todo("nope", {"task": "x"}) is None
+
+
 def test_delete_todo(storage: Storage):
     t = storage.add_todo({"task": "t"})
     assert storage.delete_todo(t["id"]) is True
@@ -398,6 +419,20 @@ def test_api_delete_todo(client, storage):
     t = storage.add_todo({"task": "t"})
     r = client.delete(f"/api/todos/{t['id']}", headers={"X-API-Key": "test-key"})
     assert r.status_code == 200
+
+
+def test_api_todo_update(client, storage):
+    t = storage.add_todo({"task": "old"})
+    r = client.patch(f"/api/todos/{t['id']}", json={"task": "new", "due": "2026-07-01", "owner": "Bob"})
+    assert r.status_code == 200
+    body = r.get_json()
+    assert body["task"] == "new"
+    assert body["due"] == "2026-07-01"
+    assert body["owner"] == "Bob"
+
+
+def test_api_todo_update_missing(client):
+    assert client.patch("/api/todos/nope", json={"task": "x"}).status_code == 404
 
 
 def test_api_action_toggle(client, storage):

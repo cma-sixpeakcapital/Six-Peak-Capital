@@ -113,6 +113,20 @@ def test_api_todo_delete(client, storage: Storage):
     assert client.delete(f"/api/todos/{t['id']}").status_code == 200
 
 
+def test_api_todo_update(client, storage: Storage):
+    t = storage.add_todo({"task": "old"})
+    r = client.patch(f"/api/todos/{t['id']}", json={"task": "new", "due": "2026-07-01", "owner": "Bob"})
+    assert r.status_code == 200
+    body = r.get_json()
+    assert body["task"] == "new"
+    assert body["due"] == "2026-07-01"
+    assert body["owner"] == "Bob"
+
+
+def test_api_todo_update_missing(client):
+    assert client.patch("/api/todos/nope", json={"task": "x"}).status_code == 404
+
+
 # --- Action items ---
 
 def test_api_action_toggle(client, storage: Storage):

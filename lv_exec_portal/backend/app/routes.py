@@ -165,6 +165,14 @@ def register_routes(app: Flask) -> None:
         })
         return jsonify(todo)
 
+    @app.route("/api/todos/<todo_id>", methods=["PATCH"])
+    def api_todo_update(todo_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        todo = _get_storage().update_todo(todo_id, body)
+        if todo is None:
+            abort(404)
+        return jsonify(todo)
+
     @app.route("/api/todos/<todo_id>/toggle", methods=["POST"])
     def api_todo_toggle(todo_id: str) -> Any:
         todo = _get_storage().toggle_todo(todo_id)

@@ -198,6 +198,18 @@ class Storage:
         self.save_rocks(data)
         return todo
 
+    def update_todo(self, todo_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
+        """Patch editable fields on a todo. Returns the updated todo or None if not found."""
+        allowed = {"owner", "task", "due"}
+        clean = {k: v for k, v in updates.items() if k in allowed}
+        data = self.load_rocks()
+        for t in data.get("todos", []) or []:
+            if t.get("id") == todo_id:
+                t.update(clean)
+                self.save_rocks(data)
+                return t
+        return None
+
     def toggle_todo(self, todo_id: str) -> dict[str, Any] | None:
         data = self.load_rocks()
         for t in data.get("todos", []) or []:
