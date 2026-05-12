@@ -106,6 +106,26 @@ def test_toggle_todo(storage: Storage):
     assert storage.toggle_todo(t["id"])["completed"] is True
 
 
+def test_update_todo_patches_allowed_fields(storage: Storage):
+    t = storage.add_todo({"owner": "Chris", "task": "old", "due": "2026-05-01"})
+    out = storage.update_todo(t["id"], {"owner": "Bob", "task": "new", "due": "2026-06-01"})
+    assert out["owner"] == "Bob"
+    assert out["task"] == "new"
+    assert out["due"] == "2026-06-01"
+
+
+def test_update_todo_ignores_protected_fields(storage: Storage):
+    t = storage.add_todo({"task": "t"})
+    out = storage.update_todo(t["id"], {"task": "new", "id": "hacked", "completed": True})
+    assert out["id"] == t["id"]
+    assert out["completed"] is False
+    assert out["task"] == "new"
+
+
+def test_update_todo_missing(storage: Storage):
+    assert storage.update_todo("nope", {"task": "x"}) is None
+
+
 def test_delete_todo(storage: Storage):
     t = storage.add_todo({"task": "t"})
     assert storage.delete_todo(t["id"]) is True

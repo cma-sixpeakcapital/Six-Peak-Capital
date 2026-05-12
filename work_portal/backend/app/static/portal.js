@@ -126,6 +126,37 @@
         });
     }
 
+    function wireEditTodo() {
+        document.querySelectorAll(".edit-todo-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const id = btn.dataset.todoId;
+                const form = document.querySelector(`.edit-todo-form[data-todo-id="${id}"]`);
+                if (!form) return;
+                form.classList.remove("hidden");
+                const first = form.querySelector("input[name=task]");
+                if (first) first.focus();
+            });
+        });
+        document.querySelectorAll(".cancel-edit-todo").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const form = btn.closest(".edit-todo-form");
+                if (form) form.classList.add("hidden");
+            });
+        });
+        document.querySelectorAll(".edit-todo-form").forEach(function (form) {
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                const id = form.dataset.todoId;
+                const data = Object.fromEntries(new FormData(form).entries());
+                const submit = form.querySelector("button[type=submit]");
+                handleAction(submit, () => apiRequest(`/api/todos/${encodeURIComponent(id)}`, {
+                    method: "PATCH",
+                    body: JSON.stringify(data),
+                }));
+            });
+        });
+    }
+
     function toggleForm(formId, openBtnId, cancelBtnId) {
         const form = document.getElementById(formId);
         const openBtn = document.getElementById(openBtnId);
@@ -217,6 +248,7 @@
         wireMoveAction();
         wireToggleTodo();
         wireDeleteTodo();
+        wireEditTodo();
         wireAddTodo();
         wireAddCompanyRock();
         wireAddPersonRock();

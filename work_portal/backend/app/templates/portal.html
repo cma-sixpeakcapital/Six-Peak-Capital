@@ -150,9 +150,19 @@
                 {% if t.source and t.source.type and t.source.type != 'manual' %}
                 <span class="source-tag" title="{{ t.source.type }}">from {{ t.source.type.replace('_', ' ') }}</span>
                 {% endif %}
+                <form class="add-form edit-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
+                    <input type="text" name="owner" placeholder="Owner" value="{{ t.owner or '' }}" />
+                    <input type="text" name="task" placeholder="Task" value="{{ t.task or '' }}" required />
+                    <input type="text" name="due" placeholder="Due" value="{{ t.due or '' }}" />
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary small">Save</button>
+                        <button type="button" class="pill-btn cancel-edit-todo">Cancel</button>
+                    </div>
+                </form>
             </div>
             <div class="todo-right">
                 {% if t.due %}<span class="due">{{ t.due }}</span>{% endif %}
+                <button type="button" class="pill-btn edit-todo-btn" data-todo-id="{{ t.id }}" title="Edit">Edit</button>
                 <button type="button" class="pill-btn danger delete-todo-btn" data-todo-id="{{ t.id }}" title="Delete">×</button>
             </div>
         </li>
