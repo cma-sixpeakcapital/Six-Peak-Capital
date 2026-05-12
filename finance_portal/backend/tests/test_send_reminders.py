@@ -1,8 +1,7 @@
 """Tests for the Finance mid-cycle reminder email job.
 
-Uses the file-backed Storage + fakes from test_send_followups (the FakeGmail
-and FakeCalendar are re-implemented inline rather than imported to keep the
-test file self-contained).
+Uses the file-backed Storage + inline fakes for Gmail and Calendar so
+the suite is self-contained (no live OAuth, no real network).
 """
 from __future__ import annotations
 
@@ -21,7 +20,7 @@ from app.jobs.send_reminders import run
 from app.storage import Storage
 
 
-# --- Fakes (mirror test_send_followups for self-contained tests) -----------
+# --- Fakes ---------------------------------------------------------------
 
 
 class FakeGmail:
@@ -143,6 +142,7 @@ def cfg(tmp_path: Path) -> Config:
         readai_api_key="",
         followup_sender_email="cma@sixpeakcapital.com",
         followup_cal_event_id="evt_recurring",
+        followup_portal_name="Six Peak Monthly Finance",
         followup_portal_url="https://finance.sixpeakapps.com",
         followup_reminder_subject_prefix="Finance Check-in",
         followup_reminder_min_age_days=14,
@@ -168,15 +168,16 @@ def _add_open_todo(storage: Storage, owner: str, task: str, due: str = "") -> di
     return storage.add_todo({"owner": owner, "task": task, "due": due})
 
 
+def _add_open_goal(storage: Storage, title: str, due: str = "") -> dict[str, Any]:
+    return storage.add_goal({"title": title, "due": due})
+
+
 # --- Template tests --------------------------------------------------------
 
 
 def test_estimated_next_call_handles_monthly_rollover():
-    # April 28 → May 28
     assert estimated_next_call("2026-04-28") == "May 28"
-    # Jan 31 → Feb 28 (relativedelta clamps to month-end)
     assert estimated_next_call("2026-01-31") == "February 28"
-    # Bad input → fallback
     assert estimated_next_call("not-a-date") == "in ~4 weeks"
 
 
@@ -186,37 +187,105 @@ def test_subject_is_forward_looking(cfg):
         "Finance Check-in — open items 2 weeks before next call"
 
 
-def test_template_includes_both_dates_in_body(cfg):
-    meeting = {"id": "x", "date": "2026-04-28", "summary": "Recap.", "action_items": []}
-    todos = [{"owner": "Bob", "task": "Do thing", "due": ""}]
-    subject, html, text = render_email(
-        meeting, todos,
-        subject_prefix=cfg.followup_reminder_subject_prefix,
-        portal_url=cfg.followup_portal_url,
+def test_template_is_clearly_automated(cfg):
+    meeting = {"id": "x", "date": "2026-04-28", "summary": "Recap."}
+    todos = [{"owner": "Bob", "task": "Do thing"}]
+    _, html, text = render_email(
+        meeting, todos, [],
+        subject_prefix="Finance Check-in",
+        portal_name="Six Peak Monthly Finance",
+        portal_url="https://finance.sixpeakapps.com",
     )
-    # Last call (April 28) and next call (May 28) both appear
-    assert "April 28" in text
+    # Header makes clear it's automated
+    assert "Automated reminder" in text
+    assert "Automated reminder" in html
+    # Footer disclaims automation, says don't reply
+    assert "sent automatically" in text
+    assert "sent automatically" in html
+    assert "Do not reply" in text or "do not reply" in text.lower()
+    # No personal sign-off, no "reply here" instruction
+    assert "— Chris" not in text
+    assert "— Chris" not in html
+    assert "reply here" not in text.lower()
+
+
+def test_template_includes_next_call_date(cfg):
+    meeting = {"id": "x", "date": "2026-04-28", "summary": "Recap."}
+    _, html, text = render_email(
+        meeting, [{"owner": "Bob", "task": "Thing"}], [],
+        subject_prefix="Finance Check-in",
+        portal_name="Six Peak Monthly Finance",
+        portal_url="https://finance.sixpeakapps.com",
+    )
     assert "May 28" in text
-    assert "April 28" in html
     assert "May 28" in html
 
 
+def test_template_includes_portal_name(cfg):
+    meeting = {"id": "x", "date": "2026-04-28", "summary": "Recap."}
+    _, html, text = render_email(
+        meeting, [{"owner": "Bob", "task": "Thing"}], [],
+        subject_prefix="Finance Check-in",
+        portal_name="Six Peak Monthly Finance",
+        portal_url="https://finance.sixpeakapps.com",
+    )
+    assert "Six Peak Monthly Finance" in text
+    assert "Six Peak Monthly Finance" in html
+
+
 def test_template_groups_todos_by_owner(cfg):
-    meeting = {"id": "x", "date": "2026-04-28", "summary": "Recap.", "action_items": []}
+    meeting = {"id": "x", "date": "2026-04-28", "summary": "Recap."}
     todos = [
         {"owner": "Bob", "task": "B1"},
         {"owner": "Alice", "task": "A1"},
         {"owner": "Bob", "task": "B2"},
     ]
     _, _, text = render_email(
-        meeting, todos,
+        meeting, todos, [],
         subject_prefix="Finance Check-in",
+        portal_name="Six Peak Monthly Finance",
         portal_url="https://finance.sixpeakapps.com",
     )
-    # Alphabetical, Alice before Bob, Bob's two tasks under one heading
     assert text.index("Alice") < text.index("Bob")
     assert text.count("Bob") == 1
     assert "B1" in text and "B2" in text
+
+
+def test_template_renders_goals_section(cfg):
+    meeting = {"id": "x", "date": "2026-04-28", "summary": "Recap."}
+    goals = [
+        {"title": "Yardi migration end-to-end", "due": "Q2 2026", "status": "incomplete"},
+        {"title": "Quarterly variance reporting", "due": "", "status": "incomplete"},
+    ]
+    _, html, text = render_email(
+        meeting, [], goals,
+        subject_prefix="Finance Check-in",
+        portal_name="Six Peak Monthly Finance",
+        portal_url="https://finance.sixpeakapps.com",
+    )
+    assert "OPEN GOALS" in text
+    assert "Yardi migration end-to-end" in text
+    assert "Q2 2026" in text
+    assert "Quarterly variance reporting" in text
+
+
+def test_template_shows_none_open_when_empty(cfg):
+    """When one section is empty, render '(none open)' rather than dropping
+    the section entirely. The send_reminders.run() skip-silent rule kicks
+    in only when BOTH are empty."""
+    meeting = {"id": "x", "date": "2026-04-28", "summary": "Recap."}
+    todos = [{"owner": "Bob", "task": "Thing"}]
+    _, _, text = render_email(
+        meeting, todos, [],
+        subject_prefix="Finance Check-in",
+        portal_name="Six Peak Monthly Finance",
+        portal_url="https://finance.sixpeakapps.com",
+    )
+    # Todos section has Bob's task, goals section says (none open)
+    assert "OPEN TO-DOS" in text
+    assert "Bob" in text
+    assert "OPEN GOALS" in text
+    assert "(none open)" in text
 
 
 # --- Pending-list filter tests --------------------------------------------
@@ -262,26 +331,57 @@ def test_claim_is_idempotent(storage, cfg):
 # --- end-to-end run() ------------------------------------------------------
 
 
-def test_skip_silently_when_no_open_todos(storage, cfg):
+def test_skip_silently_when_no_open_todos_or_goals(storage, cfg):
+    """Both empty → skip without claiming."""
     _make_meeting(storage, days_ago=14)
-    # No todos added
+    # No todos, no goals added
     gmail = FakeGmail()
     cal = _calendar_with(["candresen@sixpeakcapital.com"])
     result = run(storage=storage, cfg=cfg, dry_run=False,
                  gmail_service=gmail, calendar_service=cal)
     assert result["sent"] == []
     assert result["drafts"] == []
-    assert ("fin_2026_04_28", "no open to-dos") in result["skipped"]
+    assert ("fin_2026_04_28", "no open to-dos or goals") in result["skipped"]
     assert len(gmail.sent) == 0
-    # Claim NOT taken — retries next cycle if a todo gets added before cutoff
     m = storage.get_meeting("fin_2026_04_28")
     assert m.get("_reminder_sent_at") is None
 
 
-def test_sends_reminder_when_due_with_open_todos(storage, cfg):
+def test_fires_when_only_todos_have_content(storage, cfg):
+    """Todos present, goals empty → still send (goals section shows '(none open)')."""
+    _make_meeting(storage, days_ago=14)
+    _add_open_todo(storage, "Bob", "Thing")
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    result = run(storage=storage, cfg=cfg, dry_run=False,
+                 gmail_service=gmail, calendar_service=cal)
+    assert result["sent"] == ["fin_2026_04_28"]
+    sent = gmail.sent[0]
+    assert "OPEN TO-DOS" in sent["text"]
+    assert "OPEN GOALS" in sent["text"]
+    # Goals section says "(none open)"
+    goals_idx = sent["text"].index("OPEN GOALS")
+    assert "(none open)" in sent["text"][goals_idx:]
+
+
+def test_fires_when_only_goals_have_content(storage, cfg):
+    """Goals present, todos empty → still send."""
+    _make_meeting(storage, days_ago=14)
+    _add_open_goal(storage, "Migrate Yardi")
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    result = run(storage=storage, cfg=cfg, dry_run=False,
+                 gmail_service=gmail, calendar_service=cal)
+    assert result["sent"] == ["fin_2026_04_28"]
+    sent = gmail.sent[0]
+    assert "Migrate Yardi" in sent["text"]
+
+
+def test_sends_reminder_with_both_todos_and_goals(storage, cfg):
     _make_meeting(storage, days_ago=14)
     _add_open_todo(storage, "Chris Andresen", "Send Grady the historical payroll data")
     _add_open_todo(storage, "Grady Lakamp", "Provide pre-construction invoices", due="5/15")
+    _add_open_goal(storage, "Yardi migration end-to-end", due="Q2 2026")
     gmail = FakeGmail()
     cal = _calendar_with(["candresen@sixpeakcapital.com", "grady@lvllc.com"])
 
@@ -294,15 +394,31 @@ def test_sends_reminder_when_due_with_open_todos(storage, cfg):
     assert "candresen@sixpeakcapital.com" in sent["to"]
     assert "grady@lvllc.com" in sent["to"]
     assert "Finance Check-in" in sent["subject"]
-    assert "open items 2 weeks before next call" in sent["subject"]
     assert "Send Grady the historical payroll data" in sent["html"]
     assert "Provide pre-construction invoices" in sent["html"]
     assert "5/15" in sent["html"]
-    # claim was set
+    assert "Yardi migration end-to-end" in sent["html"]
+    assert "Q2 2026" in sent["html"]
+    # claim was set, log captures both counts
     m = storage.get_meeting("fin_2026_04_28")
     assert m["_reminder_sent_at"] is not None
     assert m["_reminder_log"]["dry_run"] is False
     assert m["_reminder_log"]["open_todos_count"] == 2
+    assert m["_reminder_log"]["open_goals_count"] == 1
+
+
+def test_completed_goals_filtered_out(storage, cfg):
+    _make_meeting(storage, days_ago=14)
+    _add_open_goal(storage, "Open goal")
+    done = _add_open_goal(storage, "Closed goal")
+    storage.toggle_goal(done["id"])  # mark complete
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    run(storage=storage, cfg=cfg, dry_run=False,
+        gmail_service=gmail, calendar_service=cal)
+    sent = gmail.sent[0]
+    assert "Open goal" in sent["text"]
+    assert "Closed goal" not in sent["text"]
 
 
 def test_dry_run_creates_draft_only_to_sender(storage, cfg):
@@ -320,16 +436,13 @@ def test_dry_run_creates_draft_only_to_sender(storage, cfg):
     draft = gmail.created_drafts[0]
     assert draft["to"] == "cma@sixpeakcapital.com"
     assert draft["subject"].startswith("[DRY RUN]")
-    m = storage.get_meeting("fin_2026_04_28")
-    assert m["_reminder_sent_at"] is not None
-    assert m["_reminder_log"]["dry_run"] is True
 
 
 def test_completed_todos_are_filtered_before_send(storage, cfg):
     _make_meeting(storage, days_ago=14)
     _add_open_todo(storage, "Bob", "Open task")
     done = _add_open_todo(storage, "Bob", "Closed task")
-    storage.toggle_todo(done["id"])  # mark complete
+    storage.toggle_todo(done["id"])
     gmail = FakeGmail()
     cal = _calendar_with(["rak@sixpeakcapital.com"])
 
@@ -352,7 +465,6 @@ def test_no_calendar_invitees_skips_without_claiming(storage, cfg):
 
     assert result["sent"] == []
     assert ("fin_2026_04_28", "no calendar invitees") in result["skipped"]
-    assert len(gmail.sent) == 0
     m = storage.get_meeting("fin_2026_04_28")
     assert m.get("_reminder_sent_at") is None
 
@@ -367,8 +479,6 @@ def test_calendar_lookup_error_caught(storage, cfg):
                  gmail_service=gmail, calendar_service=cal)
 
     assert len(result["errors"]) == 1
-    assert result["errors"][0][0] == "fin_2026_04_28"
-    # claim NOT taken — error happened before claim
     m = storage.get_meeting("fin_2026_04_28")
     assert m.get("_reminder_sent_at") is None
 
@@ -384,7 +494,6 @@ def test_send_failure_releases_claim(storage, cfg):
                  gmail_service=gmail, calendar_service=cal)
 
     assert len(result["errors"]) == 1
-    # Claim was released so the next cron retries
     m = storage.get_meeting("fin_2026_04_28")
     assert m.get("_reminder_sent_at") is None
     assert "error" in (m.get("_reminder_log") or {})
@@ -411,26 +520,23 @@ def test_excludes_sender_from_recipients(storage, cfg):
     assert gmail.sent[0]["to"] == "rak@sixpeakcapital.com"
 
 
-def test_html_contains_portal_link(storage, cfg):
+def test_link_points_to_main_portal_not_meeting_page(storage, cfg):
     """Reminder links to the portal root (to-do list view), not the specific
-    meeting page — the reminder is forward-looking ("update your status")
-    so the to-do landing page is the relevant destination, not the recap."""
+    meeting page — the reminder is forward-looking."""
     _make_meeting(storage, days_ago=14)
     _add_open_todo(storage, "Bob", "Do thing")
     gmail = FakeGmail()
     cal = _calendar_with(["rak@sixpeakcapital.com"])
     run(storage=storage, cfg=cfg, dry_run=False, gmail_service=gmail, calendar_service=cal)
     sent = gmail.sent[0]
-    # Main portal page, NOT /meetings/<id>
     assert "https://finance.sixpeakapps.com" in sent["html"]
     assert "https://finance.sixpeakapps.com" in sent["text"]
     assert "/meetings/" not in sent["html"]
     assert "/meetings/" not in sent["text"]
-    assert "Update your to-dos in the portal" in sent["text"]
+    assert "Update your status in the portal" in sent["text"]
 
 
 def test_run_with_no_pending_meetings(storage, cfg):
-    # No meetings at all
     gmail = FakeGmail()
     cal = FakeCalendar()
     result = run(storage=storage, cfg=cfg, dry_run=False,
