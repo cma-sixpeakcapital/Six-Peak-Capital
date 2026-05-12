@@ -1,6 +1,8 @@
 name: Send portal follow-up emails
 
-# Hourly cron that triggers each portal's POST /api/jobs/send_followups endpoint.
+# Hourly cron that triggers each portal's POST /api/jobs/send_followups endpoint
+# (and, for sp-finance only, also POST /api/jobs/send_reminders for the
+# mid-cycle nudge 14d after each monthly call).
 # The portal app handles all the actual logic — checking which meetings are due,
 # looking up calendar invitees, rendering the email, and sending via Gmail API.
 # This workflow is a thin trigger; if a portal is down or returns 4xx/5xx,
@@ -26,16 +28,19 @@ jobs:
       matrix:
         portal:
           - name: l10
-            url: https://l10.sixpeakapps.com/api/jobs/send_followups
+            base_url: https://l10.sixpeakapps.com
             secret: L10_PORTAL_API_KEY
+            has_reminder: false
           - name: lvexec
-            url: https://lvexec.sixpeakapps.com/api/jobs/send_followups
+            base_url: https://lvexec.sixpeakapps.com
             secret: LVEXEC_PORTAL_API_KEY
+            has_reminder: false
           - name: finance
-            url: https://finance.sixpeakapps.com/api/jobs/send_followups
+            base_url: https://finance.sixpeakapps.com
             secret: FINANCE_PORTAL_API_KEY
+            has_reminder: true
     steps:
-      - name: Trigger ${{ matrix.portal.name }}
+      - name: Trigger ${{ matrix.portal.name }} send_followups
         env:
           API_KEY: ${{ secrets[matrix.portal.secret] }}
         run: |
@@ -54,5 +59,23 @@ jobs:
                -X POST \
                -H "X-API-Key: $API_KEY" \
                -H "Content-Type: application/json" \
-               "${{ matrix.portal.url }}"
+               "${{ matrix.portal.base_url }}/api/jobs/send_followups"
           echo  # trailing newline for log readability
+
+      - name: Trigger ${{ matrix.portal.name }} send_reminders
+        if: matrix.portal.has_reminder
+        env:
+          API_KEY: ${{ secrets[matrix.portal.secret] }}
+        run: |
+          # Mid-cycle reminder (currently sp-finance only). Same auth + curl
+          # shape as the recap. Service is already warm from the call above,
+          # so this returns fast.
+          curl --fail-with-body \
+               --max-time 60 \
+               --retry 2 --retry-delay 15 \
+               --silent --show-error \
+               -X POST \
+               -H "X-API-Key: $API_KEY" \
+               -H "Content-Type: application/json" \
+               "${{ matrix.portal.base_url }}/api/jobs/send_reminders"
+          echo

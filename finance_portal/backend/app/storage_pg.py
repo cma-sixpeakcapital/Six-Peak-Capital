@@ -37,6 +37,13 @@ CREATE INDEX IF NOT EXISTS finance_meetings_date_desc_idx ON finance_meetings (d
 -- followup_log:    JSONB record of {sent_at, recipients, dry_run, gmail_id, error}.
 ALTER TABLE finance_meetings ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMPTZ NULL;
 ALTER TABLE finance_meetings ADD COLUMN IF NOT EXISTS followup_log JSONB NULL;
+
+-- Mid-cycle reminder columns (Finance-only — 14 days after the monthly call,
+-- a "still open?" nudge goes out so the team has 2 weeks before the next one).
+-- reminder_sent_at: NULL = not yet sent. Same atomic-claim pattern as follow-up.
+-- reminder_log:    JSONB record of {sent_at, recipients, dry_run, gmail_id, error}.
+ALTER TABLE finance_meetings ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMPTZ NULL;
+ALTER TABLE finance_meetings ADD COLUMN IF NOT EXISTS reminder_log JSONB NULL;
 """
 
 CONNECT_TIMEOUT = 30
@@ -363,6 +370,83 @@ class PostgresStorage:
             with conn.cursor() as cur:
                 cur.execute(
                     "UPDATE finance_meetings SET followup_log = %s WHERE id = %s",
+                    (Json(log), meeting_id),
+                )
+            conn.commit()
+
+    # --- mid-cycle reminder job ------------------------------------------
+    # Mirrors the follow-up methods above but uses reminder_sent_at / reminder_log
+    # columns, and anchors on the meeting's calendar DATE (not saved_at) so
+    # Read AI re-ingests don't shift the schedule. Used by send_reminders.py.
+
+    def list_meetings_pending_reminder(
+        self, *, min_age_days: int = 14, max_age_days: int = 21
+    ) -> list[dict[str, Any]]:
+        """Meetings due for a mid-cycle reminder email.
+
+        Filters:
+          - reminder_sent_at IS NULL (not yet sent)
+          - meeting date is between min_age_days and max_age_days ago
+            (anchored on data->>'date' which is a stable calendar date)
+          - summary is non-empty (we won't nudge people about a no-content recap)
+
+        Open-todos check happens in Python — the to-dos live in a separate
+        finance_doc table, not in the meeting row, so SQL can't join cleanly.
+
+        Returns the meeting JSON dicts in date ASC order so the oldest gets
+        sent first if a backlog ever accumulates.
+        """
+        sql = """
+            SELECT data
+            FROM finance_meetings
+            WHERE reminder_sent_at IS NULL
+              AND (current_date - (data->>'date')::date) >= %s
+              AND (current_date - (data->>'date')::date) <= %s
+              AND coalesce(trim(data->>'summary'), '') <> ''
+            ORDER BY (data->>'date')::date ASC
+        """
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (min_age_days, max_age_days))
+                return [row[0] for row in cur.fetchall()]
+
+    def claim_reminder(self, meeting_id: str) -> bool:
+        """Atomic claim. Returns True iff this caller now owns the send."""
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE finance_meetings
+                       SET reminder_sent_at = now()
+                     WHERE id = %s AND reminder_sent_at IS NULL
+                    """,
+                    (meeting_id,),
+                )
+                claimed = cur.rowcount == 1
+            conn.commit()
+        return claimed
+
+    def release_reminder(self, meeting_id: str) -> None:
+        """Undo a claim — used on error so the next cron retries."""
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE finance_meetings
+                       SET reminder_sent_at = NULL
+                     WHERE id = %s
+                       AND (reminder_log IS NULL OR reminder_log->>'error' IS NOT NULL)
+                    """,
+                    (meeting_id,),
+                )
+            conn.commit()
+
+    def record_reminder_log(self, meeting_id: str, log: dict[str, Any]) -> None:
+        """Persist reminder send metadata."""
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE finance_meetings SET reminder_log = %s WHERE id = %s",
                     (Json(log), meeting_id),
                 )
             conn.commit()

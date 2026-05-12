@@ -119,6 +119,15 @@ services:
         value: cma@sixpeakcapital.com
       - key: FOLLOWUP_DRY_RUN
         sync: false
+      # --- mid-cycle reminder job (Finance only) ---
+      - key: FOLLOWUP_REMINDER_SUBJECT_PREFIX
+        value: Finance Check-in
+      - key: FOLLOWUP_REMINDER_MIN_AGE_DAYS
+        value: "14"
+      - key: FOLLOWUP_REMINDER_MAX_AGE_DAYS
+        value: "21"
+      - key: FOLLOWUP_REMINDER_DRY_RUN
+        sync: false     # default true; flip after dry-run review
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
