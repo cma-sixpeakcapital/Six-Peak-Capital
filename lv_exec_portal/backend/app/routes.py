@@ -243,3 +243,25 @@ def register_routes(app: Flask) -> None:
             calendar_service=cal_override,
         )
         return jsonify({"status": "ok", "dry_run": dry_run, **result})
+
+    @app.route("/api/jobs/send_reminders", methods=["POST"])
+    @require_api_key
+    def api_send_reminders() -> Any:
+        from .jobs.send_reminders import run
+        cfg = current_app.config["APP_CONFIG"]
+        storage = _get_storage()
+        dry_param = request.args.get("dry_run")
+        if dry_param is not None:
+            dry_run = dry_param.strip().lower() in {"1", "true", "yes", "on"}
+        else:
+            dry_run = cfg.followup_reminder_dry_run
+        gmail_override = current_app.config.get("FOLLOWUPS_GMAIL_SERVICE")
+        cal_override = current_app.config.get("FOLLOWUPS_CALENDAR_SERVICE")
+        result = run(
+            storage=storage,
+            cfg=cfg,
+            dry_run=dry_run,
+            gmail_service=gmail_override,
+            calendar_service=cal_override,
+        )
+        return jsonify({"status": "ok", "dry_run": dry_run, **result})

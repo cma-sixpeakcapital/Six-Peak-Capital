@@ -37,6 +37,12 @@ CREATE INDEX IF NOT EXISTS lv_meetings_date_desc_idx ON lv_meetings (date DESC, 
 -- followup_log:    JSONB record of {sent_at, recipients, dry_run, gmail_id, error}.
 ALTER TABLE lv_meetings ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMPTZ NULL;
 ALTER TABLE lv_meetings ADD COLUMN IF NOT EXISTS followup_log JSONB NULL;
+
+-- Mid-cycle reminder columns (fires 7 days after each bi-weekly LV Exec
+-- meeting — halfway between meetings — as an automated nudge of open
+-- to-dos and goals).
+ALTER TABLE lv_meetings ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMPTZ NULL;
+ALTER TABLE lv_meetings ADD COLUMN IF NOT EXISTS reminder_log JSONB NULL;
 """
 
 CONNECT_TIMEOUT = 30
@@ -363,6 +369,63 @@ class PostgresStorage:
             with conn.cursor() as cur:
                 cur.execute(
                     "UPDATE lv_meetings SET followup_log = %s WHERE id = %s",
+                    (Json(log), meeting_id),
+                )
+            conn.commit()
+
+    # --- mid-cycle reminder job ------------------------------------------
+
+    def list_meetings_pending_reminder(
+        self, *, min_age_days: int = 7, max_age_days: int = 14
+    ) -> list[dict[str, Any]]:
+        sql = """
+            SELECT data
+            FROM lv_meetings
+            WHERE reminder_sent_at IS NULL
+              AND (current_date - (data->>'date')::date) >= %s
+              AND (current_date - (data->>'date')::date) <= %s
+              AND coalesce(trim(data->>'summary'), '') <> ''
+            ORDER BY (data->>'date')::date ASC
+        """
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (min_age_days, max_age_days))
+                return [row[0] for row in cur.fetchall()]
+
+    def claim_reminder(self, meeting_id: str) -> bool:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE lv_meetings
+                       SET reminder_sent_at = now()
+                     WHERE id = %s AND reminder_sent_at IS NULL
+                    """,
+                    (meeting_id,),
+                )
+                claimed = cur.rowcount == 1
+            conn.commit()
+        return claimed
+
+    def release_reminder(self, meeting_id: str) -> None:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE lv_meetings
+                       SET reminder_sent_at = NULL
+                     WHERE id = %s
+                       AND (reminder_log IS NULL OR reminder_log->>'error' IS NOT NULL)
+                    """,
+                    (meeting_id,),
+                )
+            conn.commit()
+
+    def record_reminder_log(self, meeting_id: str, log: dict[str, Any]) -> None:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE lv_meetings SET reminder_log = %s WHERE id = %s",
                     (Json(log), meeting_id),
                 )
             conn.commit()

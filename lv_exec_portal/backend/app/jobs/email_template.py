@@ -62,11 +62,15 @@ def render_subject(prefix: str, meeting: dict[str, Any]) -> str:
 
 def render_html(meeting: dict[str, Any], open_todos: list[dict[str, Any]],
                 portal_name: str, portal_url: str, cadence: str) -> str:
-    """HTML body — uses inline tags so it renders in Gmail / Outlook without external CSS."""
+    """HTML body — uses inline tags so it renders in Gmail / Outlook without external CSS.
+
+    Tone is automated: header explicitly says so, no personal sign-off, footer
+    disclaims with "do not reply." Matches the reminder email style.
+    """
     parts: list[str] = []
-    parts.append("<p>Team —</p>")
     parts.append(
-        f"<p>Recap from {escape(nice_date(meeting.get('date', '')))}'s {escape(portal_name)}:</p>"
+        f"<p>Automated recap — {escape(portal_name)} on "
+        f"{escape(nice_date(meeting.get('date', '')))}.</p>"
     )
 
     parts.append("<p><b>WHAT WE COVERED</b></p>")
@@ -105,11 +109,18 @@ def render_html(meeting: dict[str, Any], open_todos: list[dict[str, Any]],
     else:
         parts.append("<p><i>(no open to-dos)</i></p>")
 
-    portal_link = f"{portal_url.rstrip('/')}/meetings/{meeting.get('id', '')}"
+    # Link to portal root (to-do list view), not the specific meeting page.
+    # Recipients more often want to update their status than re-read the
+    # meeting recap that's already in their inbox.
+    portal_link = portal_url.rstrip("/")
     parts.append(
-        f'<p>Full portal view: <a href="{escape(portal_link)}">{escape(portal_link)}</a></p>'
+        f'<p>Update your status in the portal: <a href="{escape(portal_link)}">'
+        f"{escape(portal_link)}</a></p>"
     )
-    parts.append("<p>— Chris</p>")
+    parts.append(
+        "<p style='color:#888;font-size:12px;'>"
+        "— sent automatically by the portal. Do not reply.</p>"
+    )
 
     return "\n".join(parts)
 
@@ -118,9 +129,10 @@ def render_text(meeting: dict[str, Any], open_todos: list[dict[str, Any]],
                 portal_name: str, portal_url: str, cadence: str) -> str:
     """Plain-text alternative. Same content, no HTML."""
     lines: list[str] = []
-    lines.append("Team —")
-    lines.append("")
-    lines.append(f"Recap from {nice_date(meeting.get('date', ''))}'s {portal_name}:")
+    lines.append(
+        f"Automated recap — {portal_name} on "
+        f"{nice_date(meeting.get('date', ''))}."
+    )
     lines.append("")
     lines.append("WHAT WE COVERED")
     bullets = bullet_split(meeting.get("summary", "") or "")
@@ -155,10 +167,10 @@ def render_text(meeting: dict[str, Any], open_todos: list[dict[str, Any]],
         lines.append("  (no open to-dos)")
     lines.append("")
 
-    portal_link = f"{portal_url.rstrip('/')}/meetings/{meeting.get('id', '')}"
-    lines.append(f"Full portal view: {portal_link}")
+    portal_link = portal_url.rstrip("/")
+    lines.append(f"Update your status in the portal: {portal_link}")
     lines.append("")
-    lines.append("— Chris")
+    lines.append("— sent automatically by the portal. Do not reply.")
 
     return "\n".join(lines)
 

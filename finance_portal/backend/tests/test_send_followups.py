@@ -486,13 +486,28 @@ def test_run_with_no_pending_meetings(storage, cfg):
 
 
 def test_html_contains_portal_link(storage, cfg):
+    """Recap links to portal root (to-do view), not meeting page."""
     _make_meeting(storage, hours_ago=25)
     gmail = FakeGmail()
     cal = _calendar_with(["rak@sixpeakcapital.com"])
     run(storage=storage, cfg=cfg, dry_run=False, gmail_service=gmail, calendar_service=cal)
     sent = gmail.sent[0]
-    assert "https://l10.sixpeakapps.com/meetings/2026-04-28" in sent["html"]
-    assert "https://l10.sixpeakapps.com/meetings/2026-04-28" in sent["text"]
+    assert "https://l10.sixpeakapps.com" in sent["html"]
+    assert "/meetings/" not in sent["html"]
+    assert "/meetings/" not in sent["text"]
+    assert "Update your status in the portal" in sent["text"]
+
+
+def test_recap_is_clearly_automated(storage, cfg):
+    _make_meeting(storage, hours_ago=25)
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    run(storage=storage, cfg=cfg, dry_run=False, gmail_service=gmail, calendar_service=cal)
+    sent = gmail.sent[0]
+    assert "Automated recap" in sent["text"]
+    assert "sent automatically" in sent["text"]
+    assert "Team —" not in sent["text"]
+    assert "— Chris" not in sent["text"]
 
 
 def test_open_todos_appear_in_email(storage, cfg):

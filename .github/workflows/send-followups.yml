@@ -30,11 +30,11 @@ jobs:
           - name: l10
             base_url: https://l10.sixpeakapps.com
             secret: L10_PORTAL_API_KEY
-            has_reminder: false
+            has_reminder: true
           - name: lvexec
             base_url: https://lvexec.sixpeakapps.com
             secret: LVEXEC_PORTAL_API_KEY
-            has_reminder: false
+            has_reminder: true
           - name: finance
             base_url: https://finance.sixpeakapps.com
             secret: FINANCE_PORTAL_API_KEY
