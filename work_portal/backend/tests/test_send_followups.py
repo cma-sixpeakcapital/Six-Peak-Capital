@@ -486,13 +486,37 @@ def test_run_with_no_pending_meetings(storage, cfg):
 
 
 def test_html_contains_portal_link(storage, cfg):
+    """Recap links to the portal root (to-do list view), not the specific
+    meeting page — matches the reminder email style. Recipients more often
+    want to update their status than re-read the recap in their inbox."""
     _make_meeting(storage, hours_ago=25)
     gmail = FakeGmail()
     cal = _calendar_with(["rak@sixpeakcapital.com"])
     run(storage=storage, cfg=cfg, dry_run=False, gmail_service=gmail, calendar_service=cal)
     sent = gmail.sent[0]
-    assert "https://l10.sixpeakapps.com/meetings/2026-04-28" in sent["html"]
-    assert "https://l10.sixpeakapps.com/meetings/2026-04-28" in sent["text"]
+    assert "https://l10.sixpeakapps.com" in sent["html"]
+    assert "https://l10.sixpeakapps.com" in sent["text"]
+    assert "/meetings/" not in sent["html"]
+    assert "/meetings/" not in sent["text"]
+    assert "Update your status in the portal" in sent["text"]
+
+
+def test_recap_is_clearly_automated(storage, cfg):
+    """Recap uses the same automated tone as the reminder — no 'Team —' /
+    '— Chris' personal framing, explicit 'Automated recap' header, and a
+    'sent automatically' footer."""
+    _make_meeting(storage, hours_ago=25)
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    run(storage=storage, cfg=cfg, dry_run=False, gmail_service=gmail, calendar_service=cal)
+    sent = gmail.sent[0]
+    assert "Automated recap" in sent["text"]
+    assert "Automated recap" in sent["html"]
+    assert "sent automatically" in sent["text"]
+    assert "sent automatically" in sent["html"]
+    assert "Team —" not in sent["text"]
+    assert "— Chris" not in sent["text"]
+    assert "— Chris" not in sent["html"]
 
 
 def test_open_todos_appear_in_email(storage, cfg):
