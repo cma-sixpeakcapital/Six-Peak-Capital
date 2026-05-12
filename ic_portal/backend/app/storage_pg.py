@@ -181,6 +181,17 @@ class PostgresStorage:
         self.save_doc(data)
         return todo
 
+    def update_todo(self, todo_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
+        allowed = {"owner", "task", "due"}
+        clean = {k: v for k, v in updates.items() if k in allowed}
+        data = self.load_doc()
+        for t in data.get("todos", []) or []:
+            if t.get("id") == todo_id:
+                t.update(clean)
+                self.save_doc(data)
+                return t
+        return None
+
     def toggle_todo(self, todo_id: str) -> dict[str, Any] | None:
         data = self.load_doc()
         for t in data.get("todos", []) or []:
