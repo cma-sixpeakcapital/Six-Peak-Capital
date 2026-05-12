@@ -35,6 +35,12 @@ class Config:
     followup_min_age_hours: int = 24
     followup_max_age_days: int = 7
     followup_dry_run: bool = True
+    # Mid-cycle reminder job — fires 3 days after each weekly L10 meeting
+    # (halfway between meetings). See app/jobs/send_reminders.py.
+    followup_reminder_subject_prefix: str = "L10 Check-in"
+    followup_reminder_min_age_days: int = 3
+    followup_reminder_max_age_days: int = 10
+    followup_reminder_dry_run: bool = True
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -68,4 +74,14 @@ class Config:
             followup_min_age_hours=int(os.environ.get("FOLLOWUP_MIN_AGE_HOURS", "24")),
             followup_max_age_days=int(os.environ.get("FOLLOWUP_MAX_AGE_DAYS", "7")),
             followup_dry_run=_bool_env("FOLLOWUP_DRY_RUN", True),
+            followup_reminder_subject_prefix=os.environ.get(
+                "FOLLOWUP_REMINDER_SUBJECT_PREFIX", "L10 Check-in"
+            ),
+            followup_reminder_min_age_days=int(
+                os.environ.get("FOLLOWUP_REMINDER_MIN_AGE_DAYS", "3")
+            ),
+            followup_reminder_max_age_days=int(
+                os.environ.get("FOLLOWUP_REMINDER_MAX_AGE_DAYS", "10")
+            ),
+            followup_reminder_dry_run=_bool_env("FOLLOWUP_REMINDER_DRY_RUN", True),
         )

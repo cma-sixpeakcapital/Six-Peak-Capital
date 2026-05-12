@@ -333,6 +333,58 @@ class Storage:
         meeting["_followup_log"] = log
         self.save_meeting(meeting)
 
+    # --- mid-cycle reminder job ------------------------------------------
+
+    def list_meetings_pending_reminder(
+        self, *, min_age_days: int = 7, max_age_days: int = 14
+    ) -> list[dict[str, Any]]:
+        today = date.today()
+        out: list[dict[str, Any]] = []
+        for m in self.list_meetings():
+            if m.get("_reminder_sent_at"):
+                continue
+            date_raw = m.get("date")
+            if not date_raw:
+                continue
+            try:
+                meeting_date = date.fromisoformat(str(date_raw))
+            except (ValueError, TypeError):
+                continue
+            age_days = (today - meeting_date).days
+            if age_days < min_age_days:
+                continue
+            if age_days > max_age_days:
+                continue
+            if not (m.get("summary") or "").strip():
+                continue
+            out.append(m)
+        out.sort(key=lambda m: m.get("date", ""))
+        return out
+
+    def claim_reminder(self, meeting_id: str) -> bool:
+        meeting = self.get_meeting(meeting_id)
+        if meeting is None or meeting.get("_reminder_sent_at"):
+            return False
+        meeting["_reminder_sent_at"] = datetime.now(timezone.utc).isoformat()
+        self.save_meeting(meeting)
+        return True
+
+    def release_reminder(self, meeting_id: str) -> None:
+        meeting = self.get_meeting(meeting_id)
+        if meeting is None:
+            return
+        log = meeting.get("_reminder_log") or {}
+        if log.get("error") or not log:
+            meeting["_reminder_sent_at"] = None
+            self.save_meeting(meeting)
+
+    def record_reminder_log(self, meeting_id: str, log: dict[str, Any]) -> None:
+        meeting = self.get_meeting(meeting_id)
+        if meeting is None:
+            return
+        meeting["_reminder_log"] = log
+        self.save_meeting(meeting)
+
 
 def today_iso() -> str:
     return date.today().isoformat()

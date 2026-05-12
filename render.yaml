@@ -41,6 +41,15 @@ services:
         value: cma@sixpeakcapital.com
       - key: FOLLOWUP_DRY_RUN
         sync: false           # default true; flip to false in dashboard after dry-run review
+      # --- mid-cycle reminder (3d after each weekly L10) ---
+      - key: FOLLOWUP_REMINDER_SUBJECT_PREFIX
+        value: L10 Check-in
+      - key: FOLLOWUP_REMINDER_MIN_AGE_DAYS
+        value: "3"
+      - key: FOLLOWUP_REMINDER_MAX_AGE_DAYS
+        value: "10"
+      - key: FOLLOWUP_REMINDER_DRY_RUN
+        sync: false           # default true; flip after dry-run review
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -80,6 +89,15 @@ services:
         value: cma@sixpeakcapital.com
       - key: FOLLOWUP_DRY_RUN
         sync: false
+      # --- mid-cycle reminder (7d after each bi-weekly LV Exec) ---
+      - key: FOLLOWUP_REMINDER_SUBJECT_PREFIX
+        value: LV Exec Check-in
+      - key: FOLLOWUP_REMINDER_MIN_AGE_DAYS
+        value: "7"
+      - key: FOLLOWUP_REMINDER_MAX_AGE_DAYS
+        value: "14"
+      - key: FOLLOWUP_REMINDER_DRY_RUN
+        sync: false           # default true; flip after dry-run review
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
