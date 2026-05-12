@@ -82,9 +82,12 @@ def render_html(meeting: dict[str, Any], open_todos: list[dict[str, Any]],
         "reply here.</p>"
     )
 
-    portal_link = f"{portal_url.rstrip('/')}/meetings/{meeting.get('id', '')}"
+    # Link to the portal's main page (the to-do list view), not the meeting
+    # detail page. The reminder is forward-looking ("update your status before
+    # the next call") so the to-do landing page is the relevant destination.
+    portal_link = portal_url.rstrip("/")
     parts.append(
-        f'<p>Full portal view: <a href="{escape(portal_link)}">'
+        f'<p>Update your to-dos in the portal: <a href="{escape(portal_link)}">'
         f"{escape(portal_link)}</a></p>"
     )
     parts.append("<p>— Chris</p>")
@@ -121,8 +124,8 @@ def render_text(meeting: dict[str, Any], open_todos: list[dict[str, Any]],
     )
     lines.append("")
 
-    portal_link = f"{portal_url.rstrip('/')}/meetings/{meeting.get('id', '')}"
-    lines.append(f"Full portal view: {portal_link}")
+    portal_link = portal_url.rstrip("/")
+    lines.append(f"Update your to-dos in the portal: {portal_link}")
     lines.append("")
     lines.append("— Chris")
 
