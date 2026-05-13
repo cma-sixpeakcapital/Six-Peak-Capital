@@ -190,11 +190,19 @@ def lookup_invitees(cal_service: Any, *, calendar_id: str, recurring_event_id: s
 
 # --- Gmail send / draft ---------------------------------------------------
 
-def _build_mime(sender: str, to: list[str], subject: str, html: str, text: str) -> str:
-    """Build a base64url-encoded MIME multipart/alternative message."""
+def _build_mime(sender: str, to: list[str], subject: str, html: str, text: str,
+                cc: list[str] | None = None) -> str:
+    """Build a base64url-encoded MIME multipart/alternative message.
+
+    ``cc`` is optional; when provided, recipients appear in the CC header
+    and receive the email alongside the To: list. Gmail treats them as
+    additional addressees (visible to all other recipients).
+    """
     msg = MIMEMultipart("alternative")
     msg["From"] = sender
     msg["To"] = ", ".join(to) if to else sender
+    if cc:
+        msg["Cc"] = ", ".join(cc)
     msg["Subject"] = subject
     msg.attach(MIMEText(text, "plain", _charset="utf-8"))
     msg.attach(MIMEText(html, "html", _charset="utf-8"))
@@ -202,9 +210,15 @@ def _build_mime(sender: str, to: list[str], subject: str, html: str, text: str) 
 
 
 def send_email(gmail_service: Any, *, sender: str, to: list[str],
-               subject: str, html: str, text: str) -> str:
-    """Send via Gmail API. Returns the Gmail message ID."""
-    raw = _build_mime(sender, to, subject, html, text)
+               subject: str, html: str, text: str,
+               cc: list[str] | None = None) -> str:
+    """Send via Gmail API. Returns the Gmail message ID.
+
+    Pass ``cc`` to include additional addressees in the CC header. Chris's
+    own address is the typical value — he wants a copy of every automated
+    email in his inbox alongside what lands in Sent.
+    """
+    raw = _build_mime(sender, to, subject, html, text, cc=cc)
     sent = gmail_service.users().messages().send(
         userId="me", body={"raw": raw}
     ).execute()
@@ -332,6 +346,9 @@ def run(
                     )
                     result.drafts.append(meeting_id)
                 else:
+                    # CC the sender (Chris) so he gets a copy in his inbox.
+                    # Drafts (dry-run) are already addressed to him alone, so
+                    # no CC is added there.
                     gmail_id = send_email(
                         gmail_service,
                         sender=cfg.followup_sender_email,
@@ -339,6 +356,7 @@ def run(
                         subject=subject,
                         html=html,
                         text=text,
+                        cc=[cfg.followup_sender_email] if cfg.followup_sender_email else None,
                     )
                     result.sent.append(meeting_id)
                 storage.record_followup_log(meeting_id, {
