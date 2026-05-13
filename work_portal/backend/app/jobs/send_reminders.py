@@ -144,6 +144,7 @@ def run(
                     )
                     result["drafts"].append(meeting_id)
                 else:
+                    # CC the sender (Chris) so he gets a copy in his inbox.
                     gmail_id = send_email(
                         gmail_service,
                         sender=cfg.followup_sender_email,
@@ -151,6 +152,7 @@ def run(
                         subject=subject,
                         html=html,
                         text=text,
+                        cc=[cfg.followup_sender_email] if cfg.followup_sender_email else None,
                     )
                     result["sent"].append(meeting_id)
                 storage.record_reminder_log(meeting_id, {

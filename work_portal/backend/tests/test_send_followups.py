@@ -84,6 +84,7 @@ def _decode_raw(raw_b64: str) -> dict[str, Any]:
     return {
         "from": str(msg["From"] or ""),
         "to": str(msg["To"] or ""),
+        "cc": str(msg["Cc"] or ""),
         "subject": str(msg["Subject"] or ""),
         "text": parts.get("text/plain", ""),
         "html": parts.get("text/html", ""),
@@ -384,6 +385,24 @@ def test_excludes_sender_from_recipients(storage, cfg):
     run(storage=storage, cfg=cfg, dry_run=False, gmail_service=gmail, calendar_service=cal)
     # Sender should not be in To: line — only the other invitee
     assert gmail.sent[0]["to"] == "rak@sixpeakcapital.com"
+
+
+def test_real_send_ccs_the_sender(storage, cfg):
+    """Real sends CC the sender so Chris gets a copy in his inbox."""
+    _make_meeting(storage, hours_ago=25)
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    run(storage=storage, cfg=cfg, dry_run=False, gmail_service=gmail, calendar_service=cal)
+    assert gmail.sent[0]["cc"] == "cma@sixpeakcapital.com"
+
+
+def test_dry_run_draft_has_no_cc(storage, cfg):
+    """Drafts (dry-run) are already addressed only to sender — no CC needed."""
+    _make_meeting(storage, hours_ago=25)
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    run(storage=storage, cfg=cfg, dry_run=True, gmail_service=gmail, calendar_service=cal)
+    assert gmail.created_drafts[0]["cc"] == ""
 
 
 def test_no_calendar_invitees_skips_without_claiming(storage, cfg):
