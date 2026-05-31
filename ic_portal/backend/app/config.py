@@ -41,35 +41,48 @@ class Config:
     followup_dry_run: bool = True
 
     @classmethod
-    def from_env(cls) -> "Config":
+    def from_env(cls, prefix: str = "") -> "Config":
+        # Per-portal env namespacing: in the consolidated single-process
+        # deployment all portals share os.environ, so each portal reads its own
+        # PREFIXED vars (e.g. IC_PORTAL_API_KEY) and falls back to the bare name
+        # for standalone runs and for values shared across portals.
+        def env(name: str, default: str = "") -> str:
+            return os.environ.get(prefix + name, os.environ.get(name, default))
+
+        def env_bool(name: str, default: bool) -> bool:
+            raw = os.environ.get(prefix + name, os.environ.get(name))
+            if raw is None:
+                return default
+            return raw.strip().lower() in {"1", "true", "yes", "on"}
+
         backend_dir = Path(__file__).resolve().parent.parent
-        data_dir = Path(os.environ.get("IC_DATA_DIR", backend_dir / "data"))
+        data_dir = Path(env("DATA_DIR", str(backend_dir / "data")))
         data_dir.mkdir(parents=True, exist_ok=True)
         (data_dir / "meetings").mkdir(parents=True, exist_ok=True)
         return cls(
             data_dir=data_dir,
-            secret_key=os.environ.get("APP_SECRET_KEY", "dev-only-not-for-production"),
-            api_key=os.environ.get("PORTAL_API_KEY", ""),
-            anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", ""),
-            readai_api_key=os.environ.get("READAI_API_KEY", ""),
-            database_url=os.environ.get("DATABASE_URL", ""),
-            readai_base_url=os.environ.get("READAI_BASE_URL", "https://api.read.ai/v1"),
-            summarizer_model=os.environ.get("SUMMARIZER_MODEL", "claude-haiku-4-5-20251001"),
-            ingest_title_pattern=os.environ.get(
+            secret_key=env("APP_SECRET_KEY", "dev-only-not-for-production"),
+            api_key=env("PORTAL_API_KEY", ""),
+            anthropic_api_key=env("ANTHROPIC_API_KEY", ""),
+            readai_api_key=env("READAI_API_KEY", ""),
+            database_url=env("DATABASE_URL", ""),
+            readai_base_url=env("READAI_BASE_URL", "https://api.read.ai/v1"),
+            summarizer_model=env("SUMMARIZER_MODEL", "claude-haiku-4-5-20251001"),
+            ingest_title_pattern=env(
                 "INGEST_TITLE_PATTERN",
                 r"(?i)\bSix\s+Peak\s+IC\b|\bIC\s+(Weekly|Investment\s+Committee)\b|Investment\s+Committee",
             ),
-            google_client_id=os.environ.get("GOOGLE_CLIENT_ID", ""),
-            google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET", ""),
-            google_refresh_token=os.environ.get("GOOGLE_REFRESH_TOKEN", ""),
-            google_calendar_id=os.environ.get("GOOGLE_CALENDAR_ID", "primary"),
-            followup_sender_email=os.environ.get("FOLLOWUP_SENDER_EMAIL", ""),
-            followup_cal_event_id=os.environ.get("FOLLOWUP_CAL_EVENT_ID", ""),
-            followup_subject_prefix=os.environ.get("FOLLOWUP_SUBJECT_PREFIX", "IC Follow-up"),
-            followup_portal_name=os.environ.get("FOLLOWUP_PORTAL_NAME", "Six Peak IC Weekly"),
-            followup_portal_url=os.environ.get("FOLLOWUP_PORTAL_URL", "https://ic.sixpeakapps.com"),
-            followup_cadence=os.environ.get("FOLLOWUP_CADENCE", "weekly"),
-            followup_min_age_hours=int(os.environ.get("FOLLOWUP_MIN_AGE_HOURS", "24")),
-            followup_max_age_days=int(os.environ.get("FOLLOWUP_MAX_AGE_DAYS", "7")),
-            followup_dry_run=_bool_env("FOLLOWUP_DRY_RUN", True),
+            google_client_id=env("GOOGLE_CLIENT_ID", ""),
+            google_client_secret=env("GOOGLE_CLIENT_SECRET", ""),
+            google_refresh_token=env("GOOGLE_REFRESH_TOKEN", ""),
+            google_calendar_id=env("GOOGLE_CALENDAR_ID", "primary"),
+            followup_sender_email=env("FOLLOWUP_SENDER_EMAIL", ""),
+            followup_cal_event_id=env("FOLLOWUP_CAL_EVENT_ID", ""),
+            followup_subject_prefix=env("FOLLOWUP_SUBJECT_PREFIX", "IC Follow-up"),
+            followup_portal_name=env("FOLLOWUP_PORTAL_NAME", "Six Peak IC Weekly"),
+            followup_portal_url=env("FOLLOWUP_PORTAL_URL", "https://ic.sixpeakapps.com"),
+            followup_cadence=env("FOLLOWUP_CADENCE", "weekly"),
+            followup_min_age_hours=int(env("FOLLOWUP_MIN_AGE_HOURS", "24")),
+            followup_max_age_days=int(env("FOLLOWUP_MAX_AGE_DAYS", "7")),
+            followup_dry_run=env_bool("FOLLOWUP_DRY_RUN", True),
         )

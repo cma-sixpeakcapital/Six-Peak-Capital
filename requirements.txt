@@ -1,3 +1,13 @@
-flask>=3.0
-gunicorn>=22.0
-openpyxl>=3.1
+# Consolidated dependencies for the single `sixpeakapps` Render service that
+# runs the apex hub + all four portals via portal_router.py.
+# Union of the four portal backends (which were byte-identical) plus the hub
+# (Flask + gunicorn). The estimator's openpyxl dependency has been removed.
+Flask==3.0.3
+gunicorn==22.0.0
+anthropic==0.40.0
+requests==2.32.3
+python-dateutil==2.9.0
+psycopg[binary]==3.2.3
+google-auth==2.34.0
+google-auth-oauthlib==1.2.1
+google-api-python-client==2.151.0
