@@ -30,6 +30,11 @@ def _get_ingest_service() -> IngestService:
     )
 
 
+def _truthy(value: Any) -> bool:
+    """Parse a query-string flag like ?preview=true into a bool."""
+    return (value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def require_api_key(fn: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(fn)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -233,6 +238,11 @@ def register_routes(app: Flask) -> None:
             dry_run = dry_param.strip().lower() in {"1", "true", "yes", "on"}
         else:
             dry_run = cfg.followup_dry_run
+        # Non-consuming preview: ?preview=true returns who WOULD receive each
+        # due recap without claiming/sending. &include_claimed=true also
+        # surfaces in-window meetings already blocked by followup_sent_at.
+        preview = _truthy(request.args.get("preview"))
+        include_claimed = _truthy(request.args.get("include_claimed"))
         gmail_override = current_app.config.get("FOLLOWUPS_GMAIL_SERVICE")
         cal_override = current_app.config.get("FOLLOWUPS_CALENDAR_SERVICE")
         result = run(
@@ -241,5 +251,7 @@ def register_routes(app: Flask) -> None:
             dry_run=dry_run,
             gmail_service=gmail_override,
             calendar_service=cal_override,
+            preview=preview,
+            include_claimed=include_claimed,
         )
-        return jsonify({"status": "ok", "dry_run": dry_run, **result})
+        return jsonify({"status": "ok", "dry_run": dry_run, "preview": preview, **result})

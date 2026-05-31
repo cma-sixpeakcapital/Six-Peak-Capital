@@ -313,13 +313,14 @@ class PostgresStorage:
     # --- follow-up email job ---------------------------------------------
 
     def list_meetings_pending_followup(
-        self, *, min_age_hours: int = 24, max_age_days: int = 7
+        self, *, min_age_hours: int = 24, max_age_days: int = 7,
+        include_claimed: bool = False,
     ) -> list[dict[str, Any]]:
-        sql = """
+        claim_clause = "" if include_claimed else "followup_sent_at IS NULL\n              AND "
+        sql = f"""
             SELECT data
             FROM ic_meetings
-            WHERE followup_sent_at IS NULL
-              AND (now() - (data->>'saved_at')::timestamptz) >= make_interval(hours => %s)
+            WHERE {claim_clause}(now() - (data->>'saved_at')::timestamptz) >= make_interval(hours => %s)
               AND (now() - (data->>'saved_at')::timestamptz) <= make_interval(days  => %s)
               AND coalesce(trim(data->>'summary'), '') <> ''
             ORDER BY data->>'saved_at' ASC

@@ -1,3 +1,7 @@
+from datetime import datetime, timedelta, timezone
+
+from app import create_app
+from app.config import Config
 from app.ingest import IngestService
 from app.readai import ReadAIClient
 from app.storage import Storage
@@ -6,6 +10,85 @@ from tests.conftest import FakeHttpClient, FakeSummarizer
 
 def test_health(client) -> None:
     assert client.get("/health").get_json() == {"status": "ok"}
+
+
+# --- Job endpoint: non-consuming preview wiring --------------------------
+# Proves the ?preview=true route resolves recipients into would_send and
+# writes nothing to the DB — the portable equivalent of the spec's gunicorn
+# preview check (gunicorn is Unix-only and there's no local Postgres).
+
+
+class _FakeCalExec:
+    def __init__(self, result):
+        self._result = result
+
+    def execute(self):
+        return self._result
+
+
+class _FakeCalendar:
+    """Minimal events().instances()/list() stub returning one attendee."""
+
+    def __init__(self, emails):
+        self._items = [{
+            "status": "confirmed",
+            "attendees": [{"email": e, "responseStatus": "accepted"} for e in emails],
+        }]
+
+    def events(self):
+        return self
+
+    def instances(self, **kwargs):
+        return _FakeCalExec({"items": self._items})
+
+    def list(self, **kwargs):
+        return _FakeCalExec({"items": self._items})
+
+
+def _followup_config(tmp_path) -> Config:
+    data_dir = tmp_path / "data"
+    (data_dir / "meetings").mkdir(parents=True, exist_ok=True)
+    return Config(
+        data_dir=data_dir,
+        secret_key="t",
+        api_key="test-key",
+        anthropic_api_key="",
+        readai_api_key="",
+        followup_sender_email="cma@sixpeakcapital.com",
+        followup_cal_event_id="evt_recurring",
+        followup_subject_prefix="L10 Follow-up",
+        followup_portal_name="L10 Weekly",
+        followup_portal_url="https://l10.sixpeakapps.com",
+        followup_cadence="weekly",
+    )
+
+
+def test_send_followups_preview_route_lists_recipients_without_consuming(tmp_path) -> None:
+    cfg = _followup_config(tmp_path)
+    app = create_app(cfg)
+    app.config["FOLLOWUPS_CALENDAR_SERVICE"] = _FakeCalendar(["rak@sixpeakcapital.com"])
+    storage = app.config["STORAGE"]
+    saved_at = (datetime.now(timezone.utc) - timedelta(hours=25)).isoformat()
+    storage.save_meeting({
+        "id": "2026-04-28", "date": "2026-04-28",
+        "title": "Six Peak Capital - Weekly L10",
+        "summary": "A. B. C.", "action_items": [], "saved_at": saved_at,
+    })
+
+    with app.test_client() as c:
+        resp = c.post("/api/jobs/send_followups?preview=true",
+                      headers={"X-API-Key": "test-key"})
+    body = resp.get_json()
+
+    assert resp.status_code == 200
+    assert body["preview"] is True
+    assert body["sent"] == [] and body["drafts"] == []
+    assert [w["meeting_id"] for w in body["would_send"]] == ["2026-04-28"]
+    assert body["would_send"][0]["recipients"] == ["rak@sixpeakcapital.com"]
+    # No DB write: the meeting is untouched and still pending.
+    assert storage.get_meeting("2026-04-28").get("_followup_sent_at") is None
+    assert any(m["id"] == "2026-04-28"
+               for m in storage.list_meetings_pending_followup(min_age_hours=24, max_age_days=7))
 
 
 def test_portal_renders_empty(client) -> None:

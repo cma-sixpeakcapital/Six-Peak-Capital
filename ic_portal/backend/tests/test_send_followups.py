@@ -348,10 +348,52 @@ def test_dry_run_creates_draft_only_to_sender(storage, cfg):
     draft = gmail.created_drafts[0]
     assert draft["to"] == "cma@sixpeakcapital.com"  # only the sender
     assert draft["subject"].startswith("[DRY RUN]")
-    # claim still set so we don't draft repeatedly
+    # A dry run is non-consuming: no claim, no sent_at, no log — so it can be
+    # repeated and the meeting can still send for real afterward.
     m = storage.get_meeting("2026-04-28")
-    assert m["_followup_sent_at"] is not None
-    assert m["_followup_log"]["dry_run"] is True
+    assert m.get("_followup_sent_at") is None
+    assert m.get("_followup_log") is None
+    still_pending = storage.list_meetings_pending_followup(min_age_hours=24, max_age_days=7)
+    assert any(x["id"] == "2026-04-28" for x in still_pending)
+
+
+def test_preview_does_not_consume(storage, cfg):
+    _make_meeting(storage, hours_ago=25)
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+
+    result = run(storage=storage, cfg=cfg, dry_run=False, preview=True,
+                 gmail_service=gmail, calendar_service=cal)
+
+    assert result["sent"] == []
+    assert result["drafts"] == []
+    assert len(result["would_send"]) == 1
+    ws = result["would_send"][0]
+    assert ws["meeting_id"] == "2026-04-28"
+    assert ws["recipients"] == ["rak@sixpeakcapital.com"]
+    assert ws.get("subject")
+    assert gmail.sent == [] and gmail.created_drafts == []
+    m = storage.get_meeting("2026-04-28")
+    assert m.get("_followup_sent_at") is None
+    assert m.get("_followup_log") is None
+    still_pending = storage.list_meetings_pending_followup(min_age_hours=24, max_age_days=7)
+    assert any(x["id"] == "2026-04-28" for x in still_pending)
+
+
+def test_preview_include_claimed_surfaces_blocked(storage, cfg):
+    _make_meeting(storage, hours_ago=25)
+    storage.claim_followup("2026-04-28")
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+
+    default_preview = run(storage=storage, cfg=cfg, dry_run=False, preview=True,
+                          gmail_service=FakeGmail(), calendar_service=cal)
+    assert default_preview["would_send"] == []
+
+    inclusive = run(storage=storage, cfg=cfg, dry_run=False, preview=True,
+                    include_claimed=True, gmail_service=FakeGmail(), calendar_service=cal)
+    assert [w["meeting_id"] for w in inclusive["would_send"]] == ["2026-04-28"]
+    m = storage.get_meeting("2026-04-28")
+    assert m.get("_followup_sent_at") is not None  # still claimed, untouched
 
 
 def test_excludes_declined_invitees(storage, cfg):
@@ -482,7 +524,7 @@ def test_run_with_no_pending_meetings(storage, cfg):
     cal = FakeCalendar()
     result = run(storage=storage, cfg=cfg, dry_run=False,
                  gmail_service=gmail, calendar_service=cal)
-    assert result == {"checked": 0, "sent": [], "drafts": [], "skipped": [], "errors": []}
+    assert result == {"checked": 0, "sent": [], "drafts": [], "skipped": [], "errors": [], "would_send": []}
 
 
 def test_html_contains_portal_link(storage, cfg):

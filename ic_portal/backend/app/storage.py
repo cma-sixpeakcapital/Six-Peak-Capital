@@ -284,12 +284,13 @@ class Storage:
     # accidentally surface in the API or template (which use the real fields).
 
     def list_meetings_pending_followup(
-        self, *, min_age_hours: int = 24, max_age_days: int = 7
+        self, *, min_age_hours: int = 24, max_age_days: int = 7,
+        include_claimed: bool = False,
     ) -> list[dict[str, Any]]:
         now = datetime.now(timezone.utc)
         out: list[dict[str, Any]] = []
         for m in self.list_meetings():
-            if m.get("_followup_sent_at"):
+            if m.get("_followup_sent_at") and not include_claimed:
                 continue
             saved_raw = m.get("saved_at")
             if not saved_raw:
