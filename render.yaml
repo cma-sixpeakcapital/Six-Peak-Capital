@@ -1,202 +1,361 @@
+# Consolidated deployment: ONE always-on web service (`sixpeakapps`, Starter)
+# serves the apex hub + all four portals, routed by HTTP Host header via
+# portal_router.py. Each portal reads its own PREFIXED env vars (FINANCE_*,
+# IC_*, LVEXEC_*, L10_*) so secrets/DB stay isolated in the shared process.
+#
+# The retired `lv-estimator` service has been removed entirely (the estimator
+# code was already gone from the repo). The four old per-portal service blocks
+# (sp-finance, sp-ic, lv-exec, work-portal-api) are left COMMENTED OUT below for
+# fast rollback — to revert a single portal, move its custom domain back to the
+# old service and un-suspend it; no code change needed.
 services:
-  - type: web
-    name: lv-estimator
-    runtime: python
-    pythonVersion: "3.11.11"
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn construction_estimator.web:app --bind 0.0.0.0:$PORT
-    plan: free
-
-  - type: web
-    name: work-portal-api
-    runtime: python
-    pythonVersion: "3.11.11"
-    rootDir: work_portal/backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-    plan: free
-    envVars:
-      - key: APP_SECRET_KEY
-        sync: false
-      - key: PORTAL_API_KEY
-        sync: false
-      - key: ANTHROPIC_API_KEY
-        sync: false
-      - key: READAI_API_KEY
-        sync: false
-      - key: SUMMARIZER_MODEL
-        value: claude-haiku-4-5-20251001
-      # --- follow-up email job ---
-      - key: FOLLOWUP_PORTAL_NAME
-        value: L10 Weekly
-      - key: FOLLOWUP_SUBJECT_PREFIX
-        value: L10 Follow-up
-      - key: FOLLOWUP_PORTAL_URL
-        value: https://l10.sixpeakapps.com
-      - key: FOLLOWUP_CADENCE
-        value: weekly
-      - key: FOLLOWUP_CAL_EVENT_ID
-        value: 7jb1kbiupq9ttrljuv3utu2km7
-      - key: FOLLOWUP_SENDER_EMAIL
-        value: cma@sixpeakcapital.com
-      - key: FOLLOWUP_DRY_RUN
-        sync: false           # default true; flip to false in dashboard after dry-run review
-      # --- mid-cycle reminder (3d after each weekly L10) ---
-      - key: FOLLOWUP_REMINDER_SUBJECT_PREFIX
-        value: L10 Check-in
-      - key: FOLLOWUP_REMINDER_MIN_AGE_DAYS
-        value: "3"
-      - key: FOLLOWUP_REMINDER_MAX_AGE_DAYS
-        value: "10"
-      - key: FOLLOWUP_REMINDER_DRY_RUN
-        sync: false           # default true; flip after dry-run review
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GOOGLE_REFRESH_TOKEN
-        sync: false
-
-  - type: web
-    name: lv-exec
-    runtime: python
-    pythonVersion: "3.11.11"
-    rootDir: lv_exec_portal/backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-    plan: free
-    envVars:
-      - key: APP_SECRET_KEY
-        sync: false
-      - key: PORTAL_API_KEY
-        sync: false
-      - key: DATABASE_URL
-        sync: false
-      - key: SUMMARIZER_MODEL
-        value: claude-haiku-4-5-20251001
-      # --- follow-up email job ---
-      - key: FOLLOWUP_PORTAL_NAME
-        value: LV Executive
-      - key: FOLLOWUP_SUBJECT_PREFIX
-        value: LV Exec Follow-up
-      - key: FOLLOWUP_PORTAL_URL
-        value: https://lvexec.sixpeakapps.com
-      - key: FOLLOWUP_CADENCE
-        value: biweekly
-      - key: FOLLOWUP_CAL_EVENT_ID
-        value: 6epjj6rec5vn2kn3vekibvpf7t
-      - key: FOLLOWUP_SENDER_EMAIL
-        value: cma@sixpeakcapital.com
-      - key: FOLLOWUP_DRY_RUN
-        sync: false
-      # --- mid-cycle reminder (7d after each bi-weekly LV Exec) ---
-      - key: FOLLOWUP_REMINDER_SUBJECT_PREFIX
-        value: LV Exec Check-in
-      - key: FOLLOWUP_REMINDER_MIN_AGE_DAYS
-        value: "7"
-      - key: FOLLOWUP_REMINDER_MAX_AGE_DAYS
-        value: "14"
-      - key: FOLLOWUP_REMINDER_DRY_RUN
-        sync: false           # default true; flip after dry-run review
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GOOGLE_REFRESH_TOKEN
-        sync: false
-
-  - type: web
-    name: sp-finance
-    runtime: python
-    pythonVersion: "3.11.11"
-    rootDir: finance_portal/backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-    plan: free
-    envVars:
-      - key: APP_SECRET_KEY
-        sync: false
-      - key: PORTAL_API_KEY
-        sync: false
-      - key: DATABASE_URL
-        sync: false
-      - key: SUMMARIZER_MODEL
-        value: claude-haiku-4-5-20251001
-      # --- follow-up email job ---
-      - key: FOLLOWUP_PORTAL_NAME
-        value: Six Peak Monthly Finance
-      - key: FOLLOWUP_SUBJECT_PREFIX
-        value: Finance Follow-up
-      - key: FOLLOWUP_PORTAL_URL
-        value: https://finance.sixpeakapps.com
-      - key: FOLLOWUP_CADENCE
-        value: monthly
-      - key: FOLLOWUP_CAL_EVENT_ID
-        value: 1l1dloedq4132mrt49ir33nmis
-      - key: FOLLOWUP_SENDER_EMAIL
-        value: cma@sixpeakcapital.com
-      - key: FOLLOWUP_DRY_RUN
-        sync: false
-      # --- mid-cycle reminder job (Finance only) ---
-      - key: FOLLOWUP_REMINDER_SUBJECT_PREFIX
-        value: Finance Check-in
-      - key: FOLLOWUP_REMINDER_MIN_AGE_DAYS
-        value: "14"
-      - key: FOLLOWUP_REMINDER_MAX_AGE_DAYS
-        value: "21"
-      - key: FOLLOWUP_REMINDER_DRY_RUN
-        sync: false     # default true; flip after dry-run review
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GOOGLE_REFRESH_TOKEN
-        sync: false
-
-  - type: web
-    name: sp-ic
-    runtime: python
-    pythonVersion: "3.11.11"
-    rootDir: ic_portal/backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-    plan: free
-    envVars:
-      - key: APP_SECRET_KEY
-        sync: false
-      - key: PORTAL_API_KEY
-        sync: false
-      - key: DATABASE_URL
-        sync: false
-      - key: SUMMARIZER_MODEL
-        value: claude-haiku-4-5-20251001
-      # --- follow-up email job ---
-      - key: FOLLOWUP_PORTAL_NAME
-        value: Six Peak IC Weekly
-      - key: FOLLOWUP_SUBJECT_PREFIX
-        value: IC Follow-up
-      - key: FOLLOWUP_PORTAL_URL
-        value: https://ic.sixpeakapps.com
-      - key: FOLLOWUP_CADENCE
-        value: weekly
-      - key: FOLLOWUP_CAL_EVENT_ID
-        sync: false
-      - key: FOLLOWUP_SENDER_EMAIL
-        value: cma@sixpeakcapital.com
-      - key: FOLLOWUP_DRY_RUN
-        sync: false
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GOOGLE_REFRESH_TOKEN
-        sync: false
-
   - type: web
     name: sixpeakapps
     runtime: python
     pythonVersion: "3.11.11"
-    rootDir: sixpeakapps
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
-    plan: free
+    # --preload builds all five apps once before forking, lowering memory on
+    # Starter's 512 MB.
+    startCommand: gunicorn portal_router:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --preload
+    plan: starter
+    envVars:
+      # ===================== FINANCE (finance.sixpeakapps.com) =====================
+      - key: FINANCE_APP_SECRET_KEY
+        sync: false
+      - key: FINANCE_PORTAL_API_KEY
+        sync: false
+      - key: FINANCE_DATABASE_URL
+        sync: false
+      - key: FINANCE_ANTHROPIC_API_KEY
+        sync: false
+      - key: FINANCE_READAI_API_KEY
+        sync: false
+      - key: FINANCE_SUMMARIZER_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: FINANCE_FOLLOWUP_PORTAL_NAME
+        value: Six Peak Monthly Finance
+      - key: FINANCE_FOLLOWUP_SUBJECT_PREFIX
+        value: Finance Follow-up
+      - key: FINANCE_FOLLOWUP_PORTAL_URL
+        value: https://finance.sixpeakapps.com
+      - key: FINANCE_FOLLOWUP_CADENCE
+        value: monthly
+      - key: FINANCE_FOLLOWUP_CAL_EVENT_ID
+        value: 1l1dloedq4132mrt49ir33nmis
+      - key: FINANCE_FOLLOWUP_SENDER_EMAIL
+        value: cma@sixpeakcapital.com
+      - key: FINANCE_FOLLOWUP_DRY_RUN
+        sync: false           # default true; flip to false in dashboard after dry-run review
+      - key: FINANCE_FOLLOWUP_REMINDER_SUBJECT_PREFIX
+        value: Finance Check-in
+      - key: FINANCE_FOLLOWUP_REMINDER_MIN_AGE_DAYS
+        value: "14"
+      - key: FINANCE_FOLLOWUP_REMINDER_MAX_AGE_DAYS
+        value: "21"
+      - key: FINANCE_FOLLOWUP_REMINDER_DRY_RUN
+        sync: false
+      - key: FINANCE_GOOGLE_CLIENT_ID
+        sync: false
+      - key: FINANCE_GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: FINANCE_GOOGLE_REFRESH_TOKEN
+        sync: false
+      # ========================= IC (ic.sixpeakapps.com) ===========================
+      - key: IC_APP_SECRET_KEY
+        sync: false
+      - key: IC_PORTAL_API_KEY
+        sync: false
+      - key: IC_DATABASE_URL
+        sync: false
+      - key: IC_ANTHROPIC_API_KEY
+        sync: false
+      - key: IC_READAI_API_KEY
+        sync: false
+      - key: IC_SUMMARIZER_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: IC_FOLLOWUP_PORTAL_NAME
+        value: Six Peak IC Weekly
+      - key: IC_FOLLOWUP_SUBJECT_PREFIX
+        value: IC Follow-up
+      - key: IC_FOLLOWUP_PORTAL_URL
+        value: https://ic.sixpeakapps.com
+      - key: IC_FOLLOWUP_CADENCE
+        value: weekly
+      - key: IC_FOLLOWUP_CAL_EVENT_ID
+        sync: false
+      - key: IC_FOLLOWUP_SENDER_EMAIL
+        value: cma@sixpeakcapital.com
+      - key: IC_FOLLOWUP_DRY_RUN
+        sync: false
+      - key: IC_GOOGLE_CLIENT_ID
+        sync: false
+      - key: IC_GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: IC_GOOGLE_REFRESH_TOKEN
+        sync: false
+      # ====================== LV EXEC (lvexec.sixpeakapps.com) ======================
+      - key: LVEXEC_APP_SECRET_KEY
+        sync: false
+      - key: LVEXEC_PORTAL_API_KEY
+        sync: false
+      - key: LVEXEC_DATABASE_URL
+        sync: false
+      - key: LVEXEC_ANTHROPIC_API_KEY
+        sync: false
+      - key: LVEXEC_READAI_API_KEY
+        sync: false
+      - key: LVEXEC_SUMMARIZER_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: LVEXEC_FOLLOWUP_PORTAL_NAME
+        value: LV Executive
+      - key: LVEXEC_FOLLOWUP_SUBJECT_PREFIX
+        value: LV Exec Follow-up
+      - key: LVEXEC_FOLLOWUP_PORTAL_URL
+        value: https://lvexec.sixpeakapps.com
+      - key: LVEXEC_FOLLOWUP_CADENCE
+        value: biweekly
+      - key: LVEXEC_FOLLOWUP_CAL_EVENT_ID
+        value: 6epjj6rec5vn2kn3vekibvpf7t
+      - key: LVEXEC_FOLLOWUP_SENDER_EMAIL
+        value: cma@sixpeakcapital.com
+      - key: LVEXEC_FOLLOWUP_DRY_RUN
+        sync: false
+      - key: LVEXEC_FOLLOWUP_REMINDER_SUBJECT_PREFIX
+        value: LV Exec Check-in
+      - key: LVEXEC_FOLLOWUP_REMINDER_MIN_AGE_DAYS
+        value: "7"
+      - key: LVEXEC_FOLLOWUP_REMINDER_MAX_AGE_DAYS
+        value: "14"
+      - key: LVEXEC_FOLLOWUP_REMINDER_DRY_RUN
+        sync: false
+      - key: LVEXEC_GOOGLE_CLIENT_ID
+        sync: false
+      - key: LVEXEC_GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: LVEXEC_GOOGLE_REFRESH_TOKEN
+        sync: false
+      # ========================= L10 (l10.sixpeakapps.com) =========================
+      - key: L10_APP_SECRET_KEY
+        sync: false
+      - key: L10_PORTAL_API_KEY
+        sync: false
+      - key: L10_DATABASE_URL
+        sync: false           # L10 had no DATABASE_URL in render.yaml; confirm whether one is set in the dashboard
+      - key: L10_ANTHROPIC_API_KEY
+        sync: false
+      - key: L10_READAI_API_KEY
+        sync: false
+      - key: L10_SUMMARIZER_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: L10_FOLLOWUP_PORTAL_NAME
+        value: L10 Weekly
+      - key: L10_FOLLOWUP_SUBJECT_PREFIX
+        value: L10 Follow-up
+      - key: L10_FOLLOWUP_PORTAL_URL
+        value: https://l10.sixpeakapps.com
+      - key: L10_FOLLOWUP_CADENCE
+        value: weekly
+      - key: L10_FOLLOWUP_CAL_EVENT_ID
+        value: 7jb1kbiupq9ttrljuv3utu2km7
+      - key: L10_FOLLOWUP_SENDER_EMAIL
+        value: cma@sixpeakcapital.com
+      - key: L10_FOLLOWUP_DRY_RUN
+        sync: false
+      - key: L10_FOLLOWUP_REMINDER_SUBJECT_PREFIX
+        value: L10 Check-in
+      - key: L10_FOLLOWUP_REMINDER_MIN_AGE_DAYS
+        value: "3"
+      - key: L10_FOLLOWUP_REMINDER_MAX_AGE_DAYS
+        value: "10"
+      - key: L10_FOLLOWUP_REMINDER_DRY_RUN
+        sync: false
+      - key: L10_GOOGLE_CLIENT_ID
+        sync: false
+      - key: L10_GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: L10_GOOGLE_REFRESH_TOKEN
+        sync: false
+
+# ============================================================================
+# OLD PER-PORTAL SERVICES — commented out for fast rollback. Each still has a
+# working standalone wsgi.py entrypoint. To revert one portal: un-comment its
+# block, redeploy that service, and move its custom domain back to it.
+# ============================================================================
+#
+#  - type: web
+#    name: work-portal-api
+#    runtime: python
+#    pythonVersion: "3.11.11"
+#    rootDir: work_portal/backend
+#    buildCommand: pip install -r requirements.txt
+#    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+#    plan: free
+#    envVars:
+#      - key: APP_SECRET_KEY
+#        sync: false
+#      - key: PORTAL_API_KEY
+#        sync: false
+#      - key: ANTHROPIC_API_KEY
+#        sync: false
+#      - key: READAI_API_KEY
+#        sync: false
+#      - key: SUMMARIZER_MODEL
+#        value: claude-haiku-4-5-20251001
+#      - key: FOLLOWUP_PORTAL_NAME
+#        value: L10 Weekly
+#      - key: FOLLOWUP_SUBJECT_PREFIX
+#        value: L10 Follow-up
+#      - key: FOLLOWUP_PORTAL_URL
+#        value: https://l10.sixpeakapps.com
+#      - key: FOLLOWUP_CADENCE
+#        value: weekly
+#      - key: FOLLOWUP_CAL_EVENT_ID
+#        value: 7jb1kbiupq9ttrljuv3utu2km7
+#      - key: FOLLOWUP_SENDER_EMAIL
+#        value: cma@sixpeakcapital.com
+#      - key: FOLLOWUP_DRY_RUN
+#        sync: false
+#      - key: FOLLOWUP_REMINDER_SUBJECT_PREFIX
+#        value: L10 Check-in
+#      - key: FOLLOWUP_REMINDER_MIN_AGE_DAYS
+#        value: "3"
+#      - key: FOLLOWUP_REMINDER_MAX_AGE_DAYS
+#        value: "10"
+#      - key: FOLLOWUP_REMINDER_DRY_RUN
+#        sync: false
+#      - key: GOOGLE_CLIENT_ID
+#        sync: false
+#      - key: GOOGLE_CLIENT_SECRET
+#        sync: false
+#      - key: GOOGLE_REFRESH_TOKEN
+#        sync: false
+#
+#  - type: web
+#    name: lv-exec
+#    runtime: python
+#    pythonVersion: "3.11.11"
+#    rootDir: lv_exec_portal/backend
+#    buildCommand: pip install -r requirements.txt
+#    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+#    plan: free
+#    envVars:
+#      - key: APP_SECRET_KEY
+#        sync: false
+#      - key: PORTAL_API_KEY
+#        sync: false
+#      - key: DATABASE_URL
+#        sync: false
+#      - key: SUMMARIZER_MODEL
+#        value: claude-haiku-4-5-20251001
+#      - key: FOLLOWUP_PORTAL_NAME
+#        value: LV Executive
+#      - key: FOLLOWUP_SUBJECT_PREFIX
+#        value: LV Exec Follow-up
+#      - key: FOLLOWUP_PORTAL_URL
+#        value: https://lvexec.sixpeakapps.com
+#      - key: FOLLOWUP_CADENCE
+#        value: biweekly
+#      - key: FOLLOWUP_CAL_EVENT_ID
+#        value: 6epjj6rec5vn2kn3vekibvpf7t
+#      - key: FOLLOWUP_SENDER_EMAIL
+#        value: cma@sixpeakcapital.com
+#      - key: FOLLOWUP_DRY_RUN
+#        sync: false
+#      - key: FOLLOWUP_REMINDER_SUBJECT_PREFIX
+#        value: LV Exec Check-in
+#      - key: FOLLOWUP_REMINDER_MIN_AGE_DAYS
+#        value: "7"
+#      - key: FOLLOWUP_REMINDER_MAX_AGE_DAYS
+#        value: "14"
+#      - key: FOLLOWUP_REMINDER_DRY_RUN
+#        sync: false
+#      - key: GOOGLE_CLIENT_ID
+#        sync: false
+#      - key: GOOGLE_CLIENT_SECRET
+#        sync: false
+#      - key: GOOGLE_REFRESH_TOKEN
+#        sync: false
+#
+#  - type: web
+#    name: sp-finance
+#    runtime: python
+#    pythonVersion: "3.11.11"
+#    rootDir: finance_portal/backend
+#    buildCommand: pip install -r requirements.txt
+#    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+#    plan: free
+#    envVars:
+#      - key: APP_SECRET_KEY
+#        sync: false
+#      - key: PORTAL_API_KEY
+#        sync: false
+#      - key: DATABASE_URL
+#        sync: false
+#      - key: SUMMARIZER_MODEL
+#        value: claude-haiku-4-5-20251001
+#      - key: FOLLOWUP_PORTAL_NAME
+#        value: Six Peak Monthly Finance
+#      - key: FOLLOWUP_SUBJECT_PREFIX
+#        value: Finance Follow-up
+#      - key: FOLLOWUP_PORTAL_URL
+#        value: https://finance.sixpeakapps.com
+#      - key: FOLLOWUP_CADENCE
+#        value: monthly
+#      - key: FOLLOWUP_CAL_EVENT_ID
+#        value: 1l1dloedq4132mrt49ir33nmis
+#      - key: FOLLOWUP_SENDER_EMAIL
+#        value: cma@sixpeakcapital.com
+#      - key: FOLLOWUP_DRY_RUN
+#        sync: false
+#      - key: FOLLOWUP_REMINDER_SUBJECT_PREFIX
+#        value: Finance Check-in
+#      - key: FOLLOWUP_REMINDER_MIN_AGE_DAYS
+#        value: "14"
+#      - key: FOLLOWUP_REMINDER_MAX_AGE_DAYS
+#        value: "21"
+#      - key: FOLLOWUP_REMINDER_DRY_RUN
+#        sync: false
+#      - key: GOOGLE_CLIENT_ID
+#        sync: false
+#      - key: GOOGLE_CLIENT_SECRET
+#        sync: false
+#      - key: GOOGLE_REFRESH_TOKEN
+#        sync: false
+#
+#  - type: web
+#    name: sp-ic
+#    runtime: python
+#    pythonVersion: "3.11.11"
+#    rootDir: ic_portal/backend
+#    buildCommand: pip install -r requirements.txt
+#    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+#    plan: free
+#    envVars:
+#      - key: APP_SECRET_KEY
+#        sync: false
+#      - key: PORTAL_API_KEY
+#        sync: false
+#      - key: DATABASE_URL
+#        sync: false
+#      - key: SUMMARIZER_MODEL
+#        value: claude-haiku-4-5-20251001
+#      - key: FOLLOWUP_PORTAL_NAME
+#        value: Six Peak IC Weekly
+#      - key: FOLLOWUP_SUBJECT_PREFIX
+#        value: IC Follow-up
+#      - key: FOLLOWUP_PORTAL_URL
+#        value: https://ic.sixpeakapps.com
+#      - key: FOLLOWUP_CADENCE
+#        value: weekly
+#      - key: FOLLOWUP_CAL_EVENT_ID
+#        sync: false
+#      - key: FOLLOWUP_SENDER_EMAIL
+#        value: cma@sixpeakcapital.com
+#      - key: FOLLOWUP_DRY_RUN
+#        sync: false
+#      - key: GOOGLE_CLIENT_ID
+#        sync: false
+#      - key: GOOGLE_CLIENT_SECRET
+#        sync: false
+#      - key: GOOGLE_REFRESH_TOKEN
+#        sync: false
