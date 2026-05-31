@@ -56,15 +56,24 @@ def run(
     calendar_service: Any | None = None,
     open_todos_provider: Callable[[], list[dict[str, Any]]] | None = None,
     open_rocks_provider: Callable[[], list[tuple[str, list[dict[str, Any]]]]] | None = None,
+    preview: bool = False,
+    include_claimed: bool = False,
 ) -> dict[str, Any]:
     """Process all due reminders.
 
     Same dependency-injection shape as send_followups.run — tests pass
     fakes; production passes None and the real services are built.
+
+    ``preview=True`` is a non-consuming dry inspection: it resolves
+    recipients and subject into ``would_send`` and skips claim/draft/send and
+    every ``*_sent_at``/log write. ``include_claimed`` drops the
+    ``reminder_sent_at IS NULL`` filter so the preview can surface in-window
+    meetings that are already blocked. Neither flag writes to the DB or Gmail.
     """
     pending = storage.list_meetings_pending_reminder(
         min_age_days=cfg.followup_reminder_min_age_days,
         max_age_days=cfg.followup_reminder_max_age_days,
+        include_claimed=include_claimed,
     )
     result: dict[str, Any] = {
         "checked": len(pending),
@@ -72,13 +81,15 @@ def run(
         "drafts": [],
         "skipped": [],
         "errors": [],
+        "would_send": [],
     }
     if not pending:
         return result
 
     if calendar_service is None:
         calendar_service = build_calendar_service(cfg)
-    if gmail_service is None:
+    # A preview never drafts or sends, so it doesn't need Gmail.
+    if gmail_service is None and not preview:
         gmail_service = build_gmail_service(cfg)
 
     if open_todos_provider is None:
@@ -129,36 +140,51 @@ def run(
                 portal_url=cfg.followup_portal_url,
             )
 
+            # Non-consuming preview: record who would receive this and move on.
+            # No claim, no draft/send, no *_sent_at or log write.
+            if preview:
+                result["would_send"].append({
+                    "meeting_id": meeting_id,
+                    "date": meeting.get("date", ""),
+                    "subject": subject,
+                    "recipients": recipients,
+                })
+                continue
+
+            # Dry run: write a Gmail draft to the sender only. Still
+            # non-consuming — no claim, no *_sent_at, no log.
+            if dry_run:
+                gmail_id = create_draft(
+                    gmail_service,
+                    sender=cfg.followup_sender_email,
+                    subject=f"[DRY RUN] {subject}",
+                    html=html,
+                    text=text,
+                )
+                result["drafts"].append(meeting_id)
+                continue
+
+            # Real send: claim FIRST so a concurrent cron can't double-send.
             if not storage.claim_reminder(meeting_id):
                 result["skipped"].append((meeting_id, "already claimed"))
                 continue
 
             try:
-                if dry_run:
-                    gmail_id = create_draft(
-                        gmail_service,
-                        sender=cfg.followup_sender_email,
-                        subject=f"[DRY RUN] {subject}",
-                        html=html,
-                        text=text,
-                    )
-                    result["drafts"].append(meeting_id)
-                else:
-                    # CC the sender (Chris) so he gets a copy in his inbox.
-                    gmail_id = send_email(
-                        gmail_service,
-                        sender=cfg.followup_sender_email,
-                        to=recipients,
-                        subject=subject,
-                        html=html,
-                        text=text,
-                        cc=[cfg.followup_sender_email] if cfg.followup_sender_email else None,
-                    )
-                    result["sent"].append(meeting_id)
+                # CC the sender (Chris) so he gets a copy in his inbox.
+                gmail_id = send_email(
+                    gmail_service,
+                    sender=cfg.followup_sender_email,
+                    to=recipients,
+                    subject=subject,
+                    html=html,
+                    text=text,
+                    cc=[cfg.followup_sender_email] if cfg.followup_sender_email else None,
+                )
+                result["sent"].append(meeting_id)
                 storage.record_reminder_log(meeting_id, {
                     "sent_at": datetime.now(timezone.utc).isoformat(),
                     "recipients": recipients,
-                    "dry_run": dry_run,
+                    "dry_run": False,
                     "gmail_id": gmail_id,
                     "open_todos_count": len(open_todos),
                     "open_rocks_owners": len(rocks_by_owner),

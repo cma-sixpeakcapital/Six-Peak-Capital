@@ -290,6 +290,43 @@ def test_dry_run_creates_draft_only_to_sender(storage, cfg):
     draft = gmail.created_drafts[0]
     assert draft["to"] == "cma@sixpeakcapital.com"
     assert draft["subject"].startswith("[DRY RUN]")
+    # Non-consuming: no claim, no sent_at, no log — repeatable.
+    m = storage.get_meeting("lv_test")
+    assert m.get("_reminder_sent_at") is None
+    assert m.get("_reminder_log") is None
+    still_pending = storage.list_meetings_pending_reminder(min_age_days=7, max_age_days=14)
+    assert any(x["id"] == "lv_test" for x in still_pending)
+
+
+def test_preview_does_not_consume(storage, cfg):
+    _make_meeting(storage, days_ago=7)
+    _add_open_todo(storage, "Bob", "Thing")
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    result = run(storage=storage, cfg=cfg, dry_run=False, preview=True,
+                 gmail_service=gmail, calendar_service=cal)
+    assert result["sent"] == [] and result["drafts"] == []
+    assert [w["meeting_id"] for w in result["would_send"]] == ["lv_test"]
+    assert result["would_send"][0]["recipients"] == ["rak@sixpeakcapital.com"]
+    assert gmail.sent == [] and gmail.created_drafts == []
+    m = storage.get_meeting("lv_test")
+    assert m.get("_reminder_sent_at") is None
+    assert m.get("_reminder_log") is None
+
+
+def test_preview_include_claimed_surfaces_blocked(storage, cfg):
+    _make_meeting(storage, days_ago=7)
+    _add_open_todo(storage, "Bob", "Thing")
+    storage.claim_reminder("lv_test")
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    default_preview = run(storage=storage, cfg=cfg, dry_run=False, preview=True,
+                          gmail_service=FakeGmail(), calendar_service=cal)
+    assert default_preview["would_send"] == []
+    inclusive = run(storage=storage, cfg=cfg, dry_run=False, preview=True,
+                    include_claimed=True, gmail_service=FakeGmail(), calendar_service=cal)
+    assert [w["meeting_id"] for w in inclusive["would_send"]] == ["lv_test"]
+    m = storage.get_meeting("lv_test")
+    assert m.get("_reminder_sent_at") is not None  # still claimed, untouched
 
 
 def test_link_points_to_main_portal(storage, cfg):
@@ -362,4 +399,4 @@ def test_run_with_no_pending_meetings(storage, cfg):
     cal = FakeCalendar()
     result = run(storage=storage, cfg=cfg, dry_run=False,
                  gmail_service=gmail, calendar_service=cal)
-    assert result == {"checked": 0, "sent": [], "drafts": [], "skipped": [], "errors": []}
+    assert result == {"checked": 0, "sent": [], "drafts": [], "skipped": [], "errors": [], "would_send": []}

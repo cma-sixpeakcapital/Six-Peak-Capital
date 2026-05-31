@@ -256,12 +256,14 @@ class RunResult:
     drafts: list[str] | None = None
     skipped: list[tuple[str, str]] | None = None
     errors: list[tuple[str, str]] | None = None
+    would_send: list[dict[str, Any]] | None = None
 
     def __post_init__(self):
         self.sent = self.sent or []
         self.drafts = self.drafts or []
         self.skipped = self.skipped or []
         self.errors = self.errors or []
+        self.would_send = self.would_send or []
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -270,6 +272,7 @@ class RunResult:
             "drafts": self.drafts,
             "skipped": self.skipped,
             "errors": self.errors,
+            "would_send": self.would_send,
         }
 
 
@@ -281,16 +284,26 @@ def run(
     gmail_service: Any | None = None,
     calendar_service: Any | None = None,
     open_todos_provider: Callable[[], list[dict[str, Any]]] | None = None,
+    preview: bool = False,
+    include_claimed: bool = False,
 ) -> dict[str, Any]:
     """Process all due meetings.
 
     All external dependencies (Gmail, Calendar, todos source) can be
     injected — production passes None and the real services are built.
     Tests pass fakes.
+
+    ``preview=True`` is a non-consuming dry inspection: it resolves
+    recipients and the subject for each due meeting into ``would_send`` and
+    skips claim/draft/send and every ``*_sent_at``/log write. ``include_claimed``
+    drops the ``followup_sent_at IS NULL`` filter so the preview can surface
+    in-window meetings that are already blocked (used to validate recipient
+    resolution without sending). Neither flag ever writes to the DB or Gmail.
     """
     pending = storage.list_meetings_pending_followup(
         min_age_hours=cfg.followup_min_age_hours,
         max_age_days=cfg.followup_max_age_days,
+        include_claimed=include_claimed,
     )
     result = RunResult(checked=len(pending))
     if not pending:
@@ -298,7 +311,9 @@ def run(
 
     if calendar_service is None:
         calendar_service = build_calendar_service(cfg)
-    if gmail_service is None:
+    # A preview never drafts or sends, so it doesn't need Gmail — only the
+    # calendar lookup (which validates OAuth + the FOLLOWUP_CAL_EVENT_ID).
+    if gmail_service is None and not preview:
         gmail_service = build_gmail_service(cfg)
 
     if open_todos_provider is None:
@@ -331,38 +346,52 @@ def run(
                 cadence=cfg.followup_cadence,
             )
 
+            # Non-consuming preview: record who would receive this and move on.
+            # No claim, no draft/send, no *_sent_at or log write.
+            if preview:
+                result.would_send.append({
+                    "meeting_id": meeting_id,
+                    "date": meeting.get("date", ""),
+                    "subject": subject,
+                    "recipients": recipients,
+                })
+                continue
+
+            # Dry run: write a Gmail draft to the sender only. Still
+            # non-consuming — no claim, no *_sent_at, no log — so it can be
+            # repeated and the meeting can still send for real afterward.
+            if dry_run:
+                gmail_id = create_draft(
+                    gmail_service,
+                    sender=cfg.followup_sender_email,
+                    subject=f"[DRY RUN] {subject}",
+                    html=html,
+                    text=text,
+                )
+                result.drafts.append(meeting_id)
+                continue
+
+            # Real send: claim FIRST so a concurrent cron can't double-send.
             if not storage.claim_followup(meeting_id):
                 result.skipped.append((meeting_id, "already claimed"))
                 continue
 
             try:
-                if dry_run:
-                    gmail_id = create_draft(
-                        gmail_service,
-                        sender=cfg.followup_sender_email,
-                        subject=f"[DRY RUN] {subject}",
-                        html=html,
-                        text=text,
-                    )
-                    result.drafts.append(meeting_id)
-                else:
-                    # CC the sender (Chris) so he gets a copy in his inbox.
-                    # Drafts (dry-run) are already addressed to him alone, so
-                    # no CC is added there.
-                    gmail_id = send_email(
-                        gmail_service,
-                        sender=cfg.followup_sender_email,
-                        to=recipients,
-                        subject=subject,
-                        html=html,
-                        text=text,
-                        cc=[cfg.followup_sender_email] if cfg.followup_sender_email else None,
-                    )
-                    result.sent.append(meeting_id)
+                # CC the sender (Chris) so he gets a copy in his inbox.
+                gmail_id = send_email(
+                    gmail_service,
+                    sender=cfg.followup_sender_email,
+                    to=recipients,
+                    subject=subject,
+                    html=html,
+                    text=text,
+                    cc=[cfg.followup_sender_email] if cfg.followup_sender_email else None,
+                )
+                result.sent.append(meeting_id)
                 storage.record_followup_log(meeting_id, {
                     "sent_at": datetime.now(timezone.utc).isoformat(),
                     "recipients": recipients,
-                    "dry_run": dry_run,
+                    "dry_run": False,
                     "gmail_id": gmail_id,
                 })
             except Exception as exc:

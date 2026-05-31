@@ -365,24 +365,27 @@ class PostgresStorage:
     # --- follow-up email job ---------------------------------------------
 
     def list_meetings_pending_followup(
-        self, *, min_age_hours: int = 24, max_age_days: int = 7
+        self, *, min_age_hours: int = 24, max_age_days: int = 7,
+        include_claimed: bool = False,
     ) -> list[dict[str, Any]]:
         """Meetings due for a follow-up email.
 
         Filters:
-          - followup_sent_at IS NULL (not yet sent)
+          - followup_sent_at IS NULL (not yet sent) — unless ``include_claimed``
           - data->>'saved_at' between max_age_days and min_age_hours ago
             (anchored on JSONB.saved_at so user clicks don't reset the clock)
           - summary is non-empty (don't send blank recaps)
 
-        Returns the meeting JSON dicts in saved_at ASC order so the oldest
-        gets sent first if there's a backlog.
+        ``include_claimed=True`` drops the ``followup_sent_at IS NULL`` filter
+        so a non-consuming preview can surface in-window meetings that are
+        already blocked. Returns the meeting JSON dicts in saved_at ASC order
+        so the oldest gets sent first if there's a backlog.
         """
-        sql = """
+        claim_clause = "" if include_claimed else "followup_sent_at IS NULL\n              AND "
+        sql = f"""
             SELECT data
             FROM meetings
-            WHERE followup_sent_at IS NULL
-              AND (now() - (data->>'saved_at')::timestamptz) >= make_interval(hours => %s)
+            WHERE {claim_clause}(now() - (data->>'saved_at')::timestamptz) >= make_interval(hours => %s)
               AND (now() - (data->>'saved_at')::timestamptz) <= make_interval(days  => %s)
               AND coalesce(trim(data->>'summary'), '') <> ''
             ORDER BY data->>'saved_at' ASC
@@ -447,23 +450,25 @@ class PostgresStorage:
     # Read AI re-ingests don't shift the schedule. Used by send_reminders.py.
 
     def list_meetings_pending_reminder(
-        self, *, min_age_days: int = 3, max_age_days: int = 10
+        self, *, min_age_days: int = 3, max_age_days: int = 10,
+        include_claimed: bool = False,
     ) -> list[dict[str, Any]]:
         """Meetings due for a mid-cycle reminder email.
 
         Filters:
-          - reminder_sent_at IS NULL
+          - reminder_sent_at IS NULL — unless ``include_claimed``
           - meeting date is between min_age_days and max_age_days ago
           - summary is non-empty
 
-        Open-todos/rocks check happens in Python — those live in the
-        rocks_doc table, not in the meeting row.
+        ``include_claimed=True`` drops the ``reminder_sent_at IS NULL`` filter
+        for non-consuming previews. Open-todos/rocks check happens in Python —
+        those live in the rocks_doc table, not in the meeting row.
         """
-        sql = """
+        claim_clause = "" if include_claimed else "reminder_sent_at IS NULL\n              AND "
+        sql = f"""
             SELECT data
             FROM meetings
-            WHERE reminder_sent_at IS NULL
-              AND (current_date - (data->>'date')::date) >= %s
+            WHERE {claim_clause}(current_date - (data->>'date')::date) >= %s
               AND (current_date - (data->>'date')::date) <= %s
               AND coalesce(trim(data->>'summary'), '') <> ''
             ORDER BY (data->>'date')::date ASC
