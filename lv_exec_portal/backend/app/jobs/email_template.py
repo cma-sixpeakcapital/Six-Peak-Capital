@@ -10,7 +10,7 @@ from html import escape
 from itertools import groupby
 from typing import Any, Iterable
 
-from app.storage import bullet_split
+from ..storage import bullet_split
 
 
 CADENCE_WORD = {
