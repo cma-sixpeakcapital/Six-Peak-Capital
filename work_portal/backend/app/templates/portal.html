@@ -54,15 +54,26 @@
 
 {% block content %}
 <section class="hero">
-    <span class="section-label">This Week</span>
+    <span class="section-label">This Week · Level 10</span>
     <h1 class="hero-title">Level 10 Weekly</h1>
     {% if latest %}
     <p class="hero-sub">Last meeting: <strong>{{ latest.date }}</strong> — {{ latest.title }}</p>
     {% else %}
     <p class="hero-sub muted">No meetings ingested yet. The next Read.ai call will populate this dashboard automatically.</p>
     {% endif %}
-    <div class="divider"></div>
+    <div class="hero-meta">
+        <span class="chip"><span class="ic">◆</span> <b id="chip-todos">0</b> active to-dos</span>
+        <span class="chip"><span class="ic">▲</span> <b id="chip-rocks">0</b> rocks tracked</span>
+        {% if latest %}<span class="chip"><span class="ic">●</span> Last meeting <b>{{ latest.date }}</b></span>{% endif %}
+    </div>
 </section>
+
+<div class="kpi-band reveal">
+    <div class="kpi"><div class="v" id="kpi-rocks-v">0</div><div class="l">Rocks Complete</div><div class="track"><div class="fill" id="kpi-rocks-fill"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-actions-v">0</div><div class="l">Actions Closed</div><div class="track"><div class="fill" id="kpi-actions-fill"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-todos-v">0</div><div class="l">Open To-Dos</div><div class="track"><div class="fill" id="kpi-todos-fill"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-cats-v">0</div><div class="l">Goal Categories</div><div class="track"><div class="fill" id="kpi-cats-fill"></div></div></div>
+</div>
 
 {% if latest %}
 <section class="card">
@@ -118,7 +129,7 @@
 </section>
 {% endif %}
 
-<section class="card">
+<section class="card" id="todos">
     <div class="card-head row-between">
         <div>
             <span class="section-label">To-Dos</span>
@@ -173,7 +184,7 @@
     {% endif %}
 </section>
 
-<section class="rocks-section">
+<section class="rocks-section" id="rocks">
     <div class="section-heading row-between">
         <div>
             <span class="section-label">Company Rocks</span>
@@ -251,7 +262,7 @@
     {% endif %}
 </section>
 
-<section class="card">
+<section class="card" id="history">
     <div class="card-head">
         <span class="section-label">Recent Meetings</span>
         <h2>History</h2>
@@ -272,4 +283,38 @@
     <p class="muted">No prior meetings yet.</p>
     {% endif %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // KPI band + hero chips, computed from the already-rendered DOM — no backend.
+  (function () {
+    function setText(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+    function setFill(id, pct) { var el = document.getElementById(id); if (el) el.style.width = Math.max(0, Math.min(100, pct)) + '%'; }
+
+    var rocks = document.querySelectorAll('.rock');
+    var rocksDone = document.querySelectorAll('.rock.rock-complete').length;
+    var actions = document.querySelectorAll('.action-item');
+    var actionsDone = document.querySelectorAll('.action-item.action-complete').length;
+    var todos = document.querySelectorAll('.todo');
+    var todosOpen = todos.length - document.querySelectorAll('.todo.todo-complete').length;
+    var cats = document.querySelectorAll('.category-block').length;
+
+    setText('chip-todos', todosOpen);
+    setText('chip-rocks', rocks.length);
+
+    document.getElementById('kpi-rocks-v').innerHTML = rocksDone + '<small>/' + rocks.length + '</small>';
+    document.getElementById('kpi-actions-v').innerHTML = actionsDone + '<small>/' + actions.length + '</small>';
+    setText('kpi-todos-v', todosOpen);
+    setText('kpi-cats-v', cats);
+
+    // Animate the fills after paint.
+    setTimeout(function () {
+      setFill('kpi-rocks-fill', rocks.length ? rocksDone / rocks.length * 100 : 0);
+      setFill('kpi-actions-fill', actions.length ? actionsDone / actions.length * 100 : 100);
+      setFill('kpi-todos-fill', todos.length ? todosOpen / todos.length * 100 : 0);
+      setFill('kpi-cats-fill', cats ? 100 : 6);
+    }, 200);
+  })();
+</script>
 {% endblock %}
