@@ -16,7 +16,7 @@ from typing import Any
 
 from dateutil.relativedelta import relativedelta
 
-from app.jobs.email_template import (
+from .email_template import (
     _owner_or_unassigned,
     _todos_grouped_by_owner,
     nice_date,
