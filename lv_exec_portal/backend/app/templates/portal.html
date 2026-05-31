@@ -51,15 +51,26 @@
 
 {% block content %}
 <section class="hero">
-    <span class="section-label">This Cycle</span>
+    <span class="section-label">This Cycle · Bi-Weekly Executive</span>
     <h1 class="hero-title">LV Bi-Weekly Executive</h1>
     {% if latest %}
     <p class="hero-sub">Last meeting: <strong>{{ latest.date }}</strong> — {{ latest.title }}</p>
     {% else %}
     <p class="hero-sub muted">No meetings ingested yet. The next Read.ai call will populate this dashboard automatically.</p>
     {% endif %}
-    <div class="divider"></div>
+    <div class="hero-meta">
+        <span class="chip"><span class="ic">◆</span> <b id="chip-todos">0</b> active to-dos</span>
+        <span class="chip"><span class="ic">▲</span> <b id="chip-goals">0</b> goals set</span>
+        {% if latest %}<span class="chip"><span class="ic">●</span> Last meeting <b>{{ latest.date }}</b></span>{% endif %}
+    </div>
 </section>
+
+<div class="kpi-band reveal">
+    <div class="kpi"><div class="v" id="kpi-actions-v">0</div><div class="l">Action Items</div><div class="track"><div class="fill" id="kpi-actions-fill"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-todos-v">0</div><div class="l">Open To-Dos</div><div class="track"><div class="fill" id="kpi-todos-fill"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-goals-v">0</div><div class="l">Goals Set</div><div class="track"><div class="fill" id="kpi-goals-fill"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-meet-v">0</div><div class="l">Meetings Logged</div><div class="track"><div class="fill" id="kpi-meet-fill"></div></div></div>
+</div>
 
 {% if latest %}
 <section class="card">
@@ -115,7 +126,7 @@
 </section>
 {% endif %}
 
-<section class="card">
+<section class="card" id="todos">
     <div class="card-head row-between">
         <div>
             <span class="section-label">To-Dos</span>
@@ -170,7 +181,7 @@
     {% endif %}
 </section>
 
-<section class="rocks-section">
+<section class="rocks-section" id="goals">
     <div class="section-heading row-between">
         <div>
             <span class="section-label">Goals</span>
@@ -200,7 +211,7 @@
     </div>
 </section>
 
-<section class="card">
+<section class="card" id="history">
     <div class="card-head">
         <span class="section-label">Recent Meetings</span>
         <h2>History</h2>
@@ -221,4 +232,37 @@
     <p class="muted">No prior meetings yet.</p>
     {% endif %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // KPI band + hero chips, computed from the already-rendered DOM — no backend.
+  (function () {
+    function setText(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+    function setFill(id, pct) { var el = document.getElementById(id); if (el) el.style.width = Math.max(0, Math.min(100, pct)) + '%'; }
+
+    var actions = document.querySelectorAll('.action-item');
+    var actionsDone = document.querySelectorAll('.action-item.action-complete').length;
+    var todos = document.querySelectorAll('.todo');
+    var todosOpen = todos.length - document.querySelectorAll('.todo.todo-complete').length;
+    var goals = document.querySelectorAll('.rock');  // goals render with the .rock card class
+    var meetings = document.querySelectorAll('.history-list li').length;
+
+    setText('chip-todos', todosOpen);
+    setText('chip-goals', goals.length);
+
+    document.getElementById('kpi-actions-v').innerHTML = actions.length
+      ? actionsDone + '<small>/' + actions.length + '</small>' : '0';
+    setText('kpi-todos-v', todosOpen);
+    setText('kpi-goals-v', goals.length);
+    setText('kpi-meet-v', meetings);
+
+    setTimeout(function () {
+      setFill('kpi-actions-fill', actions.length ? actionsDone / actions.length * 100 : 6);
+      setFill('kpi-todos-fill', todos.length ? todosOpen / todos.length * 100 : 6);
+      setFill('kpi-goals-fill', goals.length ? 100 : 6);
+      setFill('kpi-meet-fill', meetings ? 80 : 6);
+    }, 200);
+  })();
+</script>
 {% endblock %}

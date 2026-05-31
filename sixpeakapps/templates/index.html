@@ -1,78 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Six Peak Capital</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --space: #2C3A51;
-            --steel-light: #E2E7F0;
-            --rust: #C4581A;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body {
-            height: 100%;
-            background: var(--space);
-            font-family: 'DM Sans', sans-serif;
-            color: var(--steel-light);
-        }
-        .page {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 32px;
-        }
-        .logos {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 64px;
-            flex-wrap: wrap;
-        }
-        .logo-card {
-            background: #FFFFFF;
-            padding: 24px 32px;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .logo-card img {
-            height: 120px;
-            width: auto;
-            display: block;
-        }
-        .divider {
-            width: 1px;
-            height: 96px;
-            background: var(--steel-light);
-            opacity: 0.25;
-        }
-        @media (max-width: 600px) {
-            .logos { gap: 32px; }
-            .logo-card { padding: 16px 20px; }
-            .logo-card img { height: 80px; }
-            .divider { display: none; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Six Peak Capital — Operating Portals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --denim:#0B1833;--denim-light:#111E3D;--space:#2C3A51;--space-muted:#1E2C44;--space-light:#384862;
+    --steel:#BFC7DA;--steel-light:#E2E7F0;
+    --rust:#C4581A;--rust-glow:#E8935A;--rust-12:rgba(196,88,26,0.12);
+    --success:#10B981;
+    --display:'DM Sans','Aptos','Segoe UI',sans-serif;
+    --body:'Aptos','DM Sans',Calibri,'Segoe UI',sans-serif;
+    --sh-glow:0 8px 25px rgba(196,88,26,0.25);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--body);color:#fff;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+    min-height:100vh;position:relative;
+    background:
+      radial-gradient(1000px 600px at 82% -10%,rgba(196,88,26,0.26),transparent 60%),
+      radial-gradient(800px 600px at 0% 108%,rgba(44,58,81,0.95),transparent 55%),
+      linear-gradient(165deg,#0B1833 0%,#0d1d3d 48%,#091428 100%);
+    background-attachment:fixed;
+  }
+  ::selection{background:var(--rust);color:#fff}
+  a{color:inherit;text-decoration:none}
+
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay}
+  .grid{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;
+    background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+    background-size:60px 60px;mask-image:radial-gradient(900px 700px at 70% 12%,#000 8%,transparent 72%);
+    -webkit-mask-image:radial-gradient(900px 700px at 70% 12%,#000 8%,transparent 72%)}
+
+  .wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:clamp(1.4rem,4vw,2.4rem) clamp(1.2rem,5vw,2.4rem) 3rem}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-top:0.4rem}
+  .brand{display:flex;align-items:center;gap:0.85rem}
+  .brand-logo{height:46px;width:auto;background:#fff;border-radius:11px;padding:5px 8px;box-shadow:var(--sh-glow);flex-shrink:0}
+  .brand .wm{font-family:var(--display);font-weight:600;font-size:1.05rem;letter-spacing:.01em}
+  .brand .wm span{display:block;color:var(--steel);font-weight:400;font-size:0.7rem;letter-spacing:.22em;text-transform:uppercase;margin-top:2px}
+  .clock{font-size:0.8rem;color:var(--steel);display:flex;align-items:center;gap:0.5rem;background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.1);padding:0.5rem 0.95rem;border-radius:999px;backdrop-filter:blur(6px)}
+  .clock b{color:#fff;font-weight:600}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.45)}70%{box-shadow:0 0 0 7px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+  @media(max-width:620px){.clock{display:none}}
+
+  .hero{padding:clamp(3.4rem,9vw,6.5rem) 0 clamp(2.4rem,5vw,3.6rem)}
+  .eyebrow{display:inline-flex;align-items:center;gap:0.6rem;font-size:0.7rem;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--rust-glow);margin-bottom:1.5rem}
+  .eyebrow .bar{width:36px;height:2px;background:linear-gradient(90deg,var(--rust),transparent)}
+  .hero h1{font-family:var(--display);font-weight:700;font-size:clamp(2.8rem,8vw,6rem);line-height:0.96;letter-spacing:-0.03em;margin-bottom:1.5rem;max-width:14ch}
+  .hero h1 .accent{background:linear-gradient(115deg,var(--rust-glow),var(--rust));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{font-size:clamp(1.02rem,1.7vw,1.28rem);color:var(--steel);max-width:600px;font-weight:300;line-height:1.6}
+  .hero p b{color:#fff;font-weight:600}
+
+  .grid-label{display:flex;align-items:center;gap:1rem;margin:0.5rem 0 1.4rem;color:var(--steel);font-size:0.72rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+  .grid-label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.18),transparent)}
+
+  .portals{display:grid;grid-template-columns:repeat(2,1fr);gap:1.1rem}
+  @media(max-width:720px){.portals{grid-template-columns:1fr}}
+
+  .portal{
+    position:relative;display:block;border-radius:18px;overflow:hidden;
+    background:linear-gradient(150deg,rgba(255,255,255,0.07),rgba(255,255,255,0.025));
+    border:1px solid rgba(255,255,255,0.1);
+    padding:1.7rem 1.7rem 1.5rem;backdrop-filter:blur(10px);
+    transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .35s,box-shadow .35s,background .35s;
+    opacity:0;transform:translateY(26px);
+  }
+  .portal.in{opacity:1;transform:none}
+  .portal::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--rust),var(--rust-glow),transparent);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+  .portal:hover{transform:translateY(-6px);border-color:rgba(196,88,26,0.55);
+    box-shadow:0 24px 60px rgba(0,0,0,0.4),0 0 0 1px rgba(196,88,26,0.3);
+    background:linear-gradient(150deg,rgba(196,88,26,0.12),rgba(255,255,255,0.03))}
+  .portal:hover::before{transform:scaleX(1)}
+  .portal:hover .arrow{transform:translate(4px,-4px);background:var(--rust);color:#fff;border-color:var(--rust)}
+  .portal:hover .p-icon{transform:scale(1.05) rotate(-3deg)}
+
+  .p-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.4rem}
+  .p-icon{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:1.05rem;
+    color:var(--rust-glow);background:rgba(196,88,26,0.14);border:1px solid rgba(196,88,26,0.3);transition:transform .35s}
+  .arrow{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:1rem;color:var(--steel);
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);transition:.3s}
+  .cadence{font-size:0.66rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rust-glow);
+    background:rgba(196,88,26,0.12);border:1px solid rgba(196,88,26,0.25);padding:0.28rem 0.7rem;border-radius:999px;display:inline-block;margin-bottom:0.85rem}
+  .portal h2{font-family:var(--display);font-weight:600;font-size:1.5rem;letter-spacing:-.01em;margin-bottom:0.45rem}
+  .portal .desc{color:var(--steel);font-size:0.92rem;line-height:1.55;font-weight:300;margin-bottom:1.3rem}
+  .p-foot{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.08)}
+  .p-meta{font-size:0.74rem;color:var(--steel)}
+  .p-meta b{color:#fff;font-weight:600}
+  .p-url{font-family:var(--display);font-size:0.74rem;color:var(--rust-glow);font-weight:500}
+
+  .entities{margin-top:3.2rem;display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+  @media(max-width:620px){.entities{grid-template-columns:1fr}}
+  .entity{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:1.3rem 1.5rem;backdrop-filter:blur(8px);display:flex;gap:1rem;align-items:center}
+  .entity img{height:54px;width:auto;background:#fff;border-radius:10px;padding:5px 8px;flex-shrink:0}
+  .entity h3{font-family:var(--display);font-weight:600;font-size:1.05rem;margin-bottom:0.3rem}
+  .entity p{font-size:0.85rem;color:var(--steel);font-weight:300;line-height:1.5}
+
+  footer{position:relative;z-index:2;text-align:center;padding:2.4rem 1.2rem 2.6rem;color:var(--steel);font-size:0.78rem;
+    border-top:1px solid rgba(255,255,255,0.07);margin-top:2.8rem}
+  footer .fwm{font-family:var(--display);font-weight:600;color:#fff;font-size:0.95rem;margin-bottom:0.35rem}
+
+  .rv{opacity:0;transform:translateY(22px);animation:rise .8s cubic-bezier(.2,.8,.2,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+</style>
 </head>
 <body>
-    <main class="page">
-        <div class="logos">
-            <div class="logo-card">
-                <img src="{{ url_for('static', filename='images/six-peak-logo.webp') }}" alt="Six Peak Capital" />
-            </div>
-            <span class="divider" aria-hidden="true"></span>
-            <div class="logo-card">
-                <img src="{{ url_for('static', filename='images/lv-llc-logo.jpg') }}" alt="LV Construction" />
-            </div>
-        </div>
-    </main>
+<div class="grid"></div>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <img class="brand-logo" src="{{ url_for('static', filename='images/six-peak-logo.webp') }}" alt="Six Peak Capital" />
+      <div class="wm">Six Peak Capital<span>Operating Portals</span></div>
+    </div>
+    <div class="clock"><span class="live-dot"></span><span id="clock">Loading…</span></div>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow rv" style="animation-delay:.05s"><span class="bar"></span>Internal Workspace</div>
+    <h1 class="rv" style="animation-delay:.12s">One front door to <span class="accent">every cadence.</span></h1>
+    <p class="rv" style="animation-delay:.2s">The operating portals for <b>Six Peak Capital</b> and <b>LV Construction</b> — meeting summaries, action items, to-dos, and goals, auto-updated after every meeting.</p>
+  </section>
+
+  <div class="grid-label rv" style="animation-delay:.28s">Enter a portal</div>
+
+  <div class="portals" id="portals">
+    <a class="portal" href="https://l10.sixpeakapps.com/">
+      <div class="p-top"><div class="p-icon">L10</div><div class="arrow">↗</div></div>
+      <span class="cadence">Weekly</span>
+      <h2>L10 Weekly</h2>
+      <p class="desc">The Level 10 weekly operating cadence — refinancing, operations, dispositions, capital markets, plus company and individual rocks.</p>
+      <div class="p-foot"><span class="p-meta">Six Peak Capital</span><span class="p-url">l10.sixpeakapps.com</span></div>
+    </a>
+    <a class="portal" href="https://finance.sixpeakapps.com/">
+      <div class="p-top"><div class="p-icon">FIN</div><div class="arrow">↗</div></div>
+      <span class="cadence">Monthly</span>
+      <h2>Finance</h2>
+      <p class="desc">The monthly finance review — co-investment structuring, consolidation, spend controls, and the goals the finance team is driving.</p>
+      <div class="p-foot"><span class="p-meta">Six Peak Capital</span><span class="p-url">finance.sixpeakapps.com</span></div>
+    </a>
+    <a class="portal" href="https://ic.sixpeakapps.com/">
+      <div class="p-top"><div class="p-icon">IC</div><div class="arrow">↗</div></div>
+      <span class="cadence">Weekly</span>
+      <h2>Investment Committee</h2>
+      <p class="desc">The weekly IC review — closing readiness, portfolio capital options, development/GC strategy, and live underwriting.</p>
+      <div class="p-foot"><span class="p-meta">Six Peak Capital</span><span class="p-url">ic.sixpeakapps.com</span></div>
+    </a>
+    <a class="portal" href="https://lvexec.sixpeakapps.com/">
+      <div class="p-top"><div class="p-icon">LV</div><div class="arrow">↗</div></div>
+      <span class="cadence">Bi-Weekly</span>
+      <h2>LV Executive</h2>
+      <p class="desc">The bi-weekly LV Construction executive review — project pipeline, contracts, financing, and resourcing across the book.</p>
+      <div class="p-foot"><span class="p-meta">LV Construction</span><span class="p-url">lvexec.sixpeakapps.com</span></div>
+    </a>
+  </div>
+
+  <div class="entities">
+    <div class="entity">
+      <img src="{{ url_for('static', filename='images/six-peak-logo.webp') }}" alt="Six Peak Capital" />
+      <div>
+        <h3>Six Peak Capital</h3>
+        <p>Real estate investment, capital markets, and asset management across the portfolio.</p>
+      </div>
+    </div>
+    <div class="entity">
+      <img src="{{ url_for('static', filename='images/lv-llc-logo.jpg') }}" alt="LV Construction" />
+      <div>
+        <h3>LV Construction</h3>
+        <p>General contracting and development execution — budgets, GMPs, and project delivery.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="fwm">Six Peak Capital · LV Construction</div>
+  <div>Operating portals — auto-updated after each meeting. Internal use only.</div>
+</footer>
+
+<script>
+  try {
+    var d = new Date();
+    document.getElementById('clock').textContent =
+      d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  } catch (e) { document.getElementById('clock').textContent = 'Six Peak Capital'; }
+
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.isIntersecting) {
+        var i = [].indexOf.call(document.querySelectorAll('.portal'), e.target);
+        setTimeout(function () { e.target.classList.add('in'); }, Math.max(0, i) * 90);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.portal').forEach(function (p) { io.observe(p); });
+
+  document.querySelectorAll('.portal').forEach(function (card) {
+    card.addEventListener('mousemove', function (e) {
+      var r = card.getBoundingClientRect();
+      card.style.background = 'radial-gradient(420px circle at ' + (e.clientX - r.left) + 'px ' + (e.clientY - r.top) + 'px,rgba(196,88,26,0.16),rgba(255,255,255,0.03))';
+    });
+    card.addEventListener('mouseleave', function () { card.style.background = ''; });
+  });
+</script>
 </body>
 </html>
