@@ -64,8 +64,7 @@
   .grid-label{display:flex;align-items:center;gap:1rem;margin:0.5rem 0 1.4rem;color:var(--steel);font-size:0.72rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
   .grid-label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.18),transparent)}
 
-  .portals{display:grid;grid-template-columns:repeat(2,1fr);gap:1.1rem}
-  @media(max-width:720px){.portals{grid-template-columns:1fr}}
+  .portals{display:grid;grid-template-columns:1fr;gap:1.1rem;max-width:540px}
 
   .portal{
     position:relative;display:block;border-radius:18px;overflow:hidden;
@@ -128,8 +127,8 @@
 
   <section class="hero">
     <div class="eyebrow rv" style="animation-delay:.05s"><span class="bar"></span>Internal Workspace</div>
-    <h1 class="rv" style="animation-delay:.12s">One front door to <span class="accent">every cadence.</span></h1>
-    <p class="rv" style="animation-delay:.2s">The operating portals for <b>Six Peak Capital</b> and <b>LV Construction</b> — meeting summaries, action items, to-dos, and goals, auto-updated after every meeting.</p>
+    <h1 class="rv" style="animation-delay:.12s">One front door to the <span class="accent">L10 cadence.</span></h1>
+    <p class="rv" style="animation-delay:.2s">The L10 operating portal for <b>Six Peak Capital</b> — meeting summaries, action items, to-dos, and goals, auto-updated after every meeting.</p>
   </section>
 
   <div class="grid-label rv" style="animation-delay:.28s">Enter a portal</div>
@@ -141,27 +140,6 @@
       <h2>L10 Weekly</h2>
       <p class="desc">The Level 10 weekly operating cadence — refinancing, operations, dispositions, capital markets, plus company and individual rocks.</p>
       <div class="p-foot"><span class="p-meta">Six Peak Capital</span><span class="p-url">l10.sixpeakapps.com</span></div>
-    </a>
-    <a class="portal" href="https://finance.sixpeakapps.com/">
-      <div class="p-top"><div class="p-icon">FIN</div><div class="arrow">↗</div></div>
-      <span class="cadence">Monthly</span>
-      <h2>Finance</h2>
-      <p class="desc">The monthly finance review — co-investment structuring, consolidation, spend controls, and the goals the finance team is driving.</p>
-      <div class="p-foot"><span class="p-meta">Six Peak Capital</span><span class="p-url">finance.sixpeakapps.com</span></div>
-    </a>
-    <a class="portal" href="https://ic.sixpeakapps.com/">
-      <div class="p-top"><div class="p-icon">IC</div><div class="arrow">↗</div></div>
-      <span class="cadence">Weekly</span>
-      <h2>Investment Committee</h2>
-      <p class="desc">The weekly IC review — closing readiness, portfolio capital options, development/GC strategy, and live underwriting.</p>
-      <div class="p-foot"><span class="p-meta">Six Peak Capital</span><span class="p-url">ic.sixpeakapps.com</span></div>
-    </a>
-    <a class="portal" href="https://lvexec.sixpeakapps.com/">
-      <div class="p-top"><div class="p-icon">LV</div><div class="arrow">↗</div></div>
-      <span class="cadence">Bi-Weekly</span>
-      <h2>LV Executive</h2>
-      <p class="desc">The bi-weekly LV Construction executive review — project pipeline, contracts, financing, and resourcing across the book.</p>
-      <div class="p-foot"><span class="p-meta">LV Construction</span><span class="p-url">lvexec.sixpeakapps.com</span></div>
     </a>
   </div>
 
