@@ -1,6 +1,10 @@
+from app.config import Config
 from app.ingest import IngestService
 from app.storage import Storage
 from tests.conftest import FakeSummarizer
+
+# The live default pattern (no INGEST_TITLE_PATTERN env override for L10).
+_DEFAULT_PATTERN = Config.ingest_title_pattern
 
 
 def _svc(storage: Storage, pattern: str) -> IngestService:
@@ -16,6 +20,36 @@ def test_title_matches_default_patterns(storage: Storage) -> None:
     assert not svc.title_matches("Sales call with Acme")
     assert not svc.title_matches("1:1 Chris / Bob")
     assert not svc.title_matches("")
+
+
+def test_default_pattern_matches_rock_session(storage: Storage) -> None:
+    """Quarterly EOS Rock Sessions ingest via the same default title filter as
+    the weekly L10 — no per-quarter config change needed."""
+    svc = _svc(storage, _DEFAULT_PATTERN)
+    assert svc.title_matches("Six Peak EOS — Q3 2026 Rock Session")
+    assert svc.title_matches("Six Peak EOS — Q4 2026 Rock Session")
+    assert svc.title_matches("Quarterly Rock Session")
+    # Weekly L10 still matches.
+    assert svc.title_matches("Six Peak Capital - Weekly L10")
+    # Unrelated meetings still ignored.
+    assert not svc.title_matches("Sales call with Acme")
+
+
+def test_ingest_stamps_rock_session_kind(storage: Storage) -> None:
+    svc = _svc(storage, _DEFAULT_PATTERN)
+    svc.ingest_webhook({"meeting": {
+        "id": "rs1", "date": "2026-06-11",
+        "title": "Six Peak EOS — Q3 2026 Rock Session",
+    }})
+    assert storage.get_meeting("rs1")["kind"] == "rock_session"
+
+
+def test_ingest_stamps_l10_kind(storage: Storage) -> None:
+    svc = _svc(storage, _DEFAULT_PATTERN)
+    svc.ingest_webhook({"meeting": {
+        "id": "w1", "date": "2026-06-09", "title": "Six Peak Capital - Weekly L10",
+    }})
+    assert storage.get_meeting("w1")["kind"] == "l10"
 
 
 def test_empty_pattern_accepts_all(storage: Storage) -> None:

@@ -128,12 +128,14 @@ def cfg(tmp_path: Path) -> Config:
     )
 
 
-def _make_meeting(storage, *, days_ago, summary="Recap.", meeting_id="l10_test"):
+def _make_meeting(storage, *, days_ago, summary="Recap.", meeting_id="l10_test",
+                  kind="l10", title="Six Peak Capital - Weekly L10"):
     meeting_date = (date.today() - timedelta(days=days_ago)).isoformat()
     storage.save_meeting({
         "id": meeting_id,
         "date": meeting_date,
-        "title": "Six Peak Capital - Weekly L10",
+        "title": title,
+        "kind": kind,
         "summary": summary,
         "action_items": [],
         "saved_at": datetime.now(timezone.utc).isoformat(),
@@ -313,6 +315,37 @@ def test_skip_silently_when_no_open_todos_or_rocks(storage, cfg):
     assert result["sent"] == []
     m = storage.get_meeting("l10_test")
     assert m.get("_reminder_sent_at") is None
+
+
+def test_rock_session_is_skipped(storage, cfg):
+    """Quarterly Rock Sessions ride the L10 portal but are OFF the mid-cycle
+    reminder rotation — skipped even with open to-dos and valid invitees."""
+    _make_meeting(storage, days_ago=3, meeting_id="rock_q3",
+                  kind="rock_session", title="Six Peak EOS — Q3 2026 Rock Session")
+    _add_open_todo(storage, "Bob", "Thing")
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    result = run(storage=storage, cfg=cfg, dry_run=False,
+                 gmail_service=gmail, calendar_service=cal)
+    assert ("rock_q3", "rock session — reminders off") in result["skipped"]
+    assert result["sent"] == []
+    assert gmail.sent == []
+    m = storage.get_meeting("rock_q3")
+    assert m.get("_reminder_sent_at") is None
+
+
+def test_weekly_l10_still_fires_alongside_rock_session(storage, cfg):
+    """A rock session is skipped but a due weekly L10 still gets its reminder."""
+    _make_meeting(storage, days_ago=3, meeting_id="rock_q3",
+                  kind="rock_session", title="Six Peak EOS — Q3 2026 Rock Session")
+    _make_meeting(storage, days_ago=4, meeting_id="weekly", kind="l10")
+    _add_open_todo(storage, "Bob", "Thing")
+    gmail = FakeGmail()
+    cal = _calendar_with(["rak@sixpeakcapital.com"])
+    result = run(storage=storage, cfg=cfg, dry_run=False,
+                 gmail_service=gmail, calendar_service=cal)
+    assert result["sent"] == ["weekly"]
+    assert ("rock_q3", "rock session — reminders off") in result["skipped"]
 
 
 def test_fires_when_only_todos_have_content(storage, cfg):

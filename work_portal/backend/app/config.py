@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -8,6 +8,18 @@ def _bool_env(name: str, default: bool) -> bool:
     if raw is None:
         return default
     return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _split_ids(raw: str, fallback: str = "") -> list[str]:
+    """Parse a comma-separated event-ID list, falling back to a single ID.
+
+    Empty entries and surrounding whitespace are dropped. When the list var is
+    empty we use the legacy single-ID var so existing deployments keep working.
+    """
+    ids = [part.strip() for part in (raw or "").split(",") if part.strip()]
+    if not ids and fallback.strip():
+        ids = [fallback.strip()]
+    return ids
 
 
 @dataclass
@@ -20,14 +32,26 @@ class Config:
     database_url: str = ""
     readai_base_url: str = "https://api.read.ai/v1"
     summarizer_model: str = "claude-haiku-4-5-20251001"
-    ingest_title_pattern: str = r"(?i)\bL10\b|Weekly Six Peak|Level 10|Leadership"
+    # Rock Session alternatives let quarterly EOS sessions ("Six Peak EOS —
+    # Q3 2026 Rock Session") ride the same webhook ingestion as the weekly L10
+    # with zero per-quarter config — see app/ingest.py title filter.
+    ingest_title_pattern: str = (
+        r"(?i)\bL10\b|Weekly Six Peak|Level 10|Leadership|Six Peak EOS|Rock Session"
+    )
     # Follow-up email job — see app/jobs/send_followups.py
     google_client_id: str = ""
     google_client_secret: str = ""
     google_refresh_token: str = ""
     google_calendar_id: str = "primary"
     followup_sender_email: str = ""
+    # Single legacy event ID (back-compat). Prefer ``followup_cal_event_ids``,
+    # which the jobs actually iterate; this is kept so the old env var and
+    # direct-construction callers (tests) keep working.
     followup_cal_event_id: str = ""
+    # One or more calendar event IDs whose invitees receive the recap. L10 has
+    # the weekly recurring series PLUS standalone quarterly Rock Sessions, each
+    # a distinct event ID; a meeting's date belongs to exactly one of them.
+    followup_cal_event_ids: list[str] = field(default_factory=list)
     followup_subject_prefix: str = "L10 Follow-up"
     followup_portal_name: str = "L10 Weekly"
     followup_portal_url: str = "https://l10.sixpeakapps.com"
@@ -41,6 +65,13 @@ class Config:
     followup_reminder_min_age_days: int = 3
     followup_reminder_max_age_days: int = 10
     followup_reminder_dry_run: bool = True
+
+    def __post_init__(self) -> None:
+        # Derive the list from the legacy single ID when callers (e.g. tests)
+        # only set ``followup_cal_event_id``. from_env populates the list
+        # directly, so this only fires for direct construction.
+        if not self.followup_cal_event_ids and self.followup_cal_event_id:
+            self.followup_cal_event_ids = [self.followup_cal_event_id]
 
     @classmethod
     def from_env(cls, prefix: str = "") -> "Config":
@@ -80,6 +111,13 @@ class Config:
             google_calendar_id=env("GOOGLE_CALENDAR_ID", "primary"),
             followup_sender_email=env("FOLLOWUP_SENDER_EMAIL", ""),
             followup_cal_event_id=env("FOLLOWUP_CAL_EVENT_ID", ""),
+            # Comma-separated list; falls back to the single legacy var so
+            # nothing breaks on deploy. Each new quarterly Rock Session appends
+            # its event ID here (one-line env change per quarter).
+            followup_cal_event_ids=_split_ids(
+                env("FOLLOWUP_CAL_EVENT_IDS", ""),
+                fallback=env("FOLLOWUP_CAL_EVENT_ID", ""),
+            ),
             followup_subject_prefix=env("FOLLOWUP_SUBJECT_PREFIX", "L10 Follow-up"),
             followup_portal_name=env("FOLLOWUP_PORTAL_NAME", "L10 Weekly"),
             followup_portal_url=env("FOLLOWUP_PORTAL_URL", "https://l10.sixpeakapps.com"),

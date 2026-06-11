@@ -71,6 +71,21 @@ def build_calendar_service(cfg) -> Any:
 
 # --- Calendar invitee lookup ----------------------------------------------
 
+def _is_non_recurring_error(exc: Exception) -> bool:
+    """True for Google's "instances of non-recurring event" 400.
+
+    Standalone meetings like quarterly Rock Sessions aren't recurring, so
+    ``events.instances()`` rejects them with HTTP 400. That's expected, not a
+    real failure — detect it (structurally via HttpError status, with a message
+    fallback) so the caller can fall through to the day-windowed list scan.
+    """
+    status = getattr(getattr(exc, "resp", None), "status", None)
+    msg = str(exc).lower()
+    if status == 400 and "non-recurring" in msg:
+        return True
+    return "non-recurring event" in msg or "nonrecurring" in msg
+
+
 def _find_instance_via_instances(cal_service: Any, calendar_id: str,
                                   recurring_event_id: str,
                                   time_min: str, time_max: str) -> dict[str, Any] | None:
@@ -78,16 +93,23 @@ def _find_instance_via_instances(cal_service: Any, calendar_id: str,
 
     Real API errors (auth, network, etc.) bubble up to the caller, which
     treats them as run-level errors. An empty ``items`` list (e.g. expired
-    RRULE) returns None so the caller can try the fallback.
+    RRULE) returns None so the caller can try the fallback. A non-recurring-
+    event 400 (standalone meetings like Rock Sessions) is also turned into
+    None so the list-scan fallback — which matches by exact id — can find it.
     """
-    result = cal_service.events().instances(
-        calendarId=calendar_id,
-        eventId=recurring_event_id,
-        timeMin=time_min,
-        timeMax=time_max,
-        maxResults=5,
-        showDeleted=False,
-    ).execute()
+    try:
+        result = cal_service.events().instances(
+            calendarId=calendar_id,
+            eventId=recurring_event_id,
+            timeMin=time_min,
+            timeMax=time_max,
+            maxResults=5,
+            showDeleted=False,
+        ).execute()
+    except Exception as exc:
+        if _is_non_recurring_error(exc):
+            return None
+        raise
     items = result.get("items", []) if isinstance(result, dict) else []
     for inst in items:
         if inst.get("status") == "cancelled":
@@ -104,7 +126,9 @@ def _find_instance_via_list_scan(cal_service: Any, calendar_id: str,
 
     Needed when the master recurrence has an expired UNTIL clause; Google
     refuses to expand instances after that date even though the events
-    physically exist on the calendar.
+    physically exist on the calendar. Also the resolution path for standalone
+    (non-recurring) events such as quarterly Rock Sessions, whose id appears
+    verbatim in the day window (no ``_<timestamp>`` suffix, no recurringEventId).
     """
     result = cal_service.events().list(
         calendarId=calendar_id,
@@ -119,7 +143,9 @@ def _find_instance_via_list_scan(cal_service: Any, calendar_id: str,
             continue
         eid = evt.get("id", "") or ""
         rid = evt.get("recurringEventId", "") or ""
-        if eid.startswith(recurring_event_id + "_") or rid.startswith(recurring_event_id):
+        if (eid == recurring_event_id
+                or eid.startswith(recurring_event_id + "_")
+                or rid.startswith(recurring_event_id)):
             return evt
     return None
 
@@ -188,6 +214,30 @@ def lookup_invitees(cal_service: Any, *, calendar_id: str, recurring_event_id: s
     return out
 
 
+def lookup_invitees_any(cal_service: Any, *, calendar_id: str,
+                        recurring_event_ids: list[str], meeting_date: str,
+                        sender_email: str) -> list[str]:
+    """Resolve invitees by trying each candidate event ID in order.
+
+    L10's portal carries more than one meeting series — the weekly recurring
+    L10 plus standalone quarterly Rock Sessions — each a distinct calendar
+    event ID. A given meeting date belongs to exactly one of them, so we return
+    the first event ID that yields a non-empty invitee list. Genuine API errors
+    propagate (a non-recurring 400 is already absorbed inside lookup_invitees).
+    """
+    for event_id in recurring_event_ids or []:
+        invitees = lookup_invitees(
+            cal_service,
+            calendar_id=calendar_id,
+            recurring_event_id=event_id,
+            meeting_date=meeting_date,
+            sender_email=sender_email,
+        )
+        if invitees:
+            return invitees
+    return []
+
+
 # --- Gmail send / draft ---------------------------------------------------
 
 def _build_mime(sender: str, to: list[str], subject: str, html: str, text: str,
@@ -239,7 +289,7 @@ def create_draft(gmail_service: Any, *, sender: str, subject: str,
 
 class _CfgLike(Protocol):
     google_calendar_id: str
-    followup_cal_event_id: str
+    followup_cal_event_ids: list[str]
     followup_sender_email: str
     followup_subject_prefix: str
     followup_portal_name: str
@@ -325,10 +375,10 @@ def run(
     for meeting in pending:
         meeting_id = meeting.get("id", "")
         try:
-            recipients = lookup_invitees(
+            recipients = lookup_invitees_any(
                 calendar_service,
                 calendar_id=cfg.google_calendar_id,
-                recurring_event_id=cfg.followup_cal_event_id,
+                recurring_event_ids=cfg.followup_cal_event_ids,
                 meeting_date=meeting.get("date", ""),
                 sender_email=cfg.followup_sender_email,
             )

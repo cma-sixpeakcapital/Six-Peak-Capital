@@ -14,8 +14,8 @@ from typing import Any
 
 import pytest
 
-from app.config import Config
-from app.jobs.send_followups import run, lookup_invitees
+from app.config import Config, _split_ids
+from app.jobs.send_followups import run, lookup_invitees, lookup_invitees_any
 from app.jobs.email_template import render_email
 from app.storage import Storage
 
@@ -613,3 +613,145 @@ def test_completed_todos_filtered(storage, cfg):
     text = gmail.sent[0]["text"]
     assert "Open thing" in text
     assert "Closed thing" not in text
+
+
+# --- Config: comma-separated event-ID parsing ----------------------------
+
+
+def test_split_ids_comma_separated():
+    assert _split_ids("a , b,c ,") == ["a", "b", "c"]
+
+
+def test_split_ids_falls_back_to_single():
+    assert _split_ids("", fallback="legacy") == ["legacy"]
+    assert _split_ids("   ", fallback="legacy") == ["legacy"]
+
+
+def test_split_ids_list_wins_over_fallback():
+    assert _split_ids("a,b", fallback="legacy") == ["a", "b"]
+
+
+def test_split_ids_empty():
+    assert _split_ids("", fallback="") == []
+
+
+def test_config_post_init_derives_list_from_single(cfg):
+    # cfg sets only followup_cal_event_id; the list is derived in __post_init__.
+    assert cfg.followup_cal_event_ids == ["evt_recurring"]
+
+
+# --- Multi event-ID lookup (weekly L10 + quarterly Rock Sessions) --------
+
+
+class _RoutingCalendar:
+    """Returns attendees keyed by the eventId passed to instances(); records
+    the order of IDs queried so we can assert short-circuit behavior."""
+    def __init__(self, by_event_id: dict[str, list[str]]) -> None:
+        self.by_event_id = by_event_id
+        self.queried: list[str] = []
+
+    def events(self):
+        return self
+
+    def instances(self, **kw):
+        self.queried.append(kw.get("eventId"))
+        emails = self.by_event_id.get(kw.get("eventId"), [])
+        return _Exec(lambda: {"items": [{
+            "status": "confirmed",
+            "attendees": [{"email": e, "responseStatus": "accepted"} for e in emails],
+        }]})
+
+    def list(self, **kw):
+        return _Exec(lambda: {"items": []})
+
+
+def test_lookup_invitees_any_tries_each_until_match():
+    cal = _RoutingCalendar({
+        "weekly_evt": [],                       # no instance on this date
+        "rock_evt": ["grady@lvllc.com", "rak@sixpeakcapital.com"],
+    })
+    out = lookup_invitees_any(
+        cal, calendar_id="primary",
+        recurring_event_ids=["weekly_evt", "rock_evt"],
+        meeting_date="2026-06-11", sender_email="cma@sixpeakcapital.com",
+    )
+    assert out == ["grady@lvllc.com", "rak@sixpeakcapital.com"]
+    assert cal.queried == ["weekly_evt", "rock_evt"]  # tried in order
+
+
+def test_lookup_invitees_any_short_circuits_on_first_match():
+    cal = _RoutingCalendar({
+        "weekly_evt": ["rak@sixpeakcapital.com"],
+        "rock_evt": ["should@not.reach"],
+    })
+    out = lookup_invitees_any(
+        cal, calendar_id="primary",
+        recurring_event_ids=["weekly_evt", "rock_evt"],
+        meeting_date="2026-06-09", sender_email="cma@sixpeakcapital.com",
+    )
+    assert out == ["rak@sixpeakcapital.com"]
+    assert cal.queried == ["weekly_evt"]  # stopped after first match
+
+
+def test_lookup_invitees_any_empty_list_returns_empty():
+    cal = _RoutingCalendar({})
+    assert lookup_invitees_any(
+        cal, calendar_id="primary", recurring_event_ids=[],
+        meeting_date="2026-06-11", sender_email="cma@sixpeakcapital.com",
+    ) == []
+
+
+# --- Standalone (non-recurring) event support — Rock Sessions ------------
+
+
+class _StandaloneCalendar:
+    """A one-off event: instances() 400s ("non-recurring"); the event surfaces
+    in the day-windowed list() with its id verbatim (no _suffix / recurringEventId)."""
+    def __init__(self, event_id: str, emails: list[str]) -> None:
+        self.event_id = event_id
+        self.emails = emails
+        self.calls: list[str] = []
+
+    def events(self):
+        return self
+
+    def instances(self, **kw):
+        self.calls.append("instances")
+        def _raise():
+            raise RuntimeError("Cannot query for instances of non-recurring event")
+        return _Exec(_raise)
+
+    def list(self, **kw):
+        self.calls.append("list")
+        return _Exec(lambda: {"items": [{
+            "id": self.event_id,
+            "status": "confirmed",
+            "attendees": [{"email": e, "responseStatus": "accepted"} for e in self.emails],
+        }]})
+
+
+def test_standalone_event_resolves_via_list_scan():
+    cal = _StandaloneCalendar(
+        "5738s8qjmr7d83pft96dkj95ng",
+        ["grady@lvllc.com", "anthony.franks@steyngroup.com"],
+    )
+    out = lookup_invitees(
+        cal, calendar_id="primary",
+        recurring_event_id="5738s8qjmr7d83pft96dkj95ng",
+        meeting_date="2026-06-11", sender_email="cma@sixpeakcapital.com",
+    )
+    assert out == ["grady@lvllc.com", "anthony.franks@steyngroup.com"]
+    assert cal.calls == ["instances", "list"]  # 400 fell through to the scan
+
+
+def test_non_recurring_400_not_treated_as_run_error(storage, cfg):
+    """A non-recurring 400 must NOT surface as a run-level error — it falls
+    through to the list scan and the recap still sends."""
+    _make_meeting(storage, hours_ago=25, meeting_id="2026-06-11", date="2026-06-11")
+    gmail = FakeGmail()
+    cal = _StandaloneCalendar("evt_recurring", ["rak@sixpeakcapital.com"])
+    result = run(storage=storage, cfg=cfg, dry_run=False,
+                 gmail_service=gmail, calendar_service=cal)
+    assert result["errors"] == []
+    assert result["sent"] == ["2026-06-11"]
+    assert "rak@sixpeakcapital.com" in gmail.sent[0]["to"]
