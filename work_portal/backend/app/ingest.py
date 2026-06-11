@@ -19,6 +19,16 @@ _OWNER_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Distinguishes quarterly EOS Rock Sessions from the weekly L10. Both ingest
+# via the same title filter and share storage, but reminders are scoped to
+# weekly L10 only (see app/jobs/send_reminders.py), so each meeting carries a
+# ``kind`` stamped at ingest time.
+_ROCK_SESSION_RE = re.compile(r"(?i)\brock session\b")
+
+
+def _classify_kind(title: str) -> str:
+    return "rock_session" if _ROCK_SESSION_RE.search(title or "") else "l10"
+
 
 def _extract_owner(text: str) -> str:
     """Best-effort owner extraction from the start of a Read.ai action sentence.
@@ -111,6 +121,7 @@ class IngestService:
             if not meeting.get("files"):
                 meeting["files"] = extracted.get("files", [])
         meeting["action_items"] = _assign_action_item_ids(meeting.get("action_items") or [])
+        meeting.setdefault("kind", _classify_kind(meeting.get("title", "")))
         meeting.setdefault("ingested_at", datetime.now(timezone.utc).isoformat())
         if not meeting.get("id"):
             meeting["id"] = meeting.get("date") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%S")

@@ -29,7 +29,7 @@ from .send_followups import (
     build_calendar_service,
     build_gmail_service,
     create_draft,
-    lookup_invitees,
+    lookup_invitees_any,
     send_email,
 )
 
@@ -38,7 +38,7 @@ log = logging.getLogger(__name__)
 
 class _CfgLike(Protocol):
     google_calendar_id: str
-    followup_cal_event_id: str
+    followup_cal_event_ids: list[str]
     followup_sender_email: str
     followup_portal_name: str
     followup_portal_url: str
@@ -109,6 +109,12 @@ def run(
     for meeting in pending:
         meeting_id = meeting.get("id", "")
         try:
+            # Rock Sessions (quarterly EOS) ride the L10 portal for the one-time
+            # recap but are intentionally OFF the mid-cycle reminder rotation.
+            if meeting.get("kind") == "rock_session":
+                result["skipped"].append((meeting_id, "rock session — reminders off"))
+                continue
+
             # Silent skip if both empty — no point nudging about nothing.
             open_todos = open_todos_provider()
             rocks_by_owner = open_rocks_provider()
@@ -116,10 +122,10 @@ def run(
                 result["skipped"].append((meeting_id, "no open to-dos or rocks"))
                 continue
 
-            recipients = lookup_invitees(
+            recipients = lookup_invitees_any(
                 calendar_service,
                 calendar_id=cfg.google_calendar_id,
-                recurring_event_id=cfg.followup_cal_event_id,
+                recurring_event_ids=cfg.followup_cal_event_ids,
                 meeting_date=meeting.get("date", ""),
                 sender_email=cfg.followup_sender_email,
             )
