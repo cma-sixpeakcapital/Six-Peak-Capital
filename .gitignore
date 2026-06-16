@@ -16,3 +16,6 @@ _temp_*.txt
 .vscode/
 .idea/
 design_mockups/
+
+# Q3 migration DB snapshots — contain live data, never commit
+scripts/snapshots/

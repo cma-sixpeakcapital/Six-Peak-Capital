@@ -157,7 +157,10 @@ class PostgresStorage:
         return None
 
     def update_rock(self, rock_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
-        allowed = {"title", "notes", "due", "category", "link"}
+        allowed = {
+            "title", "notes", "due", "category", "link",
+            "priority", "done_definition", "area", "dependencies",
+        }
         clean = {k: v for k, v in updates.items() if k in allowed}
         data = self.load_rocks()
         for rocks in (data.get("rocks") or {}).values():

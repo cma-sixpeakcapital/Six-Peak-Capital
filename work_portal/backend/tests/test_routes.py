@@ -171,30 +171,46 @@ def test_api_toggle_rock_not_found(client) -> None:
     assert resp.status_code == 404
 
 
-def test_portal_groups_by_category(client, storage: Storage) -> None:
+def test_portal_groups_by_owner(client, storage: Storage) -> None:
+    # Q3-style set: individual rocks grouped by owner, archived excluded from
+    # active cards and surfaced in "Past quarters"; deferred company rock in
+    # its own collapsed subsection.
     storage.save_rocks({
-        "team": [{"name": "A"}, {"name": "B"}],
+        "team": [],
         "rocks": {
-            "A": [
-                {"id": "1", "title": "A-Finance-1", "status": "incomplete", "category": "Finance"},
-                {"id": "2", "title": "A-Asset-1", "status": "incomplete", "category": "Asset"},
+            "Zoe Owner": [
+                {"id": "1", "title": "Zoe-Active-1", "status": "incomplete",
+                 "level": "individual", "priority": "High", "quarter": "Q3 2026"},
             ],
-            "B": [
-                {"id": "3", "title": "B-Finance-1", "status": "complete", "category": "Finance"},
+            "Amy Owner": [
+                {"id": "2", "title": "Amy-Active-1", "status": "in_progress",
+                 "level": "individual", "priority": "Medium", "quarter": "Q3 2026"},
+                {"id": "3", "title": "Amy-Archived-Old", "status": "complete",
+                 "archived": True, "quarter": "Q2 2026"},
             ],
         },
-        "company_rocks": [],
+        "company_rocks": [
+            {"id": "c1", "title": "Co-Active", "status": "incomplete", "level": "company",
+             "priority": "High", "quarter": "Q3 2026"},
+            {"id": "c2", "title": "Co-Deferred", "status": "incomplete", "level": "company",
+             "deferred": True, "quarter": "Q3 2026"},
+        ],
     })
     body = client.get("/").data.decode()
-    # Category headings present
-    assert "Finance" in body
-    assert "Asset" in body
-    # Finance section should show both A and B's finance rocks
-    finance_idx = body.index("Finance")
-    asset_idx = body.index("Asset")
-    assert finance_idx < asset_idx  # order preserved from team order (A first saw Finance)
-    # The Finance rock for B must appear after the Finance header and before Asset header
-    assert finance_idx < body.index("B-Finance-1") < asset_idx
+    assert "By owner" in body
+    # Owners alphabetical: Amy before Zoe.
+    assert body.index("Amy Owner") < body.index("Zoe Owner")
+    assert "Amy-Active-1" in body and "Zoe-Active-1" in body
+    # Priority badge + in-progress pill rendered.
+    assert "prio-high" in body and "prio-medium" in body
+    assert "status-progress" in body
+    # Deferred company rock surfaced in its own subsection, not the active list.
+    assert "Co-Deferred" in body and "Deferred / Q4" in body
+    # Archived old rock lands in Past quarters, not an active owner card.
+    assert "Past quarters" in body
+    assert "Amy-Archived-Old" in body
+    # Archived rock must not carry the active .rock class (KPI counts only active).
+    assert 'class="rock rock-complete"' not in body
 
 
 def test_api_update_company_rocks_validates(client) -> None:

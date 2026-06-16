@@ -13,7 +13,11 @@ ROCKS_SCHEMA_DEFAULT: dict[str, Any] = {
     "todos": [],
 }
 
-STATUSES = {"complete", "incomplete"}
+# "in_progress" added for Q3 2026 rocks (one rock — Schuyler's regulatory
+# hurdles — is mid-flight). Existing rows use complete/incomplete; the toggle
+# control still flips between those two, and in_progress renders as its own
+# badge. Both Storage and PostgresStorage import this set.
+STATUSES = {"complete", "incomplete", "in_progress"}
 
 
 def _new_id(prefix: str) -> str:
@@ -119,7 +123,10 @@ class Storage:
 
     def update_rock(self, rock_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
         """Patch editable fields on a rock. Returns the updated rock or None if not found."""
-        allowed = {"title", "notes", "due", "category", "link"}
+        allowed = {
+            "title", "notes", "due", "category", "link",
+            "priority", "done_definition", "area", "dependencies",
+        }
         clean = {k: v for k, v in updates.items() if k in allowed}
         data = self.load_rocks()
         for rocks in (data.get("rocks") or {}).values():

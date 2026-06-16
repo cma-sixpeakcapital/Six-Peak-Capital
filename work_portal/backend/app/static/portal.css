@@ -314,3 +314,63 @@ button.is-loading { opacity:.6; pointer-events:none; }
   .top-nav { display:none; }
   .main-content { padding-top:5.5rem; }
 }
+
+/* ============================================================
+   Q3 2026 rocks: priority badges, done-definition, archive.
+   ============================================================ */
+
+/* Priority badge — High=rust, Medium=denim, Low=slate (brand kit). */
+.prio { display:inline-block; font-family:var(--display); font-weight:700;
+  font-size:0.6rem; text-transform:uppercase; letter-spacing:.06em;
+  padding:0.12rem 0.5rem; border-radius:999px; margin-left:0.5rem; vertical-align:middle; color:#fff; }
+.prio-high { background:var(--rust); }
+.prio-medium { background:var(--denim); }
+.prio-low { background:var(--slate); }
+
+/* In-progress status pill (third state alongside complete/incomplete). */
+.status-pill { display:inline-block; font-size:0.6rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.05em; padding:0.12rem 0.5rem;
+  border-radius:999px; margin-left:0.4rem; vertical-align:middle; }
+.status-progress { background:var(--warning); color:#3a2a00; }
+
+.rock-area { font-size:0.62rem; color:var(--muted); font-weight:600;
+  text-transform:uppercase; letter-spacing:.05em; margin-left:0.5rem; }
+
+/* SMART done-definition — collapsed by default, expands inline. */
+.done-def { margin-top:0.35rem; }
+.done-def > summary { cursor:pointer; font-size:0.74rem; font-weight:600;
+  color:var(--rust); list-style:none; user-select:none; }
+.done-def > summary::-webkit-details-marker { display:none; }
+.done-def > summary::before { content:"▸ "; color:var(--rust); }
+.done-def[open] > summary::before { content:"▾ "; }
+.done-def p { font-size:0.82rem; color:var(--text-sub); line-height:1.5;
+  margin:0.4rem 0 0; padding-left:0.9rem; border-left:2px solid var(--rust-12); }
+.done-def p.dep { color:var(--muted); font-size:0.76rem; }
+
+.todo-detail { font-size:0.8rem; color:var(--text-sub); margin-top:0.2rem; }
+
+/* Deferred / Q4 subsection inside Company Rocks. */
+.deferred-block { margin-top:0.8rem; border-top:1px dashed var(--border-md); padding-top:0.6rem; }
+.deferred-block > summary { cursor:pointer; font-size:0.78rem; font-weight:600;
+  color:var(--muted); user-select:none; }
+.rock-readonly { display:flex; align-items:flex-start; gap:0.6rem; padding:0.6rem 0;
+  border-bottom:1px solid var(--border); opacity:0.92; }
+.rock-readonly:last-child { border-bottom:none; }
+.rock-readonly .rock-body { flex:1; }
+.rock-readonly .rock-right { display:flex; align-items:center; gap:0.5rem; }
+
+/* "Past quarters" archive — collapsed, read-only history. */
+.archive-block > summary { cursor:pointer; display:flex; align-items:center; gap:0.8rem;
+  padding:0.6rem 0; user-select:none; }
+.archive-block > summary .archive-count { font-size:0.78rem; font-weight:600;
+  color:var(--rust); background:var(--rust-12); padding:0.2rem 0.6rem; border-radius:999px; }
+.archive-list { list-style:none; margin:0; padding:0; }
+.archive-rock { display:flex; align-items:center; gap:0.7rem; padding:0.45rem 0;
+  border-bottom:1px solid var(--border); font-size:0.86rem; }
+.archive-rock:last-child { border-bottom:none; }
+.archive-check { color:var(--success); font-weight:700; }
+.archive-owner { font-family:var(--display); font-weight:600; color:var(--text-sub);
+  font-size:0.78rem; min-width:11rem; }
+.archive-title { flex:1; color:var(--text); }
+.archive-quarter { font-size:0.7rem; color:var(--muted); font-weight:600;
+  text-transform:uppercase; letter-spacing:.05em; }
