@@ -43,6 +43,58 @@ def _group_by_category(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
+_PRIORITY_RANK = {"High": 0, "Medium": 1, "Low": 2}
+
+
+def _group_active_by_owner(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
+    """Active (non-archived, non-deferred) individual rocks grouped by owner.
+
+    EOS-standard grouping for the Q3 set: one card per person, owners
+    alphabetical, each person's rocks ordered High→Medium→Low then by due.
+    """
+    rocks_map: dict[str, list[dict[str, Any]]] = rocks_data.get("rocks", {}) or {}
+    groups: list[dict[str, Any]] = []
+    for owner in sorted(rocks_map.keys(), key=lambda s: s.lower()):
+        active = [r for r in rocks_map[owner]
+                  if not r.get("archived") and not r.get("deferred")]
+        if not active:
+            continue
+        active.sort(key=lambda r: (_PRIORITY_RANK.get(r.get("priority"), 9),
+                                   str(r.get("due") or "")))
+        groups.append({"name": owner, "rocks": active})
+    return groups
+
+
+def _split_company_rocks(rocks_data: dict[str, Any]) -> tuple[list, list]:
+    """Return (active_company_rocks, deferred_company_rocks), archived excluded."""
+    active, deferred = [], []
+    for r in rocks_data.get("company_rocks", []) or []:
+        if r.get("archived"):
+            continue
+        (deferred if r.get("deferred") else active).append(r)
+    return active, deferred
+
+
+def _collect_archive(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
+    """Archived old rocks for the 'Past quarters' section (converted excluded).
+
+    Converted rocks live on as active to-dos, so they're retained in the doc
+    but not surfaced here. Returns flat {owner, title, status, quarter} dicts.
+    """
+    out: list[dict[str, Any]] = []
+    for r in rocks_data.get("company_rocks", []) or []:
+        if r.get("archived") and not r.get("converted"):
+            out.append({"owner": "Company", "title": r.get("title", ""),
+                        "status": r.get("status"), "quarter": r.get("quarter", "")})
+    for owner, rocks in (rocks_data.get("rocks", {}) or {}).items():
+        for r in rocks:
+            if r.get("archived") and not r.get("converted"):
+                out.append({"owner": owner, "title": r.get("title", ""),
+                            "status": r.get("status"), "quarter": r.get("quarter", "")})
+    out.sort(key=lambda a: (a["quarter"], a["owner"].lower(), a["title"].lower()))
+    return out
+
+
 def _get_storage():
     return current_app.config["STORAGE"]
 
@@ -95,12 +147,15 @@ def register_routes(app: Flask) -> None:
         latest = storage.latest_meeting()
         history = storage.list_meetings(limit=12)
         summary_bullets = bullet_split(latest.get("summary", "")) if latest else []
+        company_active, company_deferred = _split_company_rocks(rocks_data)
         return render_template(
             "portal.html",
             team=rocks_data.get("team", []),
             rocks=rocks_data.get("rocks", {}),
-            company_rocks=rocks_data.get("company_rocks", []),
-            categorized=_group_by_category(rocks_data),
+            company_rocks=company_active,
+            company_deferred=company_deferred,
+            owner_groups=_group_active_by_owner(rocks_data),
+            archived_rocks=_collect_archive(rocks_data),
             todos=rocks_data.get("todos", []),
             latest=latest,
             summary_bullets=summary_bullets,

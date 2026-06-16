@@ -1,0 +1,33 @@
+{
+  "_comment": "One-time Q3 2026 rock rollover for l10.sixpeakapps.com. Source of truth for the migration step in Claude_Code_Q3_rocks_implementation.md. Owners and titles captured from the live portal on 2026-06-16.",
+
+  "convert_open_old_rocks_to_todos": [
+    { "old_rock_title": "Move Investments Out of Six Peak Capital", "todo_owner": "Chris Andresen & Robert Carrega", "detail": "Move Francis, Ramsgate, Crenshaw, Shadow Way, Reseda to deal-level entities", "due": "End of Q3 2026" },
+    { "old_rock_title": "Property Manager Questions and Proformas", "todo_owner": "Tom Taggart", "detail": "Choose 2-3 candidates and get proposals/proformas", "due": "2026-07-01" },
+    { "old_rock_title": "Figure out outreach to all tax credit investors that will consider a ground lease structure", "todo_owner": "Chris Aiello", "detail": "Tax credit investor outreach (ground lease)", "due": "End of Q3 2026" },
+    { "old_rock_title": "Francis GMP Contract Finalization & closing budget", "todo_owner": "Derek Sanders & Grady Lakamp", "detail": "Negotiate and finalize GMP with LV / Six Peak / MRK", "due": "2026-05-15" },
+    { "old_rock_title": "HR/401k/employees discussion", "todo_owner": "Grady Lakamp & Bob Kennedy", "detail": "", "due": "September 15 2026" },
+    { "old_rock_title": "MRK Negotiations and finalize MOU", "todo_owner": "Bob Kennedy", "detail": "Lead negotiations with MRK and Steyn Capital", "due": "By Francis Closing" },
+    { "old_rock_title": "2859 Francis Debt & Equity Execution", "todo_owner": "Bob Kennedy & Chris Aiello", "detail": "Manage closing logistics/legal with Steyn", "due": "Apr-May 2026" }
+  ],
+
+  "archive_done_old_rocks": [
+    { "title": "AI Workflow", "owner": "Company", "note": "Open Company rock; archived per Chris (not converted to a to-do). Superseded by the Q3 AI-adoption rocks." },
+    { "title": "Review the board portal for accuracy of expenses", "owner": "Chris Andresen & Robert Carrega" },
+    { "title": "Finalize Remaining Restructure Items", "owner": "Chris Andresen & Robert Carrega" },
+    { "title": "LIHTC Parking Study", "owner": "Tom Taggart" },
+    { "title": "Reading Lease renewal plan", "owner": "Tom Taggart" },
+    { "title": "Update BBC memo for 4/13 IC meeing", "owner": "Chris Aiello" },
+    { "title": "Finalize 3rd St Closing 4/21", "owner": "Chris Aiello & Chris Andresen" },
+    { "title": "Construction photo plan", "owner": "Derek Sanders (discuss with Grady)" },
+    { "title": "Reading Utility bill back issue", "owner": "Derek Sanders & Tom Taggart" },
+    { "title": "Create a targeted list of outbound dev. site leads", "owner": "Schuyler Dietz" },
+    { "title": "Finalize uplifters memo and term sheet", "owner": "Schuyler Dietz" },
+    { "title": "8350 Reseda HOA dialogue", "owner": "Schuyler Dietz" },
+    { "title": "Monthly Reporting to Justin Kruger", "owner": "Schuyler Dietz & Chris Aiello" },
+    { "title": "Revise LV website", "owner": "Schuyler Dietz & Chris Aiello" },
+    { "title": "LIHTC Parking Study Oversight", "owner": "Bob Kennedy" }
+  ],
+
+  "_counts": { "convert_to_todos": 7, "archive": 15, "q3_company": 7, "q3_company_deferred": 1, "q3_individual": 25 }
+}
