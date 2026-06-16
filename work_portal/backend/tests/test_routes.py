@@ -191,7 +191,7 @@ def test_portal_groups_by_owner(client, storage: Storage) -> None:
         },
         "company_rocks": [
             {"id": "c1", "title": "Co-Active", "status": "incomplete", "level": "company",
-             "priority": "High", "quarter": "Q3 2026"},
+             "owner": "Amy Owner", "priority": "High", "quarter": "Q3 2026"},
             {"id": "c2", "title": "Co-Deferred", "status": "incomplete", "level": "company",
              "deferred": True, "quarter": "Q3 2026"},
         ],
@@ -211,6 +211,32 @@ def test_portal_groups_by_owner(client, storage: Storage) -> None:
     assert "Amy-Archived-Old" in body
     # Archived rock must not carry the active .rock class (KPI counts only active).
     assert 'class="rock rock-complete"' not in body
+    # Company rock shows its accountable owner in the Company section.
+    assert "rock-owner" in body
+    # Amy owns a company rock → her card carries a checkable reference to it
+    # (same rock id, but a .rock-ref so the KPI doesn't double-count it).
+    assert "Company Rock owned" in body
+    assert 'class="rock-ref rock-incomplete" data-rock-id="c1"' in body
+    # The full company rock (the .rock li) exists once in the Company section;
+    # the reference is a separate .rock-ref so the KPI doesn't double-count it.
+    assert 'class="rock rock-incomplete" data-rock-id="c1"' in body
+
+
+def test_owner_with_only_company_rock_gets_a_card(client, storage: Storage) -> None:
+    # An owner who owns a company rock but has no individual rocks still gets a
+    # card (with the checkable reference), so accountability is never hidden.
+    storage.save_rocks({
+        "team": [],
+        "rocks": {},
+        "company_rocks": [
+            {"id": "c9", "title": "Solo-Co-Rock", "status": "incomplete", "level": "company",
+             "owner": "Pat Lead", "priority": "High", "quarter": "Q3 2026"},
+        ],
+    })
+    body = client.get("/").data.decode()
+    assert "Pat Lead" in body
+    assert 'data-rock-id="c9"' in body
+    assert "Company Rock owned" in body
 
 
 def test_api_update_company_rocks_validates(client) -> None:

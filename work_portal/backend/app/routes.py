@@ -51,17 +51,40 @@ def _group_active_by_owner(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
 
     EOS-standard grouping for the Q3 set: one card per person, owners
     alphabetical, each person's rocks ordered High→Medium→Low then by due.
+    Each group also carries ``company_rocks`` — the active company rocks this
+    person owns — so their card can show a checkable reference to the shared
+    Company Rock they're accountable for (details stay in the Company section).
     """
     rocks_map: dict[str, list[dict[str, Any]]] = rocks_data.get("rocks", {}) or {}
-    groups: list[dict[str, Any]] = []
-    for owner in sorted(rocks_map.keys(), key=lambda s: s.lower()):
-        active = [r for r in rocks_map[owner]
-                  if not r.get("archived") and not r.get("deferred")]
-        if not active:
+
+    # Active company rocks indexed by their (individual) owner.
+    company_by_owner: dict[str, list[dict[str, Any]]] = {}
+    for r in rocks_data.get("company_rocks", []) or []:
+        if r.get("archived") or r.get("deferred"):
             continue
+        owner = r.get("owner") or ""
+        if owner:
+            company_by_owner.setdefault(owner, []).append(r)
+
+    active_by_owner: dict[str, list[dict[str, Any]]] = {}
+    for owner, rocks in rocks_map.items():
+        active = [r for r in rocks if not r.get("archived") and not r.get("deferred")]
+        if active:
+            active_by_owner[owner] = active
+
+    # A card appears for anyone with active individual rocks OR who owns a
+    # company rock (so an accountable owner is never missing a card).
+    owner_names = set(active_by_owner) | set(company_by_owner)
+    groups: list[dict[str, Any]] = []
+    for owner in sorted(owner_names, key=lambda s: s.lower()):
+        active = active_by_owner.get(owner, [])
         active.sort(key=lambda r: (_PRIORITY_RANK.get(r.get("priority"), 9),
                                    str(r.get("due") or "")))
-        groups.append({"name": owner, "rocks": active})
+        groups.append({
+            "name": owner,
+            "rocks": active,
+            "company_rocks": company_by_owner.get(owner, []),
+        })
     return groups
 
 

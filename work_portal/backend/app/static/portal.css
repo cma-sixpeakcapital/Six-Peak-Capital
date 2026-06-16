@@ -374,3 +374,22 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .archive-title { flex:1; color:var(--text); }
 .archive-quarter { font-size:0.7rem; color:var(--muted); font-weight:600;
   text-transform:uppercase; letter-spacing:.05em; }
+
+/* Company rock owner (accountable individual), shown on company cards. */
+.rock-owner { font-size:0.74rem; color:var(--text-sub); margin-top:0.25rem; font-weight:600; }
+.rock-owner-label { font-size:0.6rem; text-transform:uppercase; letter-spacing:.06em;
+  color:#fff; background:var(--denim); padding:0.1rem 0.45rem; border-radius:999px; margin-right:0.4rem; }
+
+/* Checkable reference to a shared Company Rock inside an owner's card.
+   Toggles the same rock (reuses .check[data-rock-id]); NOT a .rock so it
+   doesn't double-count in the KPI band. */
+.company-ref { margin:0 0 0.6rem; padding:0.5rem 0.6rem; background:var(--rust-06);
+  border:1px solid var(--rust-12); border-radius:10px; }
+.company-ref-label { display:block; font-size:0.6rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--rust); margin-bottom:0.35rem; }
+.company-ref-list { list-style:none; margin:0; padding:0; }
+.rock-ref { display:flex; align-items:flex-start; gap:0.5rem; padding:0.2rem 0; }
+.rock-ref .ref-title { font-size:0.82rem; color:var(--text); font-weight:600;
+  line-height:1.35; border:none; }
+.rock-ref .ref-title:hover { color:var(--rust); }
+.rock-ref.rock-complete .ref-title { color:var(--muted); text-decoration:line-through; }

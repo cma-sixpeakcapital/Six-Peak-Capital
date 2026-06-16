@@ -24,6 +24,9 @@
             {{ priority_badge(rock.priority) }}{{ status_pill(rock.status) }}
             {% if rock.area %}<span class="rock-area">{{ rock.area }}</span>{% endif %}
         </div>
+        {% if rock.level == 'company' and rock.owner %}
+        <div class="rock-owner"><span class="rock-owner-label">Owner</span> {{ rock.owner }}</div>
+        {% endif %}
         {% if rock.notes %}<div class="rock-notes">{{ rock.notes }}</div>{% endif %}
         {% if rock.done_definition %}
         <details class="done-def"><summary>Done when…</summary><p>{{ rock.done_definition }}</p>
@@ -271,6 +274,21 @@
                     <button type="button" class="pill-btn cancel-add-rock">Cancel</button>
                 </div>
             </form>
+            {% if o.company_rocks %}
+            <div class="company-ref">
+                <span class="company-ref-label">Company Rock{{ 's' if o.company_rocks|length > 1 else '' }} owned</span>
+                <ul class="company-ref-list">
+                    {% for cr in o.company_rocks %}
+                    <li class="rock-ref rock-{{ cr.status or 'incomplete' }}" data-rock-id="{{ cr.id }}">
+                        <button type="button" class="check" data-rock-id="{{ cr.id }}"
+                                aria-label="Toggle complete"
+                                title="Toggle complete — shared Company Rock">{% if cr.status == 'complete' %}✓{% else %}◻{% endif %}</button>
+                        <a class="ref-title" href="#rocks">{{ cr.title }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
             <ul class="rocks-list">
                 {% for rock in o.rocks %}{{ rock_row(rock) }}{% endfor %}
             </ul>
