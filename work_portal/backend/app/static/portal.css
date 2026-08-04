@@ -356,14 +356,18 @@ button.is-loading { opacity:.6; pointer-events:none; }
   overflow-wrap:anywhere; }
 .rock-files { margin-top:0.55rem; display:flex; flex-wrap:wrap; align-items:center; gap:0.4rem; }
 .file-chips { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:0.4rem; width:100%; }
-.file-chip { display:inline-flex; flex-wrap:wrap; align-items:center; gap:0.15rem; max-width:100%;
+.file-chip { display:inline-flex; flex-wrap:wrap; align-items:center; gap:0.1rem 0.3rem;
+  min-width:0; max-width:100%;
   background:var(--surface-alt); border:1px solid var(--border); border-radius:999px;
   padding:0.18rem 0.5rem; }
 .file-chip:has(.edit-file-form:not(.hidden)) { border-radius:12px; }
-.file-chip-link { display:inline-flex; align-items:center; gap:0.32rem; min-width:0;
+/* Label flexes and truncates to the space left over so the ✎/× buttons always
+   stay on the same line as the label (no wrapping into a chunky 2-row pill). */
+.file-chip-link { flex:1 1 auto; display:inline-flex; align-items:center; gap:0.32rem; min-width:0;
   color:var(--denim); font-size:0.76rem; font-weight:600; text-decoration:none; }
 .file-chip-link .file-label { min-width:0; overflow:hidden; text-overflow:ellipsis;
-  white-space:nowrap; max-width:15rem; }
+  white-space:nowrap; }
+.file-edit-btn, .file-remove-btn { flex:none; }
 .file-chip-link:hover, .file-chip-link:focus { color:var(--rust); }
 .file-chip .file-ic { flex:none; color:currentColor; }
 .file-edit-btn, .file-remove-btn { border:none; background:none; cursor:pointer;
