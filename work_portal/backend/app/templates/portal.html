@@ -10,6 +10,28 @@
 {% if status == 'in_progress' %}<span class="status-pill status-progress" title="In progress">In progress</span>{% endif %}
 {%- endmacro %}
 
+{% macro file_icon() -%}
+<svg class="file-ic" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+{%- endmacro %}
+
+{% macro file_chip(f, rock_id, readonly=False) -%}
+<li class="file-chip" data-file-id="{{ f.id }}">
+    <a class="file-chip-link" href="{{ f.url }}" target="_blank" rel="noopener noreferrer" title="{{ f.url }}">{{ file_icon() }}<span class="file-label">{{ f.label }}</span></a>
+    {% if not readonly %}
+    <button type="button" class="file-edit-btn" data-rock-id="{{ rock_id }}" data-file-id="{{ f.id }}" title="Edit link" aria-label="Edit link">✎</button>
+    <button type="button" class="file-remove-btn" data-rock-id="{{ rock_id }}" data-file-id="{{ f.id }}" title="Remove link" aria-label="Remove link">×</button>
+    <form class="add-form edit-file-form hidden" data-rock-id="{{ rock_id }}" data-file-id="{{ f.id }}" autocomplete="off">
+        <input type="url" name="url" placeholder="URL (https://…)" value="{{ f.url }}" required />
+        <input type="text" name="label" placeholder="Label" value="{{ f.label }}" maxlength="60" />
+        <div class="form-actions">
+            <button type="submit" class="btn-primary small">Save</button>
+            <button type="button" class="pill-btn cancel-edit-file">Cancel</button>
+        </div>
+    </form>
+    {% endif %}
+</li>
+{%- endmacro %}
+
 {% macro rock_row(rock, readonly=False) -%}
 <li class="{{ 'rock-readonly' if readonly else 'rock rock-' ~ (rock.status or 'incomplete') }}" data-rock-id="{{ rock.id }}">
     {% if not readonly %}
@@ -19,19 +41,38 @@
     {% endif %}
     <div class="rock-body">
         <div class="rock-title">
-            {% if rock.link %}<a href="{{ rock.link }}" target="_blank" rel="noopener">{{ rock.title }}</a>
-            {% else %}{{ rock.title }}{% endif %}
+            {{ rock.title }}
             {{ priority_badge(rock.priority) }}{{ status_pill(rock.status) }}
             {% if rock.area %}<span class="rock-area">{{ rock.area }}</span>{% endif %}
         </div>
         {% if rock.level == 'company' and rock.owner %}
         <div class="rock-owner"><span class="rock-owner-label">Owner</span> {{ rock.owner }}</div>
         {% endif %}
-        {% if rock.notes %}<div class="rock-notes">{{ rock.notes }}</div>{% endif %}
+        {% if rock.notes %}<div class="rock-notes">{{ rock.notes | linkify }}</div>{% endif %}
         {% if rock.done_definition %}
-        <details class="done-def"><summary>Done when…</summary><p>{{ rock.done_definition }}</p>
+        <details class="done-def"><summary>Done when…</summary><p>{{ rock.done_definition | linkify }}</p>
             {% if rock.dependencies %}<p class="dep"><b>Depends on:</b> {{ rock.dependencies }}</p>{% endif %}
         </details>
+        {% endif %}
+        {% if rock.files or not readonly %}
+        <div class="rock-files" data-rock-id="{{ rock.id }}">
+            {% if rock.files %}
+            <ul class="file-chips">
+                {% for f in rock.files %}{{ file_chip(f, rock.id, readonly) }}{% endfor %}
+            </ul>
+            {% endif %}
+            {% if not readonly %}
+            <button type="button" class="file-add-btn" data-rock-id="{{ rock.id }}">+ File</button>
+            <form class="add-form add-file-form hidden" data-rock-id="{{ rock.id }}" autocomplete="off">
+                <input type="url" name="url" placeholder="URL (https://…)" required />
+                <input type="text" name="label" placeholder="Label (optional)" maxlength="60" />
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary small">Save</button>
+                    <button type="button" class="pill-btn cancel-add-file">Cancel</button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
         {% endif %}
         {% if not readonly %}
         <form class="add-form edit-rock-form hidden" data-rock-id="{{ rock.id }}" autocomplete="off">
@@ -314,6 +355,11 @@
                     <span class="archive-check">✓</span>
                     <span class="archive-owner">{{ a.owner }}</span>
                     <span class="archive-title">{{ a.title }}</span>
+                    {% if a.files %}
+                    <ul class="file-chips archive-file-chips">
+                        {% for f in a.files %}{{ file_chip(f, '', readonly=True) }}{% endfor %}
+                    </ul>
+                    {% endif %}
                     {% if a.quarter %}<span class="archive-quarter">{{ a.quarter }}</span>{% endif %}
                 </li>
                 {% endfor %}

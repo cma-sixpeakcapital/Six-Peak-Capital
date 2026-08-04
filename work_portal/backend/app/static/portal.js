@@ -81,6 +81,87 @@
         });
     }
 
+    function showForm(form) {
+        if (!form) return;
+        form.classList.remove("hidden");
+        const first = form.querySelector("input");
+        if (first) first.focus();
+    }
+
+    function wireFiles() {
+        // --- add a file link ---
+        document.querySelectorAll(".file-add-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const wrap = btn.closest(".rock-files");
+                showForm(wrap && wrap.querySelector(".add-file-form"));
+            });
+        });
+        document.querySelectorAll(".cancel-add-file").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const form = btn.closest(".add-file-form");
+                if (form) { form.classList.add("hidden"); form.reset(); }
+            });
+        });
+        document.querySelectorAll(".add-file-form").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const id = form.dataset.rockId;
+                const data = Object.fromEntries(new FormData(form).entries());
+                const submit = form.querySelector("button[type=submit]");
+                handleAction(submit, () => apiRequest(`/api/rocks/${encodeURIComponent(id)}/files`, {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                }));
+            });
+        });
+
+        // --- edit a file link ---
+        document.querySelectorAll(".file-edit-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const rid = btn.dataset.rockId, fid = btn.dataset.fileId;
+                showForm(document.querySelector(
+                    `.edit-file-form[data-rock-id="${rid}"][data-file-id="${fid}"]`));
+            });
+        });
+        document.querySelectorAll(".cancel-edit-file").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const form = btn.closest(".edit-file-form");
+                if (form) form.classList.add("hidden");
+            });
+        });
+        document.querySelectorAll(".edit-file-form").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const rid = form.dataset.rockId, fid = form.dataset.fileId;
+                const data = Object.fromEntries(new FormData(form).entries());
+                const submit = form.querySelector("button[type=submit]");
+                handleAction(submit, () => apiRequest(
+                    `/api/rocks/${encodeURIComponent(rid)}/files/${encodeURIComponent(fid)}`, {
+                    method: "PATCH",
+                    body: JSON.stringify(data),
+                }));
+            });
+        });
+
+        // --- remove a file link ---
+        document.querySelectorAll(".file-remove-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                if (!confirm("Remove this file link?")) return;
+                const rid = btn.dataset.rockId, fid = btn.dataset.fileId;
+                handleAction(btn, () => apiRequest(
+                    `/api/rocks/${encodeURIComponent(rid)}/files/${encodeURIComponent(fid)}`,
+                    { method: "DELETE" }));
+            });
+        });
+
+        // Esc closes any open file form (Enter submits via the form default).
+        document.querySelectorAll(".add-file-form, .edit-file-form").forEach(function (form) {
+            form.addEventListener("keydown", function (e) {
+                if (e.key === "Escape") { e.preventDefault(); form.classList.add("hidden"); }
+            });
+        });
+    }
+
     function wireToggleAction() {
         document.querySelectorAll("button.check[data-action-id]").forEach(function (btn) {
             btn.addEventListener("click", function () {
@@ -244,6 +325,7 @@
         wireMoveRock();
         wireEditRock();
         wireDeleteRock();
+        wireFiles();
         wireToggleAction();
         wireMoveAction();
         wireToggleTodo();

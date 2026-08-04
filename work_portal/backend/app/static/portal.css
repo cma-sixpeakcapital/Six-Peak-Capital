@@ -234,7 +234,7 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .rock-body { flex:1; min-width:0; }
 .rock-title { font-size:0.95rem; font-weight:600; color:var(--text); line-height:1.4; }
 .rock-title a { border-bottom:1px dashed rgba(196,88,26,.5); }
-.rock-notes { font-size:0.82rem; color:var(--muted); line-height:1.5; margin-top:0.3rem; }
+.rock-notes { font-size:0.82rem; color:var(--muted); line-height:1.5; margin-top:0.3rem; overflow-wrap:anywhere; }
 .rock-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem; }
 .rock-due { font-size:0.7rem; color:var(--muted); background:var(--surface-alt); padding:0.15rem 0.5rem; border-radius:6px; white-space:nowrap; }
 
@@ -344,10 +344,40 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .done-def > summary::before { content:"▸ "; color:var(--rust); }
 .done-def[open] > summary::before { content:"▾ "; }
 .done-def p { font-size:0.82rem; color:var(--text-sub); line-height:1.5;
-  margin:0.4rem 0 0; padding-left:0.9rem; border-left:2px solid var(--rust-12); }
+  margin:0.4rem 0 0; padding-left:0.9rem; border-left:2px solid var(--rust-12); overflow-wrap:anywhere; }
 .done-def p.dep { color:var(--muted); font-size:0.76rem; }
 
-.todo-detail { font-size:0.8rem; color:var(--text-sub); margin-top:0.2rem; }
+.todo-detail { font-size:0.8rem; color:var(--text-sub); margin-top:0.2rem; overflow-wrap:anywhere; }
+
+/* ---------- Per-rock file links (attachments) ---------- */
+/* Bare URLs left in notes/done-def are linkified server-side; keep them from
+   blowing out the card even if a raw token slips through. */
+.rock-inline-link { color:var(--rust); border-bottom:1px dashed rgba(196,88,26,.5);
+  overflow-wrap:anywhere; }
+.rock-files { margin-top:0.55rem; display:flex; flex-wrap:wrap; align-items:center; gap:0.4rem; }
+.file-chips { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:0.4rem; width:100%; }
+.file-chip { display:inline-flex; flex-wrap:wrap; align-items:center; gap:0.15rem; max-width:100%;
+  background:var(--surface-alt); border:1px solid var(--border); border-radius:999px;
+  padding:0.18rem 0.5rem; }
+.file-chip:has(.edit-file-form:not(.hidden)) { border-radius:12px; }
+.file-chip-link { display:inline-flex; align-items:center; gap:0.32rem; min-width:0;
+  color:var(--denim); font-size:0.76rem; font-weight:600; text-decoration:none; }
+.file-chip-link .file-label { min-width:0; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; max-width:15rem; }
+.file-chip-link:hover, .file-chip-link:focus { color:var(--rust); }
+.file-chip .file-ic { flex:none; color:currentColor; }
+.file-edit-btn, .file-remove-btn { border:none; background:none; cursor:pointer;
+  color:var(--muted); font-size:0.82rem; line-height:1; padding:0 0.12rem; }
+.file-edit-btn:hover, .file-edit-btn:focus,
+.file-remove-btn:hover, .file-remove-btn:focus { color:var(--rust); }
+.file-add-btn { border:1px dashed var(--border-md); background:none; cursor:pointer;
+  color:var(--muted); font-size:0.72rem; font-weight:600; border-radius:999px;
+  padding:0.15rem 0.6rem; transition:.2s; }
+.file-add-btn:hover, .file-add-btn:focus { color:var(--rust); border-color:rgba(196,88,26,.35); }
+.file-chips .add-form, .file-chips .edit-file-form { flex-basis:100%; }
+.edit-file-form { width:100%; }
+/* Archived rocks: chips render read-only, inline with the row. */
+.archive-file-chips { width:auto; margin-left:0.3rem; }
 
 /* Deferred / Q4 subsection inside Company Rocks. */
 .deferred-block { margin-top:0.8rem; border-top:1px dashed var(--border-md); padding-top:0.6rem; }

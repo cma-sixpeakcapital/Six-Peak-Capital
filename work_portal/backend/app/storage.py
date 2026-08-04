@@ -6,6 +6,13 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from .rock_files import (
+    FileArchivedError,
+    apply_add_file,
+    apply_remove_file,
+    apply_update_file,
+)
+
 ROCKS_SCHEMA_DEFAULT: dict[str, Any] = {
     "team": [],
     "rocks": {},
@@ -30,6 +37,23 @@ def bullet_split(text: str) -> list[str]:
         return []
     parts = re.split(r"(?<=[.!?])\s+(?=[A-Z(\"$\d])", text.strip())
     return [p.strip() for p in parts if p.strip()]
+
+
+def iter_all_rocks(data: dict[str, Any]):
+    """Yield every rock dict (individual then company), all quarters."""
+    for rocks in (data.get("rocks") or {}).values():
+        for rock in rocks:
+            yield rock
+    for rock in data.get("company_rocks") or []:
+        yield rock
+
+
+def find_rock(data: dict[str, Any], rock_id: str) -> dict[str, Any] | None:
+    """Locate a rock by id across individual and company collections."""
+    for rock in iter_all_rocks(data):
+        if rock.get("id") == rock_id:
+            return rock
+    return None
 
 
 @dataclass
@@ -157,6 +181,51 @@ class Storage:
                 self.save_rocks(data)
                 return True
         return False
+
+    # --- per-rock file links --------------------------------------------------
+    # Archived rocks are read-only for files (chips still render, no writes).
+
+    def add_rock_file(
+        self, rock_id: str, url: str, label: str | None = None,
+        added_by: str | None = None,
+    ) -> dict[str, Any] | None:
+        data = self.load_rocks()
+        rock = find_rock(data, rock_id)
+        if rock is None:
+            return None
+        if rock.get("archived"):
+            raise FileArchivedError("cannot attach files to an archived rock")
+        entry = apply_add_file(rock, url, label, added_by)
+        self.save_rocks(data)
+        return entry
+
+    def update_rock_file(
+        self, rock_id: str, file_id: str, url: str | None = None,
+        label: str | None = None,
+    ) -> dict[str, Any] | None:
+        data = self.load_rocks()
+        rock = find_rock(data, rock_id)
+        if rock is None:
+            return None
+        if rock.get("archived"):
+            raise FileArchivedError("cannot edit files on an archived rock")
+        entry = apply_update_file(rock, file_id, url, label)
+        if entry is None:
+            return None
+        self.save_rocks(data)
+        return entry
+
+    def remove_rock_file(self, rock_id: str, file_id: str) -> bool:
+        data = self.load_rocks()
+        rock = find_rock(data, rock_id)
+        if rock is None:
+            return False
+        if rock.get("archived"):
+            raise FileArchivedError("cannot remove files from an archived rock")
+        if not apply_remove_file(rock, file_id):
+            return False
+        self.save_rocks(data)
+        return True
 
     def move_rock_to_todos(self, rock_id: str) -> dict[str, Any] | None:
         data = self.load_rocks()

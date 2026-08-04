@@ -14,7 +14,13 @@ from typing import Any, Iterator
 import psycopg
 from psycopg.types.json import Json
 
-from .storage import ROCKS_SCHEMA_DEFAULT, STATUSES, _new_id
+from .rock_files import (
+    FileArchivedError,
+    apply_add_file,
+    apply_remove_file,
+    apply_update_file,
+)
+from .storage import ROCKS_SCHEMA_DEFAULT, STATUSES, _new_id, find_rock
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS rocks_doc (
@@ -190,6 +196,51 @@ class PostgresStorage:
                 self.save_rocks(data)
                 return True
         return False
+
+    # --- per-rock file links --------------------------------------------------
+    # Parity with Storage.*_rock_file. Archived rocks are read-only for files.
+
+    def add_rock_file(
+        self, rock_id: str, url: str, label: str | None = None,
+        added_by: str | None = None,
+    ) -> dict[str, Any] | None:
+        data = self.load_rocks()
+        rock = find_rock(data, rock_id)
+        if rock is None:
+            return None
+        if rock.get("archived"):
+            raise FileArchivedError("cannot attach files to an archived rock")
+        entry = apply_add_file(rock, url, label, added_by)
+        self.save_rocks(data)
+        return entry
+
+    def update_rock_file(
+        self, rock_id: str, file_id: str, url: str | None = None,
+        label: str | None = None,
+    ) -> dict[str, Any] | None:
+        data = self.load_rocks()
+        rock = find_rock(data, rock_id)
+        if rock is None:
+            return None
+        if rock.get("archived"):
+            raise FileArchivedError("cannot edit files on an archived rock")
+        entry = apply_update_file(rock, file_id, url, label)
+        if entry is None:
+            return None
+        self.save_rocks(data)
+        return entry
+
+    def remove_rock_file(self, rock_id: str, file_id: str) -> bool:
+        data = self.load_rocks()
+        rock = find_rock(data, rock_id)
+        if rock is None:
+            return False
+        if rock.get("archived"):
+            raise FileArchivedError("cannot remove files from an archived rock")
+        if not apply_remove_file(rock, file_id):
+            return False
+        self.save_rocks(data)
+        return True
 
     def move_rock_to_todos(self, rock_id: str) -> dict[str, Any] | None:
         data = self.load_rocks()
