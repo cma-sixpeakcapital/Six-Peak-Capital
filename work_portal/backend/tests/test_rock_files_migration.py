@@ -53,6 +53,19 @@ def test_ramsgate_soft_wrapped_url_is_stitched() -> None:
     assert cleaned == ""
 
 
+def test_inline_label_clause_extracted_and_prose_kept() -> None:
+    # The real live shape: "sentence. INLINE LABEL:  <url>" on one line.
+    notes = (
+        "Finalize all proposals and present recommendation to Kinfolk.  "
+        "HERE IS THE LINK TO THE FINAL MATERIALS:  " + RAMSGATE_URL
+    )
+    cleaned, urls = migrate_text(notes)
+    assert urls == [(RAMSGATE_URL, "HERE IS THE LINK TO THE FINAL MATERIALS")]
+    assert cleaned == "Finalize all proposals and present recommendation to Kinfolk."
+    assert "FINAL MATERIALS" not in cleaned      # dangling clause dropped
+    assert RAMSGATE_URL not in cleaned
+
+
 def test_no_url_returns_text_unchanged() -> None:
     text = "Just prose, no links here."
     assert migrate_text(text) == (text, [])

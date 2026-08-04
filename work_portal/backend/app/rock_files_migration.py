@@ -94,6 +94,30 @@ def _label_from_line(line: str) -> str:
     return line.strip().rstrip(":").strip()
 
 
+def _split_trailing_label(prefix: str) -> tuple[str, str | None]:
+    """Split same-line text before a URL into (kept_prose, label|None).
+
+    Handles the inline case ``"...sentence. HERE IS THE LINK:  <url>"`` — the
+    trailing colon/ALL-CAPS clause becomes the label and the earlier prose is
+    kept. Falls back to using the whole prefix as the label when it is itself a
+    short heading, else keeps the whole prefix as prose with no label.
+    """
+    s = (prefix or "").strip()
+    if not s:
+        return "", None
+    breaks = list(re.finditer(r"[.!?]\s+", s))
+    if breaks:
+        cut = breaks[-1].end()
+        earlier, trailing = s[:cut].strip(), s[cut:].strip()
+    else:
+        earlier, trailing = "", s
+    if trailing and _is_label_line(trailing):
+        return earlier, _label_from_line(trailing)
+    if _is_label_line(s):
+        return "", _label_from_line(s)
+    return s, None
+
+
 def migrate_text(text: str | None) -> tuple[str, list[tuple[str, str | None]]]:
     """Return (cleaned_text, [(url, label_hint), …]).
 
@@ -117,24 +141,18 @@ def migrate_text(text: str | None) -> tuple[str, list[tuple[str, str | None]]]:
             continue
 
         first = matches[0]
-        prefix = raw_line[: first.start()].strip()
+        prefix = raw_line[: first.start()]
 
-        # Determine the label for the first URL on this line.
-        label: str | None
-        used_prev_label = False
-        if prefix and _is_label_line(prefix):
-            label = _label_from_line(prefix)
-        else:
-            # Look back for a heading line immediately above (skip blanks).
+        # Determine the label: prefer a trailing colon/CAPS clause on this line,
+        # else a heading line immediately above, else derive from the URL.
+        kept_prose, label = _split_trailing_label(prefix)
+        if label is None:
             back = len(out_lines) - 1
             while back >= 0 and not out_lines[back].strip():
                 back -= 1
             if back >= 0 and _is_label_line(out_lines[back]) and not _URL_RE.search(out_lines[back]):
                 label = _label_from_line(out_lines[back])
                 del out_lines[back]  # orphan-removal: the heading had only this URL
-                used_prev_label = True
-            else:
-                label = None  # derive from URL later
 
         for i, m in enumerate(matches):
             url = _strip_trailing_punct(m.group(0))
@@ -142,14 +160,12 @@ def migrate_text(text: str | None) -> tuple[str, list[tuple[str, str | None]]]:
                 continue
             found.append((url, label if i == 0 else None))
 
-        # Whatever plain text remains once the URLs are stripped out.
-        remainder = _URL_RE.sub("", raw_line).strip()
+        # Rebuild the leftover text: kept prose before the label/URL, plus any
+        # text after the URL(s), with the URLs themselves removed.
+        tail = _URL_RE.sub(" ", raw_line[first.start():])
+        remainder = re.sub(r"\s{2,}", " ", (kept_prose + " " + tail)).strip()
         remainder = remainder.strip("?& \t").strip()
-        # If the same-line prefix was the label we consumed, don't re-emit it.
-        drop = (not remainder) or (
-            not used_prev_label and prefix and _is_label_line(remainder)
-        )
-        if not drop:
+        if remainder:
             out_lines.append(remainder)
 
     cleaned = "\n".join(out_lines)
