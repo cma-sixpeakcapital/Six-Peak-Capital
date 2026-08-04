@@ -5,6 +5,7 @@ from flask import Flask, abort, current_app, jsonify, render_template, request
 
 from .ingest import IngestService
 from .readai import ReadAIClient
+from .rock_files import FileArchivedError, FileValidationError
 from .storage import bullet_split
 from .summarizer import Summarizer
 
@@ -108,12 +109,14 @@ def _collect_archive(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
     for r in rocks_data.get("company_rocks", []) or []:
         if r.get("archived") and not r.get("converted"):
             out.append({"owner": "Company", "title": r.get("title", ""),
-                        "status": r.get("status"), "quarter": r.get("quarter", "")})
+                        "status": r.get("status"), "quarter": r.get("quarter", ""),
+                        "files": r.get("files") or []})
     for owner, rocks in (rocks_data.get("rocks", {}) or {}).items():
         for r in rocks:
             if r.get("archived") and not r.get("converted"):
                 out.append({"owner": owner, "title": r.get("title", ""),
-                            "status": r.get("status"), "quarter": r.get("quarter", "")})
+                            "status": r.get("status"), "quarter": r.get("quarter", ""),
+                            "files": r.get("files") or []})
     out.sort(key=lambda a: (a["quarter"], a["owner"].lower(), a["title"].lower()))
     return out
 
@@ -248,6 +251,46 @@ def register_routes(app: Flask) -> None:
         if todo is None:
             abort(404)
         return jsonify(todo)
+
+    @app.route("/api/rocks/<rock_id>/files", methods=["POST"])
+    def api_rock_file_add(rock_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        try:
+            entry = _get_storage().add_rock_file(
+                rock_id, body.get("url", ""), body.get("label"), body.get("added_by"),
+            )
+        except FileArchivedError as exc:
+            abort(403, description=str(exc))
+        except FileValidationError as exc:
+            abort(400, description=str(exc))
+        if entry is None:
+            abort(404, description="rock not found")
+        return jsonify(entry)
+
+    @app.route("/api/rocks/<rock_id>/files/<file_id>", methods=["PATCH"])
+    def api_rock_file_update(rock_id: str, file_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        try:
+            entry = _get_storage().update_rock_file(
+                rock_id, file_id, body.get("url"), body.get("label"),
+            )
+        except FileArchivedError as exc:
+            abort(403, description=str(exc))
+        except FileValidationError as exc:
+            abort(400, description=str(exc))
+        if entry is None:
+            abort(404, description="rock or file not found")
+        return jsonify(entry)
+
+    @app.route("/api/rocks/<rock_id>/files/<file_id>", methods=["DELETE"])
+    def api_rock_file_delete(rock_id: str, file_id: str) -> Any:
+        try:
+            removed = _get_storage().remove_rock_file(rock_id, file_id)
+        except FileArchivedError as exc:
+            abort(403, description=str(exc))
+        if not removed:
+            abort(404, description="rock or file not found")
+        return jsonify({"status": "deleted", "id": file_id})
 
     @app.route("/api/rocks/<person>/add", methods=["POST"])
     def api_rock_add(person: str) -> Any:

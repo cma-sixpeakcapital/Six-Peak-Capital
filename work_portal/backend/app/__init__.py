@@ -3,6 +3,7 @@ from datetime import date
 from flask import Flask
 
 from .config import Config
+from .rock_files import linkify
 from .routes import register_routes
 from .storage import Storage
 
@@ -21,6 +22,7 @@ def create_app(config: Config | None = None) -> Flask:
     app.config["APP_CONFIG"] = cfg
     app.config["SECRET_KEY"] = cfg.secret_key
     app.config["STORAGE"] = make_storage(cfg)
+    app.jinja_env.filters["linkify"] = linkify
 
     @app.context_processor
     def inject_today():
