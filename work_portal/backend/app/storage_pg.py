@@ -20,7 +20,7 @@ from .rock_files import (
     apply_remove_file,
     apply_update_file,
 )
-from .storage import ROCKS_SCHEMA_DEFAULT, STATUSES, _new_id, find_rock
+from .storage import RESULTS, ROCKS_SCHEMA_DEFAULT, STATUSES, _new_id, find_rock
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS rocks_doc (
@@ -166,8 +166,13 @@ class PostgresStorage:
         allowed = {
             "title", "notes", "due", "category", "link",
             "priority", "done_definition", "area", "dependencies",
+            # quarter close-out fields (Scoreboard reads these on archived rocks)
+            "result", "result_note", "root_cause", "controllable_action",
+            "smart_statement", "review_status",
         }
         clean = {k: v for k, v in updates.items() if k in allowed}
+        if "result" in clean and clean["result"] not in (None, "", *RESULTS):
+            raise ValueError(f"invalid result: {clean['result']}")
         data = self.load_rocks()
         for rocks in (data.get("rocks") or {}).values():
             for rock in rocks:

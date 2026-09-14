@@ -10,6 +10,23 @@
 {% if status == 'in_progress' %}<span class="status-pill status-progress" title="In progress">In progress</span>{% endif %}
 {%- endmacro %}
 
+{% macro result_badge(result) -%}
+{% if result == 'complete' %}<span class="res res-complete">Done</span>
+{% elif result == 'carry_forward' %}<span class="res res-cf">Carried</span>
+{% elif result == 'task' %}<span class="res res-task">→ Task</span>
+{% elif result == 'killed' %}<span class="res res-killed">Killed</span>
+{% elif result == 'deferred' %}<span class="res res-deferred">Deferred</span>
+{% endif %}
+{%- endmacro %}
+
+{% macro rank_badge(rank) -%}
+{% if rank %}<span class="rank" title="Force-rank {{ rank }}">#{{ rank }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro bar(pct, cls='') -%}
+<div class="bar {{ cls }}"><div class="bar-fill" style="width:{{ pct or 0 }}%"></div></div>
+{%- endmacro %}
+
 {% macro file_icon() -%}
 <svg class="file-ic" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
 {%- endmacro %}
@@ -41,17 +58,28 @@
     {% endif %}
     <div class="rock-body">
         <div class="rock-title">
-            {{ rock.title }}
-            {{ priority_badge(rock.priority) }}{{ status_pill(rock.status) }}
-            {% if rock.area %}<span class="rock-area">{{ rock.area }}</span>{% endif %}
+            {{ rank_badge(rock.rank) }}{{ rock.title }}
+            {{ priority_badge(rock.priority) }}{{ status_pill(rock.status) }}{% if readonly %}{{ result_badge(rock.result) }}{% endif %}
+            {% if rock.area and rock.area != 'Parent' %}<span class="rock-area">{{ rock.area }}</span>{% endif %}
+            {% if rock.review_status and 'APPROVED' not in rock.review_status %}<span class="status-pill status-review" title="{{ rock.review_status }}">Rewrite pending</span>{% endif %}
         </div>
         {% if rock.level == 'company' and rock.owner %}
         <div class="rock-owner"><span class="rock-owner-label">Owner</span> {{ rock.owner }}</div>
         {% endif %}
+        {% if rock.controllable_action %}<div class="rock-control"><span class="rock-owner-label">Controllable action</span> {{ rock.controllable_action }}</div>{% endif %}
         {% if rock.notes %}<div class="rock-notes">{{ rock.notes | linkify }}</div>{% endif %}
-        {% if rock.done_definition %}
-        <details class="done-def"><summary>Done when…</summary><p>{{ rock.done_definition | linkify }}</p>
-            {% if rock.dependencies %}<p class="dep"><b>Depends on:</b> {{ rock.dependencies }}</p>{% endif %}
+        {% if rock.done_definition or rock.smart_statement %}
+        <details class="done-def"><summary>Done when…</summary>
+            {% if rock.done_definition %}<p>{{ rock.done_definition | linkify }}</p>{% endif %}
+            {% if rock.smart_statement %}<p class="smart"><b>Rock:</b> {{ rock.smart_statement | linkify }}</p>{% endif %}
+            {% if rock.milestones and (rock.milestones['30'] or rock.milestones['60'] or rock.milestones['90']) %}
+            <ul class="milestone-list">
+                {% for k in ['30','60','90'] %}{% if rock.milestones[k] %}<li><span class="ms-k">{{ k }}d</span> {{ rock.milestones[k] }}</li>{% endif %}{% endfor %}
+            </ul>
+            {% endif %}
+            {% if rock.dependencies %}<p class="dep"><b>Depends on:</b> {{ rock.dependencies }}{% if rock.dependency_risk %} <span class="dep-risk dep-{{ rock.dependency_risk|lower }}">{{ rock.dependency_risk }} risk</span>{% endif %}</p>{% endif %}
+            {% if rock.ties_to_vto %}<p class="dep"><b>V/TO:</b> {{ rock.ties_to_vto }}</p>{% endif %}
+            {% if readonly and rock.root_cause %}<p class="dep"><b>Why:</b> {{ rock.root_cause }}</p>{% endif %}
         </details>
         {% endif %}
         {% if rock.files or not readonly %}
@@ -117,6 +145,101 @@
 </li>
 {%- endmacro %}
 
+
+{% macro scoreboard_section() -%}
+{% if scoreboard and scoreboard.quarters %}
+<section class="rocks-section" id="scoreboard">
+    <div class="section-heading">
+        <span class="section-label">Scoreboard</span>
+        <h2>Rock hit-rate — company and by person</h2>
+    </div>
+
+    <div class="sb-grid">
+        {# ---- Company hit-rate by quarter ---- #}
+        <div class="card sb-card">
+            <div class="card-head"><span class="section-label">By quarter</span><h3>Rocks done · target {{ scoreboard.target_pct }}%</h3></div>
+            <div class="qbars">
+                {% for q in scoreboard.quarters %}
+                {% set pct = (q.official.complete * 100 / q.official.total)|round|int if (q.closed and q.official) else (q.pct or 0) %}
+                <div class="qbar {{ 'qbar-live' if not q.closed else '' }}">
+                    <div class="qbar-col">
+                        <div class="qbar-target" style="bottom:{{ scoreboard.target_pct }}%"></div>
+                        <div class="qbar-fill {{ 'hit' if pct >= scoreboard.target_pct else ('mid' if pct >= 50 else 'miss') }}" style="height:{{ pct }}%"></div>
+                        <span class="qbar-v">{{ pct }}%</span>
+                    </div>
+                    <div class="qbar-l"><b>{{ q.label }}</b>{% if q.closed %}<span>{{ q.official.complete if q.official else q.complete }} / {{ q.official.total if q.official else q.total }}</span>{% else %}<span>{{ q.complete }} / {{ q.total }} so far</span>{% endif %}</div>
+                    <div class="qbar-sub">Co. {{ q.company_complete }}/{{ q.company_total }} · Ind. {{ q.individual_complete }}/{{ q.individual_total }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if scoreboard.last_closed and scoreboard.last_closed.official and scoreboard.last_closed.official.complete != scoreboard.last_closed.complete %}
+            <p class="sb-note muted">{{ scoreboard.last_closed.label }}: official result {{ scoreboard.last_closed.official.complete }}/{{ scoreboard.last_closed.official.total }} ({{ scoreboard.last_closed.official.source }}); per-rock tally below sums to {{ scoreboard.last_closed.complete }}/{{ scoreboard.last_closed.total }} pending reconciliation.</p>
+            {% endif %}
+        </div>
+
+        {# ---- Live quarter ---- #}
+        {% if scoreboard.live %}
+        <div class="card sb-card">
+            <div class="card-head"><span class="section-label">In flight</span><h3>{{ scoreboard.live.label }} · {{ scoreboard.live.complete }} of {{ scoreboard.live.total }} done{% if scoreboard.milestones %} · {{ scoreboard.milestones.days_left }} days left{% endif %}</h3></div>
+            <ul class="live-list">
+                {% for o in scoreboard.live.owners %}
+                <li><span class="lv-name">{{ o.owner }}</span>{{ bar(o.pct, 'bar-sm') }}<span class="lv-n">{{ o.complete }}/{{ o.owned }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ---- Leaderboard ---- #}
+    <div class="card">
+        <div class="card-head row-between">
+            <div><span class="section-label">Leaderboard</span><h3>Rocks completed · closed quarters, cumulative</h3></div>
+            <span class="muted sb-legend">complete = 1 · carried / task / killed = 0 · company rocks credit their owner</span>
+        </div>
+        <div class="tbl-wrap">
+        <table class="tbl lb-tbl">
+            <thead><tr><th class="num">#</th><th>Owner</th>
+                {% for q in scoreboard.quarters if q.closed %}<th class="num">{{ q.label }}</th>{% endfor %}
+                <th>Cumulative</th><th class="num">%</th><th>Streak</th>
+                {% if scoreboard.live %}<th class="num">{{ scoreboard.live.label }} live</th>{% endif %}
+            </tr></thead>
+            <tbody>
+            {% for r in scoreboard.leaderboard %}
+            <tr class="{{ 'lb-top' if r.rank == 1 and r.cum_pct is not none else '' }}">
+                <td class="num rank-cell">{{ r.rank }}</td>
+                <td class="strong">{{ r.owner }}</td>
+                {% for q in r.quarters %}<td class="num">{% if q.owned %}{{ q.complete }}/{{ q.owned }}{% else %}<span class="muted">—</span>{% endif %}</td>{% endfor %}
+                <td class="lb-bar">{{ bar(r.cum_pct, 'bar-sm') }}<span class="lb-n">{{ r.cum_complete }}/{{ r.cum_owned }}</span></td>
+                <td class="num">{% if r.cum_pct is not none %}{{ r.cum_pct }}%{% else %}<span class="muted">—</span>{% endif %}</td>
+                <td>{% if r.streak %}<span class="streak" title="{{ r.streak }} consecutive clean quarter{{ 's' if r.streak > 1 }}">▲ {{ r.streak }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+                {% if scoreboard.live %}<td class="num">{% if r.live and r.live.owned %}{{ r.live.complete }}/{{ r.live.owned }}{% else %}<span class="muted">—</span>{% endif %}</td>{% endif %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    {# ---- Post-mortem ---- #}
+    {% if scoreboard.postmortem %}
+    <div class="card">
+        <div class="card-head"><span class="section-label">{{ scoreboard.last_closed.label }} post-mortem</span><h3>What didn't land, and what it became</h3></div>
+        <div class="tbl-wrap">
+        <table class="tbl pm-tbl">
+            <thead><tr><th>Rock</th><th>Owner</th><th>Result</th><th>Why</th><th>Now</th></tr></thead>
+            <tbody>
+            {% for r in scoreboard.postmortem %}
+            <tr><td class="strong">{{ r.title }}{% if r.level == 'company' %} <span class="rock-area">Company</span>{% endif %}</td><td>{{ r.owner }}</td><td>{{ result_badge(r.result) }}</td><td class="muted">{{ r.root_cause or r.note }}</td><td>{% if r.successor %}→ {{ r.successor }}{% elif r.result == 'task' %}To-do{% else %}<span class="muted">—</span>{% endif %}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+{%- endmacro %}
+
 {% block content %}
 <section class="hero">
     <span class="section-label">This Week · Level 10</span>
@@ -127,17 +250,18 @@
     <p class="hero-sub muted">No meetings ingested yet. The next Read.ai call will populate this dashboard automatically.</p>
     {% endif %}
     <div class="hero-meta">
-        <span class="chip"><span class="ic">◆</span> <b id="chip-todos">0</b> active to-dos</span>
-        <span class="chip"><span class="ic">▲</span> <b id="chip-rocks">0</b> rocks tracked</span>
+        <span class="chip"><span class="ic">◆</span> <b id="chip-todos">{{ kpis.todos_open }}</b> active to-dos</span>
+        <span class="chip"><span class="ic">▲</span> <b id="chip-rocks">{{ kpis.rocks_total }}</b> rocks tracked</span>
+        {% if current_quarter %}<span class="chip"><span class="ic">◎</span> <b>{{ current_quarter.label }}</b>{% if scoreboard.milestones %} · {{ scoreboard.milestones.days_left }} days to {{ current_quarter.end }}{% endif %}</span>{% endif %}
         {% if latest %}<span class="chip"><span class="ic">●</span> Last meeting <b>{{ latest.date }}</b></span>{% endif %}
     </div>
 </section>
 
 <div class="kpi-band reveal">
-    <div class="kpi"><div class="v" id="kpi-rocks-v">0</div><div class="l">Rocks Complete</div><div class="track"><div class="fill" id="kpi-rocks-fill"></div></div></div>
-    <div class="kpi"><div class="v" id="kpi-actions-v">0</div><div class="l">Actions Closed</div><div class="track"><div class="fill" id="kpi-actions-fill"></div></div></div>
-    <div class="kpi"><div class="v" id="kpi-todos-v">0</div><div class="l">Open To-Dos</div><div class="track"><div class="fill" id="kpi-todos-fill"></div></div></div>
-    <div class="kpi"><div class="v" id="kpi-cats-v">0</div><div class="l">Rock Owners</div><div class="track"><div class="fill" id="kpi-cats-fill"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-rocks-v">{{ kpis.rocks_done }}<small>/{{ kpis.rocks_total }}</small></div><div class="l">Rocks Complete{% if current_quarter %} · {{ current_quarter.label }}{% endif %}</div><div class="track"><div class="fill" id="kpi-rocks-fill" data-pct="{{ kpis.rocks_pct }}"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-actions-v">{{ kpis.actions_done }}<small>/{{ kpis.actions_total }}</small></div><div class="l">Actions Closed</div><div class="track"><div class="fill" id="kpi-actions-fill" data-pct="{{ kpis.actions_pct }}"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-todos-v">{{ kpis.todos_open }}</div><div class="l">Open To-Dos</div><div class="track"><div class="fill" id="kpi-todos-fill" data-pct="{{ kpis.todos_pct }}"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-cats-v">{% if scoreboard.last_closed %}{{ scoreboard.last_closed.official.complete if scoreboard.last_closed.official else scoreboard.last_closed.complete }}<small>/{{ scoreboard.last_closed.official.total if scoreboard.last_closed.official else scoreboard.last_closed.total }}</small>{% else %}{{ kpis.owners }}{% endif %}</div><div class="l">{% if scoreboard.last_closed %}{{ scoreboard.last_closed.label }} Result{% else %}Rock Owners{% endif %}</div><div class="track"><div class="fill" id="kpi-cats-fill" data-pct="{% if scoreboard.last_closed %}{{ (100 * scoreboard.last_closed.official.complete / scoreboard.last_closed.official.total)|round|int if scoreboard.last_closed.official else scoreboard.last_closed.pct }}{% else %}100{% endif %}"></div></div></div>
 </div>
 
 {% if latest %}
@@ -251,10 +375,36 @@
 </section>
 
 <section class="rocks-section" id="rocks">
+    {% if current_quarter %}
+    <div class="card quarter-banner">
+        <div class="qb-head row-between">
+            <div>
+                <span class="section-label">Current quarter</span>
+                <h2>{{ current_quarter.label }}{% if current_quarter.fiscal %} <span class="muted qb-fiscal">{{ current_quarter.fiscal }}</span>{% endif %}</h2>
+            </div>
+            <div class="qb-dates">
+                {% if current_quarter.rock_session %}<span>Rock session <b>{{ current_quarter.rock_session }}</b></span>{% endif %}
+                {% if current_quarter.end %}<span>Rocks due <b>{{ current_quarter.end }}</b></span>{% endif %}
+                {% if current_quarter.offsite %}<span>Offsite <b>{{ current_quarter.offsite }}</b></span>{% endif %}
+                {% if current_quarter.next_session %}<span>Next session <b>{{ current_quarter.next_session }}</b></span>{% endif %}
+            </div>
+        </div>
+        {% if scoreboard.milestones %}
+        <div class="ms-strip" title="{{ scoreboard.milestones.days_left }} days left">
+            <div class="ms-track"><div class="ms-elapsed" style="width:{{ scoreboard.milestones.pct }}%"></div>
+                {% for m in scoreboard.milestones.marks %}<span class="ms-mark" style="left:{{ m.pct }}%"><i></i><b>{{ m.label }}d</b></span>{% endfor %}
+                <span class="ms-today" style="left:{{ scoreboard.milestones.pct }}%"><i></i><b>today</b></span>
+            </div>
+            <div class="ms-labels"><span>{{ scoreboard.milestones.start }}</span><span>{{ scoreboard.milestones.days_left }} days left</span><span>{{ scoreboard.milestones.end }}</span></div>
+        </div>
+        {% endif %}
+        {% if current_quarter.rule %}<p class="qb-rule"><b>Rule this quarter:</b> {{ current_quarter.rule }}</p>{% endif %}
+    </div>
+    {% endif %}
     <div class="section-heading row-between">
         <div>
             <span class="section-label">Company Rocks</span>
-            <h2>Shared quarterly goals</h2>
+            <h2>Shared quarterly goals{% if current_quarter %} · force-ranked{% endif %}</h2>
         </div>
         <button type="button" class="btn-primary small" id="add-company-rock-open">+ Add Company Rock</button>
     </div>
@@ -280,7 +430,7 @@
 
         {% if company_deferred %}
         <details class="deferred-block">
-            <summary>Deferred / Q4 ({{ company_deferred|length }}) — not scored this quarter</summary>
+            <summary>Deferred ({{ company_deferred|length }}) — not scored this quarter</summary>
             <ul class="rocks-list">
                 {% for rock in company_deferred %}{{ rock_row(rock, readonly=True) }}{% endfor %}
             </ul>
@@ -341,16 +491,41 @@
     {% endif %}
 </section>
 
-{% if archived_rocks %}
+{% if quarter_views or archived_rocks %}
 <section class="rocks-section" id="past-quarters">
+    <div class="section-heading">
+        <span class="section-label">Past quarters</span>
+        <h2>Closed with results</h2>
+    </div>
+    {% for qv in quarter_views %}
+    {% set qs = (scoreboard.quarters | selectattr('quarter', 'equalto', qv.id) | list | first) %}
+    <details class="archive-block quarter-block" {% if loop.first %}open{% endif %}>
+        <summary>
+            <span class="q-name">{{ qv.id }}</span>
+            {% if qs %}<span class="archive-count">{{ qs.complete }} / {{ qs.total }} rocks done{% if qs.official %} · official {{ qs.official.complete }}/{{ qs.official.total }}{% endif %}</span>{% endif %}
+        </summary>
+        <div class="card">
+            {% if qv.company_rocks %}
+            <div class="q-sub">Company</div>
+            <ul class="rocks-list">{% for rock in qv.company_rocks %}{{ rock_row(rock, readonly=True) }}{% endfor %}</ul>
+            {% endif %}
+            {% for o in qv.owner_groups %}
+            <div class="q-sub">{{ o.name }} <span class="person-count">{{ o.rocks | selectattr('result', 'equalto', 'complete') | list | length }} / {{ o.rocks | rejectattr('result', 'equalto', 'deferred') | list | length }}</span></div>
+            <ul class="rocks-list">{% for rock in o.rocks %}{{ rock_row(rock, readonly=True) }}{% endfor %}</ul>
+            {% endfor %}
+        </div>
+    </details>
+    {% endfor %}
+    {% set legacy = archived_rocks | rejectattr('result') | list %}
+    {% if legacy %}
     <details class="archive-block">
         <summary>
-            <span class="section-label">Past quarters</span>
-            <span class="archive-count">{{ archived_rocks|length }} archived</span>
+            <span class="q-name">Earlier</span>
+            <span class="archive-count">{{ legacy|length }} archived (pre-EOS format, not scored)</span>
         </summary>
         <div class="card">
             <ul class="archive-list">
-                {% for a in archived_rocks %}
+                {% for a in legacy %}
                 <li class="archive-rock">
                     <span class="archive-check">✓</span>
                     <span class="archive-owner">{{ a.owner }}</span>
@@ -366,6 +541,28 @@
             </ul>
         </div>
     </details>
+    {% endif %}
+</section>
+{% endif %}
+
+{{ scoreboard_section() }}
+
+{% if parked_issues %}
+<section class="card" id="issues">
+    <div class="card-head">
+        <span class="section-label">Issues List · parked</span>
+        <h2>IDS themes not taken as rocks{% if current_quarter %} · {{ current_quarter.label }}{% endif %}</h2>
+    </div>
+    <div class="tbl-wrap">
+    <table class="tbl issues-tbl">
+        <thead><tr><th>Issue / theme</th><th class="num">IDS pts</th><th class="num">Voters</th><th>Why parked</th><th>Revisit</th></tr></thead>
+        <tbody>
+        {% for p in parked_issues %}
+        <tr><td class="strong">{{ p.issue }}</td><td class="num">{{ p.ids_pts }}</td><td class="num">{{ p.voters }}</td><td class="muted">{{ p.why_parked }}</td><td><span class="revisit">{{ p.revisit }}</span></td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
 </section>
 {% endif %}
 
@@ -394,33 +591,13 @@
 
 {% block scripts %}
 <script>
-  // KPI band + hero chips, computed from the already-rendered DOM — no backend.
+  // KPI band values are rendered server-side (routes._kpis); JS only animates the fills.
   (function () {
-    function setText(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
-    function setFill(id, pct) { var el = document.getElementById(id); if (el) el.style.width = Math.max(0, Math.min(100, pct)) + '%'; }
-
-    var rocks = document.querySelectorAll('.rock');
-    var rocksDone = document.querySelectorAll('.rock.rock-complete').length;
-    var actions = document.querySelectorAll('.action-item');
-    var actionsDone = document.querySelectorAll('.action-item.action-complete').length;
-    var todos = document.querySelectorAll('.todo');
-    var todosOpen = todos.length - document.querySelectorAll('.todo.todo-complete').length;
-    var cats = document.querySelectorAll('.person-card').length;
-
-    setText('chip-todos', todosOpen);
-    setText('chip-rocks', rocks.length);
-
-    document.getElementById('kpi-rocks-v').innerHTML = rocksDone + '<small>/' + rocks.length + '</small>';
-    document.getElementById('kpi-actions-v').innerHTML = actionsDone + '<small>/' + actions.length + '</small>';
-    setText('kpi-todos-v', todosOpen);
-    setText('kpi-cats-v', cats);
-
-    // Animate the fills after paint.
     setTimeout(function () {
-      setFill('kpi-rocks-fill', rocks.length ? rocksDone / rocks.length * 100 : 0);
-      setFill('kpi-actions-fill', actions.length ? actionsDone / actions.length * 100 : 100);
-      setFill('kpi-todos-fill', todos.length ? todosOpen / todos.length * 100 : 0);
-      setFill('kpi-cats-fill', cats ? 100 : 6);
+      document.querySelectorAll('.kpi .fill[data-pct]').forEach(function (el) {
+        var pct = parseFloat(el.getAttribute('data-pct')) || 0;
+        el.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      });
     }, 200);
   })();
 </script>

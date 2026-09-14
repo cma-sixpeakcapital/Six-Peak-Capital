@@ -1,0 +1,355 @@
+{
+  "_comment": "Q3 2026 -> Q4 2026 rollover for l10.sixpeakapps.com (app/quarter_rollover.py). Stamps a binary result on every Q3 rock (source: live portal status 2026-09-14 + Bob's Q3 post-mortem tab + Chris's 9/14 calls), converts Task dispositions to to-dos, links Carry Forwards to their Q4 successor, archives Q3, loads Q4 from Q4_rocks_data.json. Decisions applied 9/14 (Chris).",
+  "from_quarter": "Q3 2026",
+  "to_quarter": "Q4 2026",
+  "from_quarter_info": {
+    "id": "Q3 2026",
+    "label": "Q3 2026",
+    "fiscal": "FY2026 Q3",
+    "start": "2026-06-01",
+    "end": "2026-08-31",
+    "rock_session": "2026-06-11",
+    "official_score": {
+      "complete": 18,
+      "total": 32,
+      "source": "Q3 post-mortem tab (13 not done) + 401(k) memo open, per Chris 9/14"
+    }
+  },
+  "scoring_rules": {
+    "complete": 1,
+    "carry_forward": 0,
+    "task": 0,
+    "killed": 0,
+    "deferred": "excluded",
+    "company_rock_credit": "credited to its named owner",
+    "converted_to_todo_prior_quarters": "excluded (Q2 conversions)"
+  },
+  "closeout": [
+    {
+      "title": "Finance engine institutionalized",
+      "owner": "Bob Kennedy",
+      "level": "company",
+      "result": "complete",
+      "id": "cr_q3_01"
+    },
+    {
+      "title": "Six Peak HoldCo operating system fully live",
+      "owner": "Bob Kennedy",
+      "level": "company",
+      "result": "complete",
+      "id": "cr_q3_02"
+    },
+    {
+      "title": "Business development engine defined and staffed",
+      "owner": "Bob Kennedy",
+      "level": "company",
+      "result": "task",
+      "root_cause": "One outstanding item (executed BD consulting agreement) delayed by Francis closing.",
+      "todo": {
+        "owner": "Bob Kennedy",
+        "task": "Execute the BD consulting agreement with Tom (BD engine close-out)",
+        "due": "2026-09-30",
+        "link_existing": "consulting agreement"
+      },
+      "id": "cr_q3_03"
+    },
+    {
+      "title": "LIHTC closing checklist built",
+      "owner": "Bob Kennedy",
+      "level": "company",
+      "result": "carry_forward",
+      "successor": "LIHTC developer-side closing checklist — v1 published",
+      "root_cause": "Francis Avenue delayed close (June to mid-August) compressed the working window.",
+      "id": "cr_q3_04"
+    },
+    {
+      "title": "Mandate Claude Cowork adoption with an easy Projects manual",
+      "owner": "Chris Aiello",
+      "level": "company",
+      "result": "complete",
+      "id": "cr_q3_05"
+    },
+    {
+      "title": "Board portal and Steyn reporting standard finalized",
+      "owner": "Chris Aiello",
+      "level": "company",
+      "result": "complete",
+      "id": "cr_q3_06"
+    },
+    {
+      "title": "LV 3rd-party platform and capacity readiness defined",
+      "owner": "Tom Taggart",
+      "level": "company",
+      "result": "complete",
+      "id": "cr_q3_07"
+    },
+    {
+      "title": "LV bonding and growth roadmap documented",
+      "owner": "Bob Kennedy",
+      "level": "company",
+      "result": "deferred",
+      "successor": "Bonding independence from Krueger — memo + dated path",
+      "note": "Was deferred/Q4 in Q3 — not scored. Successor is Q4 CR #3 (Aiello).",
+      "id": "cr_q3_def"
+    },
+    {
+      "title": "Benefits & employment attorney-produced memo on LV / Six Peak 401(k)",
+      "owner": "Bob Kennedy",
+      "level": "individual",
+      "result": "task",
+      "note": "Chris 9/14: still open — task.",
+      "todo": {
+        "owner": "Bob Kennedy",
+        "task": "401(k) attorney memo — close out or kill",
+        "due": "2026-09-30"
+      },
+      "id": "r_q3_03"
+    },
+    {
+      "title": "Refine construction-estimating skill",
+      "owner": "Chris Aiello",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_04"
+    },
+    {
+      "title": "Finalize 626 Wilton business plan",
+      "owner": "Chris Aiello",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_05"
+    },
+    {
+      "title": "Complete Tom’s transition from asset management to BD",
+      "owner": "Chris Aiello",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_06"
+    },
+    {
+      "title": "Finalize AI sister-company deal",
+      "owner": "Chris Aiello",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_07"
+    },
+    {
+      "title": "9033 Ramsgate PM Proposals",
+      "owner": "Chris Aiello",
+      "level": "individual",
+      "result": "complete",
+      "note": "Chris 9/14: complete. Live record has no quarter tag — migration sets quarter='Q3 2026'."
+    },
+    {
+      "title": "Put in place a non-recourse revolving LOC",
+      "owner": "Chris Andresen",
+      "level": "individual",
+      "result": "carry_forward",
+      "successor": "Working-capital facility — signed term sheet",
+      "root_cause": "Zero lender contact in Q3; upstream dependency on Bob for sizing and structure.",
+      "id": "r_q3_01"
+    },
+    {
+      "title": "Finalize board-portal financial reporting process",
+      "owner": "Chris Andresen",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_08"
+    },
+    {
+      "title": "Finalize restructure of equity positions under SPC & CLH2",
+      "owner": "Chris Andresen",
+      "level": "individual",
+      "result": "task",
+      "root_cause": "Delayed by Francis closing and Jane's vacation.",
+      "todo": {
+        "owner": "Chris Andresen",
+        "task": "Finalize restructure of equity positions under SPC & CLH2",
+        "due": "2026-10-31"
+      },
+      "id": "r_q3_09"
+    },
+    {
+      "title": "Implement Claude in at least one LV finance workflow",
+      "owner": "Chris Andresen",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_10"
+    },
+    {
+      "title": "Evaluate construction-specific finance software",
+      "owner": "Chris Andresen",
+      "level": "individual",
+      "result": "carry_forward",
+      "successor": "Evaluate construction-specific finance software",
+      "root_cause": "Timing.",
+      "id": "r_q3_11"
+    },
+    {
+      "title": "Execute Ramsgate offsite conduit proposal",
+      "owner": "Derek Sanders",
+      "level": "individual",
+      "result": "killed",
+      "root_cause": "Carried forward with no rewrite and no notes.",
+      "note": "Chris 9/14: killed (never rewritten; not on the Q4 list).",
+      "id": "r_q3_12"
+    },
+    {
+      "title": "Develop LIHTC closing operating manual",
+      "owner": "Derek Sanders",
+      "level": "individual",
+      "result": "carry_forward",
+      "successor": "LIHTC developer-side closing checklist — v1 published",
+      "root_cause": "Overlapped with Bob's company rock; consolidated into Q4 CR #4.",
+      "id": "r_q3_14"
+    },
+    {
+      "title": "Assist Jonah/LV on AI workflow build",
+      "owner": "Derek Sanders",
+      "level": "individual",
+      "result": "carry_forward",
+      "successor": "GrindAI implementation roadmap (discovery memo)",
+      "root_cause": "Development team only in place 2 weeks before quarter end.",
+      "id": "r_q3_13"
+    },
+    {
+      "title": "Implement Claude in PM/PC roles",
+      "owner": "Grady Lakamp",
+      "level": "individual",
+      "result": "killed",
+      "root_cause": "Owner lacks Claude enablement; dropped from Q4.",
+      "id": "r_q3_15"
+    },
+    {
+      "title": "Finalize onsite staffing for 2026 projects",
+      "owner": "Grady Lakamp",
+      "level": "individual",
+      "result": "killed",
+      "root_cause": "Fluid staffing; never rewritten. Dropped given off-site absence; may be picked up under Tom's LV capacity rock.",
+      "id": "r_q3_16"
+    },
+    {
+      "title": "Create monthly checklist for financial statements and LV pay apps",
+      "owner": "Robert Carrega",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_20"
+    },
+    {
+      "title": "Create SOPs for repeated finance tasks",
+      "owner": "Robert Carrega",
+      "level": "individual",
+      "result": "carry_forward",
+      "successor": "Refine + distribute finance SOPs and monthly checklist (Claude-updated)",
+      "root_cause": "Claude changed several SOPs; needed refinement before distribution.",
+      "id": "r_q3_21"
+    },
+    {
+      "title": "Implement Claude in one LV finance workflow",
+      "owner": "Robert Carrega",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_22"
+    },
+    {
+      "title": "Streamline LV 3rd-party reporting system",
+      "owner": "Schuyler Dietz",
+      "level": "individual",
+      "result": "killed",
+      "root_cause": "Owner wrote 'perhaps consider done for now'.",
+      "note": "On Bob's Q3 post-mortem tab (Done-or-Kill); Chris 9/14: the post-mortem tab is the non-complete list, so scored 0 / killed.",
+      "id": "r_q3_19"
+    },
+    {
+      "title": "Begin Fundraising process for UL Foundation",
+      "owner": "Schuyler Dietz",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_23"
+    },
+    {
+      "title": "Complete all regulatory hurdles for Uplifters Foundation",
+      "owner": "Schuyler Dietz",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_24"
+    },
+    {
+      "title": "Have signed LOI's with all UL Foundation Vendors for a turnkey rebuilds",
+      "owner": "Schuyler Dietz",
+      "level": "individual",
+      "result": "carry_forward",
+      "successor": "Uplifters Foundation — 3rd-party GC/sub LOIs signed",
+      "root_cause": "Timing.",
+      "id": "r_q3_25"
+    },
+    {
+      "title": "Develop LV marketing pitch",
+      "owner": "Tom Taggart",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_17"
+    },
+    {
+      "title": "Build 3rd-party buyer landscape",
+      "owner": "Tom Taggart",
+      "level": "individual",
+      "result": "complete",
+      "id": "r_q3_18"
+    }
+  ],
+  "q3_score_projected_from_rock_results": {
+    "team": "18/32",
+    "team_pct": 56,
+    "by_owner": {
+      "Bob Kennedy": {
+        "owned": 5,
+        "complete": 2
+      },
+      "Chris Aiello": {
+        "owned": 7,
+        "complete": 7
+      },
+      "Tom Taggart": {
+        "owned": 3,
+        "complete": 3
+      },
+      "Chris Andresen": {
+        "owned": 5,
+        "complete": 2
+      },
+      "Derek Sanders": {
+        "owned": 3,
+        "complete": 0
+      },
+      "Grady Lakamp": {
+        "owned": 2,
+        "complete": 0
+      },
+      "Robert Carrega": {
+        "owned": 3,
+        "complete": 2
+      },
+      "Schuyler Dietz": {
+        "owned": 4,
+        "complete": 2
+      }
+    },
+    "reconcile": "Chris 9/14: the non-complete rocks are exactly the 13 on Bob's Q3 post-mortem tab plus the 401(k) memo (still open). Everything else is complete. Per-rock tally = official = 18/32."
+  },
+  "fixups": [
+    {
+      "title": "9033 Ramsgate PM Proposals",
+      "owner": "Chris Aiello",
+      "set": {
+        "quarter": "Q3 2026",
+        "level": "individual"
+      },
+      "why": "live record has no quarter tag; it is Chris's 7th Q3 rock"
+    }
+  ],
+  "notes": [
+    "team[] has 17 entries incl. joint-owner keys from Q2 — left as-is; the scoreboard uses the canonical 8-person roster.",
+    "Q2 2026 rocks (archived, some converted) are history only — never scored."
+  ]
+}

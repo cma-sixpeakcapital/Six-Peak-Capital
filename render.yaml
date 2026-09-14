@@ -159,9 +159,10 @@ services:
         value: 7jb1kbiupq9ttrljuv3utu2km7   # legacy single ID — kept as fallback
       # Weekly L10 + quarterly EOS Rock Sessions. Append each new quarter's
       # standalone event ID here (comma-separated); takes precedence over the
-      # single ID above. 5738… = Q3 2026 Rock Session (2026-06-11).
+      # single ID above. 5738… = Q3 2026 Rock Session (2026-06-11);
+      # t217… = Q4 2026 Rock Session (2026-09-01).
       - key: L10_FOLLOWUP_CAL_EVENT_IDS
-        value: 7jb1kbiupq9ttrljuv3utu2km7,5738s8qjmr7d83pft96dkj95ng
+        value: 7jb1kbiupq9ttrljuv3utu2km7,5738s8qjmr7d83pft96dkj95ng,t217tfequ9vhd8tjmbof9d8qi4
       - key: L10_FOLLOWUP_SENDER_EMAIL
         value: cma@sixpeakcapital.com
       - key: L10_FOLLOWUP_DRY_RUN

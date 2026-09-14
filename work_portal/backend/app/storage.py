@@ -26,6 +26,9 @@ ROCKS_SCHEMA_DEFAULT: dict[str, Any] = {
 # badge. Both Storage and PostgresStorage import this set.
 STATUSES = {"complete", "incomplete", "in_progress"}
 
+# Binary quarter-close results (see quarter_rollover.py / scoring.py).
+RESULTS = {"complete", "carry_forward", "task", "killed", "deferred"}
+
 
 def _new_id(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:10]}"
@@ -150,8 +153,13 @@ class Storage:
         allowed = {
             "title", "notes", "due", "category", "link",
             "priority", "done_definition", "area", "dependencies",
+            # quarter close-out fields (Scoreboard reads these on archived rocks)
+            "result", "result_note", "root_cause", "controllable_action",
+            "smart_statement", "review_status",
         }
         clean = {k: v for k, v in updates.items() if k in allowed}
+        if "result" in clean and clean["result"] not in (None, "", *RESULTS):
+            raise ValueError(f"invalid result: {clean['result']}")
         data = self.load_rocks()
         for rocks in (data.get("rocks") or {}).values():
             for rock in rocks:

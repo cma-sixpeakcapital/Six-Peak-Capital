@@ -205,7 +205,7 @@ def test_portal_groups_by_owner(client, storage: Storage) -> None:
     assert "prio-high" in body and "prio-medium" in body
     assert "status-progress" in body
     # Deferred company rock surfaced in its own subsection, not the active list.
-    assert "Co-Deferred" in body and "Deferred / Q4" in body
+    assert "Co-Deferred" in body and "not scored this quarter" in body
     # Archived old rock lands in Past quarters, not an active owner card.
     assert "Past quarters" in body
     assert "Amy-Archived-Old" in body
