@@ -6,6 +6,7 @@ from flask import Flask, abort, current_app, jsonify, render_template, request
 from .ingest import IngestService
 from .readai import ReadAIClient
 from .rock_files import FileArchivedError, FileValidationError
+from .scoring import scoreboard as build_scoreboard, current_quarter, quarters as list_quarters
 from .storage import bullet_split
 from .summarizer import Summarizer
 
@@ -90,13 +91,59 @@ def _group_active_by_owner(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _split_company_rocks(rocks_data: dict[str, Any]) -> tuple[list, list]:
-    """Return (active_company_rocks, deferred_company_rocks), archived excluded."""
+    """Return (active_company_rocks, deferred_company_rocks), archived excluded.
+
+    Active company rocks are ordered by force-rank (Q4+), then by insertion.
+    """
     active, deferred = [], []
     for r in rocks_data.get("company_rocks", []) or []:
         if r.get("archived"):
             continue
         (deferred if r.get("deferred") else active).append(r)
+    active.sort(key=lambda r: (r.get("rank") is None, r.get("rank") or 0))
     return active, deferred
+
+
+def _quarter_view(rocks_data: dict[str, Any], qid: str) -> dict[str, Any]:
+    """Read-only view of one archived quarter: company rocks + individual by owner."""
+    company = [r for r in (rocks_data.get("company_rocks") or []) if r.get("quarter") == qid]
+    company.sort(key=lambda r: (r.get("rank") is None, r.get("rank") or 0))
+    by_owner: dict[str, list] = {}
+    for owner, rocks in (rocks_data.get("rocks", {}) or {}).items():
+        for r in rocks:
+            if r.get("quarter") == qid and not r.get("converted"):
+                by_owner.setdefault(r.get("owner") or owner, []).append(r)
+    groups = [{"name": o, "rocks": rs} for o, rs in sorted(by_owner.items(), key=lambda kv: kv[0].lower())]
+    return {"id": qid, "company_rocks": company, "owner_groups": groups}
+
+
+def _kpis(rocks_data: dict[str, Any], latest: dict[str, Any] | None) -> dict[str, Any]:
+    """Server-side KPI band (the old template counted DOM nodes client-side)."""
+    active = [r for r in (rocks_data.get("company_rocks") or [])
+              if not r.get("archived") and not r.get("deferred")]
+    owners = set()
+    for owner, rocks in (rocks_data.get("rocks", {}) or {}).items():
+        for r in rocks:
+            if not r.get("archived") and not r.get("deferred"):
+                active.append(r)
+                owners.add(r.get("owner") or owner)
+    for r in rocks_data.get("company_rocks") or []:
+        if not r.get("archived") and not r.get("deferred") and r.get("owner"):
+            owners.add(r["owner"])
+    done = len([r for r in active if r.get("status") == "complete"])
+    todos = rocks_data.get("todos") or []
+    todos_open = len([t for t in todos if not t.get("completed")])
+    actions = (latest or {}).get("action_items") or []
+    actions_done = len([a for a in actions if a.get("completed")])
+    return {
+        "rocks_total": len(active), "rocks_done": done,
+        "rocks_pct": round(100 * done / len(active)) if active else 0,
+        "actions_total": len(actions), "actions_done": actions_done,
+        "actions_pct": round(100 * actions_done / len(actions)) if actions else 100,
+        "todos_open": todos_open, "todos_total": len(todos),
+        "todos_pct": round(100 * todos_open / len(todos)) if todos else 0,
+        "owners": len(owners),
+    }
 
 
 def _collect_archive(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
@@ -110,13 +157,13 @@ def _collect_archive(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
         if r.get("archived") and not r.get("converted"):
             out.append({"owner": "Company", "title": r.get("title", ""),
                         "status": r.get("status"), "quarter": r.get("quarter", ""),
-                        "files": r.get("files") or []})
+                        "result": r.get("result"), "files": r.get("files") or []})
     for owner, rocks in (rocks_data.get("rocks", {}) or {}).items():
         for r in rocks:
             if r.get("archived") and not r.get("converted"):
                 out.append({"owner": owner, "title": r.get("title", ""),
                             "status": r.get("status"), "quarter": r.get("quarter", ""),
-                            "files": r.get("files") or []})
+                            "result": r.get("result"), "files": r.get("files") or []})
     out.sort(key=lambda a: (a["quarter"], a["owner"].lower(), a["title"].lower()))
     return out
 
@@ -174,6 +221,11 @@ def register_routes(app: Flask) -> None:
         history = storage.list_meetings(limit=12)
         summary_bullets = bullet_split(latest.get("summary", "")) if latest else []
         company_active, company_deferred = _split_company_rocks(rocks_data)
+        sb = build_scoreboard(rocks_data)
+        cur_q = current_quarter(rocks_data)
+        scored_ids = {q["quarter"] for q in sb["quarters"] if q["closed"]}
+        closed_qs = [q for q in list_quarters(rocks_data) if q.get("closed") and q["id"] in scored_ids]
+        closed_qs.reverse()  # newest first; pre-EOS quarters (Q2) stay in the "Earlier" list
         return render_template(
             "portal.html",
             team=rocks_data.get("team", []),
@@ -186,6 +238,12 @@ def register_routes(app: Flask) -> None:
             latest=latest,
             summary_bullets=summary_bullets,
             history=history,
+            kpis=_kpis(rocks_data, latest),
+            scoreboard=sb,
+            current_quarter=cur_q,
+            closed_quarters=closed_qs,
+            quarter_views=[_quarter_view(rocks_data, q["id"]) for q in closed_qs],
+            parked_issues=rocks_data.get("parked_issues") or [],
         )
 
     @app.route("/meetings/<meeting_id>")
@@ -212,6 +270,16 @@ def register_routes(app: Flask) -> None:
     def api_rocks() -> Any:
         return jsonify(_get_storage().load_rocks())
 
+    @app.route("/api/scoreboard")
+    def api_scoreboard() -> Any:
+        return jsonify(build_scoreboard(_get_storage().load_rocks()))
+
+    @app.route("/api/quarters")
+    def api_quarters() -> Any:
+        data = _get_storage().load_rocks()
+        return jsonify({"quarters": list_quarters(data), "current": current_quarter(data),
+                        "parked_issues": data.get("parked_issues") or []})
+
     @app.route("/api/rocks/<person>", methods=["PUT"])
     def api_update_rocks(person: str) -> Any:
         body = request.get_json(silent=True) or {}
@@ -234,7 +302,10 @@ def register_routes(app: Flask) -> None:
     @app.route("/api/rocks/<rock_id>", methods=["PATCH"])
     def api_rock_update(rock_id: str) -> Any:
         body = request.get_json(silent=True) or {}
-        rock = _get_storage().update_rock(rock_id, body)
+        try:
+            rock = _get_storage().update_rock(rock_id, body)
+        except ValueError as exc:
+            abort(400, description=str(exc))
         if rock is None:
             abort(404)
         return jsonify(rock)
