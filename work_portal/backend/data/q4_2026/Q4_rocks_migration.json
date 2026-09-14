@@ -10,9 +10,9 @@
     "end": "2026-08-31",
     "rock_session": "2026-06-11",
     "official_score": {
-      "complete": 17,
+      "complete": 18,
       "total": 32,
-      "source": "Chris Aiello 9/14"
+      "source": "Q3 post-mortem tab (13 not done) + 401(k) memo open, per Chris 9/14"
     }
   },
   "scoring_rules": {
@@ -255,8 +255,9 @@
       "title": "Streamline LV 3rd-party reporting system",
       "owner": "Schuyler Dietz",
       "level": "individual",
-      "result": "complete",
-      "note": "Chris 9/14: complete (sheet had said Done-or-Kill).",
+      "result": "killed",
+      "root_cause": "Owner wrote 'perhaps consider done for now'.",
+      "note": "On Bob's Q3 post-mortem tab (Done-or-Kill); Chris 9/14: the post-mortem tab is the non-complete list, so scored 0 / killed.",
       "id": "r_q3_19"
     },
     {
@@ -298,8 +299,8 @@
     }
   ],
   "q3_score_projected_from_rock_results": {
-    "team": "19/32",
-    "team_pct": 59,
+    "team": "18/32",
+    "team_pct": 56,
     "by_owner": {
       "Bob Kennedy": {
         "owned": 5,
@@ -331,10 +332,10 @@
       },
       "Schuyler Dietz": {
         "owned": 4,
-        "complete": 3
+        "complete": 2
       }
     },
-    "reconcile": "Chris 9/14: official Q3 result is 17/32. The per-rock results compute higher — two rocks the portal shows complete are not; Chris to name them, then flip their result here. Until then the Scoreboard shows the official 17/32 for the team and per-rock tallies for people."
+    "reconcile": "Chris 9/14: the non-complete rocks are exactly the 13 on Bob's Q3 post-mortem tab plus the 401(k) memo (still open). Everything else is complete. Per-rock tally = official = 18/32."
   },
   "fixups": [
     {
