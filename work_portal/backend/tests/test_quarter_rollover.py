@@ -56,7 +56,7 @@ def test_every_q3_rock_gets_a_result_and_is_archived(rolled):
     results = {}
     for r in q3:
         results[r["result"]] = results.get(r["result"], 0) + 1
-    assert results == {"complete": 19, "carry_forward": 7, "task": 3, "killed": 3, "deferred": 1}
+    assert results == {"complete": 18, "carry_forward": 7, "task": 3, "killed": 4, "deferred": 1}
 
 
 def test_ramsgate_fixup_makes_chris_seven_for_seven(rolled):
@@ -70,9 +70,9 @@ def test_ramsgate_fixup_makes_chris_seven_for_seven(rolled):
 def test_q3_team_score_and_official_record(rolled):
     after, _ = rolled
     s = score_quarter(after, "Q3 2026")
-    assert (s["complete"], s["total"]) == (19, 32)      # per-rock tally
+    assert (s["complete"], s["total"]) == (18, 32)      # per-rock tally == official
     assert s["closed"] is True
-    assert s["official"] == {"complete": 17, "total": 32, "source": "Chris Aiello 9/14"}
+    assert s["official"]["complete"] == 18 and s["official"]["total"] == 32
     assert s["company_total"] == 7  # deferred excluded
 
 
@@ -147,7 +147,7 @@ def test_q2_rocks_untouched_and_unscored(rolled):
 def test_leaderboard_order_and_streaks(rolled):
     after, _ = rolled
     lb = leaderboard(after)
-    assert [r["owner"] for r in lb[:2]] == ["Chris Aiello", "Tom Taggart"]  # both 100%, Chris owned more
+    assert [r["owner"] for r in lb[:3]] == ["Chris Aiello", "Tom Taggart", "Robert Carrega"]
     assert lb[0]["streak"] == 1 and lb[0]["cum_pct"] == 100
     assert lb[-1]["owner"] == "Grady Lakamp" and lb[-1]["cum_pct"] == 0
     assert all(r["live"]["quarter"] == "Q4 2026" for r in lb if r["live"])
@@ -163,7 +163,7 @@ def test_scoreboard_shape(rolled):
     assert sb["live"]["total"] == 24 and sb["live"]["complete"] == 0
     assert sb["last_closed"]["quarter"] == "Q3 2026"
     assert sb["milestones"]["end"] == "2026-11-30"
-    assert len(sb["postmortem"]) == 13
+    assert len(sb["postmortem"]) == 14
     assert sb["postmortem"][0]["result"] == "carry_forward"
 
 

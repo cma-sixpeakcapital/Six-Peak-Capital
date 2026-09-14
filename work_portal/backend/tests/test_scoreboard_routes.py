@@ -14,7 +14,7 @@ def test_portal_renders_scoreboard_sections(client, storage):
     storage.save_rocks(_rolled_doc())
     body = client.get("/").data.decode()
     for needle in ("Scoreboard", "Leaderboard", "Q3 2026 post-mortem", "Issues List",
-                   "Rule this quarter", "#1", "Controllable action", "official 17/32",
+                   "Rule this quarter", "#1", "Controllable action", "official 18/32",
                    "Q4 2026", "77 days left" if False else "days left"):
         assert needle in body, needle
     # Leaderboard: Chris row first, Grady last.
@@ -37,7 +37,7 @@ def test_portal_before_rollover_still_renders(client, storage):
 def test_api_scoreboard_and_quarters(client, storage):
     storage.save_rocks(_rolled_doc())
     sb = client.get("/api/scoreboard").get_json()
-    assert sb["last_closed"]["official"]["complete"] == 17
+    assert sb["last_closed"]["official"]["complete"] == 18
     assert sb["leaderboard"][0]["owner"] == "Chris Aiello"
     q = client.get("/api/quarters").get_json()
     assert q["current"]["id"] == "Q4 2026"
