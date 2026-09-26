@@ -320,3 +320,21 @@ def test_ingest_job_requires_api_key_and_skips_outside_window(sc_app):
         assert r.get_json()["status"] == "skipped"
         r = c.post("/api/jobs/ingest_scorecard?force=true", headers={"X-API-Key": "test-key"})
         assert r.get_json()["status"] == "frozen"
+
+
+def test_you_are_picker_lists_single_people_only(sc_app):
+    storage = sc_app.config["STORAGE"]
+    storage.save_rocks({"team": [{"name": "Chris Aiello"}, {"name": "Chris Aiello and Grady Lakamp"}],
+                        "rocks": {"Bob Kennedy & Tom Taggart": [], "Derek": []}, "company_rocks": [], "todos": []})
+    with sc_app.test_client() as c:
+        html = c.get("/").get_data(as_text=True)
+    picker = html[html.index('id="actor-select"'):html.index("</select>")]
+    assert "Chris Andresen" in picker and "Grady Lakamp" in picker  # from the Sheet's people tab
+    assert " and " not in picker and "&amp;" not in picker and "&" not in picker.replace("&mdash;", "")
+
+
+def test_actor_names_fallback_filters_shared_owners():
+    from app.routes import _actor_names
+    doc = {"team": [{"name": "Chris Aiello"}, {"name": "Chris Aiello and Grady Lakamp"}],
+           "rocks": {"Bob Kennedy / Tom": [], "Derek": []}}
+    assert _actor_names(doc) == ["Chris Aiello", "Derek"]

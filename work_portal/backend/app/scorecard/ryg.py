@@ -205,6 +205,7 @@ def build_view(model: Model, ref: date, start_week: date, weeks: int = 6) -> dic
         "metric_count": len(rows),
         "counts": counts,
         "missing_by_owner": missing_by_owner,
+        "people": sorted(p["name"] for p in model.people.values() if p.get("active")),
         "errors": [e for e in model.errors if e["level"] == "error"],
         "warnings": [e for e in model.errors if e["level"] == "warning"],
     }
