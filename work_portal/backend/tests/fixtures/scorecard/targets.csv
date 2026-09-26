@@ -1,0 +1,10 @@
+metric_id,effective_date,target,yellow_floor,interpolate,note
+bd_developer_contacts,2026-09-14,0,,FALSE,Contract start (Wickline)
+bd_developer_contacts,2027-03-14,20,,TRUE,Section 6.1(b) Month 6
+bd_developer_contacts,2027-09-14,30,,TRUE,Month 12
+bd_qualified_pipeline,2026-09-14,0,,FALSE,Contract start (Wickline)
+bd_qualified_pipeline,2027-09-14,30000000,,TRUE,Section 6.1(c) Month 12
+bd_qualified_pipeline,2028-03-14,60000000,,TRUE,Month 18
+bd_qualified_pipeline,2028-09-14,90000000,,TRUE,Month 24
+bd_cumulative_sourced_gmp,2026-09-14,0,,FALSE,Contract start (Wickline)
+bd_cumulative_sourced_gmp,2028-09-14,20000000,,TRUE,Section 6.1(e) Month 24
