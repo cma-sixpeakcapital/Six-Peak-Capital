@@ -11,7 +11,7 @@ from .readai import ReadAIClient
 from .rock_files import FileArchivedError, FileValidationError
 from .scoring import scoreboard as build_scoreboard, current_quarter, quarters as list_quarters
 from .storage import bullet_split
-from .summarizer import Summarizer
+from .summarizer import Summarizer, clean_topics
 from .scorecard.service import ET, ScorecardService
 from .scorecard.sheet import SheetFetchError, make_fetcher, parse_gids
 
@@ -381,6 +381,25 @@ def register_routes(app: Flask) -> None:
             abort(404)
         summary_bullets = bullet_split(meeting.get("summary", ""))
         return render_template("meeting.html", meeting=meeting, summary_bullets=summary_bullets)
+
+    @app.route("/api/meetings/<meeting_id>/topics", methods=["PUT"])
+    def api_meeting_set_topics(meeting_id: str) -> Any:
+        """Store a topic grouping produced outside the portal (the weekly
+        scheduled Claude task; there is no Anthropic key on the server).
+        Open like every other edit, and recorded in the change log."""
+        storage = _get_storage()
+        meeting = storage.get_meeting(meeting_id)
+        if not meeting:
+            abort(404)
+        body = request.get_json(silent=True) or {}
+        topics = clean_topics(body.get("topics"))
+        if not topics:
+            abort(400, description="'topics' must be a list of {topic, notes[]} with at least one note")
+        meeting["topics"] = topics
+        meeting.pop("topics_error", None)
+        meeting["topics_source"] = (body.get("source") or "external")[:60]
+        storage.save_meeting(meeting)
+        return jsonify({"status": "ok", "id": meeting_id, "topics": topics})
 
     @app.route("/api/meetings/<meeting_id>/topics", methods=["POST"])
     @require_api_key

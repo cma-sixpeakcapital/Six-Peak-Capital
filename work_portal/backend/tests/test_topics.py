@@ -77,3 +77,20 @@ def test_regroup_endpoint_requires_key(tmp_config, storage):
         assert c.post("/api/meetings/m1/topics").status_code == 401
         r = c.post("/api/meetings/m1/topics", headers={"X-API-Key": "test-key"})
         assert r.status_code == 200 and len(r.get_json()["topics"]) == 2
+
+
+def test_put_topics_stores_and_validates(tmp_config, storage):
+    from app import create_app
+    storage.save_meeting(_meeting())
+    app = create_app(tmp_config)
+    with app.test_client() as c:
+        assert c.put("/api/meetings/m1/topics", json={"topics": [{"topic": "X", "notes": []}]}).status_code == 400
+        assert c.put("/api/meetings/nope/topics", json={"topics": []}).status_code == 404
+        r = c.put("/api/meetings/m1/topics", json={"source": "claude-scheduled",
+                  "topics": [{"topic": "Reseda", "notes": ["Steyn declined to leave equity in."]}]})
+        assert r.status_code == 200
+        html = c.get("/").get_data(as_text=True)
+    m = app.config["STORAGE"].get_meeting("m1")
+    assert m["topics"][0]["topic"] == "Reseda" and m["topics_source"] == "claude-scheduled"
+    assert 'class="topic-bubble"' in html
+    assert app.config["STORAGE"].list_audit()[0]["action"] == "Set meeting summary topics"

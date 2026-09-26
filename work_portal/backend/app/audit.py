@@ -49,6 +49,7 @@ ACTION_LABELS = {
     "api_action_toggle": "Toggle meeting action item",
     "api_action_move": "Move action item to To-Dos",
     "api_scorecard_refresh": "Refresh scorecard from Sheet",
+    "api_meeting_set_topics": "Set meeting summary topics",
 }
 
 
