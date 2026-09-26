@@ -267,3 +267,10 @@ def test_scoreboard_api_includes_todo_numbers(app_client):
     body = c.get("/api/scoreboard").get_json()
     assert body["todos"]["standard_pct"] == 90 and body["todos"]["open"] == 1
     assert len(body["todos"]["trend"]) == 13
+
+
+def test_completed_before_tracking_has_no_verdict():
+    t = todo(date(2026, 9, 16), orig=date(2026, 10, 6))
+    t["completed"], t["completed_at"] = True, None  # done before completion times were kept
+    assert on_time([t], date(2026, 9, 1), TODAY)["d"] == 0
+    assert seven_day([t], date(2026, 9, 1), TODAY)["d"] == 0

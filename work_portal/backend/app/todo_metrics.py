@@ -60,8 +60,10 @@ def seven_day(todos: Iterable[dict[str, Any]], start: date, end: date) -> dict[s
         m = _mark(t)
         if m is None or not (start < m <= end) or m < TRACKING_FROM:
             continue
-        d += 1
         done = _done_date(t)
+        if t.get("completed") and done is None:
+            continue  # checked off before completion times were kept: no verdict
+        d += 1
         if done is not None and done <= m:
             n += 1
     return _frac(n, d)
@@ -77,6 +79,8 @@ def on_time(todos: Iterable[dict[str, Any]], q_start: date, today: date) -> dict
         if orig is None or orig < lo:
             continue
         done = _done_date(t)
+        if t.get("completed") and done is None:
+            continue  # checked off before completion times were kept: no verdict
         if orig >= today and done is None:
             continue  # not due yet and not done: no verdict
         d += 1
