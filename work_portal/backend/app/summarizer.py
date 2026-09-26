@@ -58,6 +58,60 @@ TOOL_SCHEMA = {
 }
 
 
+TOPICS_PROMPT = """You organize a Level 10 (EOS) weekly leadership meeting summary by topic \
+for Six Peak Capital, a Los Angeles real estate developer with a general contractor, \
+LV Construction.
+
+Group the summary into the topics that were discussed, in the order they came up.
+- 3 to 8 topics. Each topic title is 1-5 words and names the subject, e.g. \
+"Lien releases", "Klump & Scott", "Reseda", "Uplifters", "Bonding", "AI adoption".
+- Each topic has 1 to 5 notes. A note is one short factual line taken from the summary. \
+Keep numbers, names and dates exactly. Never add facts that are not in the summary.
+- Merge sentences that say the same thing. Drop filler such as "The meeting reviewed \
+several topics".
+- Every substantive fact in the summary must land under exactly one topic.
+- Fix obvious speech-to-text misspellings of these known names when the intent is clear: \
+Klump & Scott (not Clump), Steyn (not Stein), LV Construction, HVN, MRK, Reseda, Uplifters, \
+Troost, Acama, Wickline, Francis, Crenshaw, Grady Lakamp, Derek Sanders, Tom Taggart, \
+Bob Kennedy, Chris Aiello, Chris Andresen, Schuyler Dietz. Otherwise keep the wording.
+"""
+
+TOPICS_TOOL = {
+    "name": "record_topics",
+    "description": "Record the meeting summary grouped by topic.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "topics": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "topic": {"type": "string"},
+                        "notes": {"type": "array", "items": {"type": "string"}},
+                    },
+                    "required": ["topic", "notes"],
+                },
+            },
+        },
+        "required": ["topics"],
+    },
+}
+
+
+def clean_topics(raw: Any) -> list[dict[str, Any]]:
+    """Keep only well-formed topics: a non-empty title and at least one note."""
+    out: list[dict[str, Any]] = []
+    for t in raw or []:
+        if not isinstance(t, dict):
+            continue
+        title = str(t.get("topic") or "").strip()
+        notes = [str(n).strip() for n in (t.get("notes") or []) if str(n).strip()]
+        if title and notes:
+            out.append({"topic": title, "notes": notes})
+    return out
+
+
 class AnthropicLike(Protocol):
     class messages:  # type: ignore[no-redef]
         @staticmethod
@@ -101,6 +155,32 @@ class Summarizer:
             ],
         )
         return _extract_tool_input(response)
+
+
+    def group_topics(self, summary: str, title: str = "L10 Meeting") -> list[dict[str, Any]]:
+        """Regroup a meeting summary (e.g. Read.ai's) into topics with notes."""
+        if not (summary or "").strip():
+            return []
+        client = self._get_client()
+        response = client.messages.create(
+            model=self.model,
+            max_tokens=2000,
+            system=[{"type": "text", "text": TOPICS_PROMPT, "cache_control": {"type": "ephemeral"}}],
+            tools=[TOPICS_TOOL],
+            tool_choice={"type": "tool", "name": "record_topics"},
+            messages=[{"role": "user", "content": f"Meeting title: {title}\n\nSummary:\n{summary}"}],
+        )
+        for block in getattr(response, "content", []) or []:
+            btype = getattr(block, "type", None) or (block.get("type") if isinstance(block, dict) else None)
+            if btype == "tool_use":
+                data = getattr(block, "input", None)
+                if data is None and isinstance(block, dict):
+                    data = block.get("input")
+                if isinstance(data, str):
+                    data = json.loads(data)
+                if isinstance(data, dict):
+                    return clean_topics(data.get("topics"))
+        return []
 
 
 def _extract_tool_input(response: Any) -> dict[str, Any]:
