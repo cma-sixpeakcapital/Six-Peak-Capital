@@ -574,3 +574,13 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .ch-f { font-weight:600; }
 .ch-json { font-size:0.72rem; white-space:pre-wrap; word-break:break-word; display:inline-block; max-width:640px; }
 .ch-hist { font-size:0.8rem; columns:2; }
+/* Header fit after adding Scorecard / Hit Rate / Changes + "You are" (9/2026) */
+.top-nav { gap:0.1rem; }
+.top-nav a { white-space:nowrap; padding:0.45rem 0.6rem; }
+.brand-title, .brand-date { white-space:nowrap; }
+@media (max-width:1400px) { .actor-pick span { display:none; } .top-nav a { padding:0.45rem 0.45rem; font-size:0.78rem; } }
+@media (max-width:1100px) { .brand-date { display:none; } }
+/* Scorecard: 6 trailing weeks; Owner and Target fixed, equal, single line (9/26) */
+.sc-tbl .sc-fixed { width:150px; min-width:150px; max-width:150px; white-space:nowrap; }
+.sc-tbl td.sc-fixed { overflow:hidden; text-overflow:ellipsis; }
+.sc-tbl .sc-c { min-width:56px; }

@@ -156,7 +156,7 @@ def _trend_down(metric: dict[str, Any], cells: list[dict[str, Any]]) -> bool:
     return False
 
 
-def build_view(model: Model, ref: date, start_week: date, weeks: int = 12) -> dict[str, Any]:
+def build_view(model: Model, ref: date, start_week: date, weeks: int = 6) -> dict[str, Any]:
     current = monday_of(ref)
     week_list = [current - timedelta(weeks=i) for i in range(weeks - 1, -1, -1)]
     cat_order: dict[str, float] = {}

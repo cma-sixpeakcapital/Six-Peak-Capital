@@ -302,7 +302,7 @@
     <div class="tbl-wrap">
     <table class="tbl sc-tbl">
         <thead><tr>
-            <th>Metric</th><th>Owner</th><th>Target</th><th class="sc-now">This week</th>
+            <th>Metric</th><th class="sc-fixed">Owner</th><th class="sc-fixed num">Target</th><th class="sc-now">This week</th>
             {% for w in v.weeks %}<th class="sc-wk">{{ w.month }}/{{ w.day }}</th>{% endfor %}
             <th>Updated</th>
         </tr></thead>
@@ -313,8 +313,8 @@
         {% set c = r.current %}
         <tr>
             <td class="strong sc-name" title="{{ r.definition }}">{{ r.name }}{% if r.streak_flag %} <span class="sc-flag" title="Red {{ r.streak }} weeks in a row: this is now an Issue">{{ r.streak }} wks red → Issue</span>{% endif %}{% if r.trend_down %} <span class="sc-trend" title="Two weeks of deterioration while still green">↓</span>{% endif %}{% if r.cadence == 'monthly_reported_weekly' %} <span class="sc-monthly" title="Reported monthly; the last value carries forward">monthly</span>{% endif %}</td>
-            <td>{{ r.owner_name }}</td>
-            <td class="num">{{ c.target_display }}{% if c.glide %} <span class="muted" title="Glidepath from the targets tab">(path)</span>{% endif %}</td>
+            <td class="sc-fixed">{{ r.owner_name }}</td>
+            <td class="num sc-fixed">{{ c.target_display }}{% if c.glide %} <span class="muted" title="Glidepath from the targets tab">(path)</span>{% endif %}</td>
             {% if c.state == 'pre' %}<td class="sc-now sc-pre">·</td>
             {% elif c.state == 'missing' %}<td class="sc-now sc-red"><b>not reported</b></td>
             {% else %}<td class="sc-now sc-{{ c.color }}{% if c.state == 'carried' %} sc-carried{% endif %}"><b>{{ c.display }}</b>{% if c.state == 'carried' %}<small> as of {{ c.as_of.month }}/{{ c.as_of.day }}</small>{% endif %}{% if c.state == 'stale' %}<small> stale</small>{% endif %}</td>
