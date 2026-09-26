@@ -442,6 +442,7 @@
             <div class="todo-body">
                 {% if t.owner %}<span class="owner">{{ t.owner }}</span>{% endif %}
                 <span class="task">{{ t.task }}</span>
+                <span class="todo-due{{ ' todo-due-tbd' if not (t.due and t.due|trim) }}">Due: {{ t.due|trim if (t.due and t.due|trim) else 'TBD' }}</span>
                 {% if t.source and t.source.type and t.source.type != 'manual' %}
                 <span class="source-tag" title="{{ t.source.type }}">{{ t.source.label or ('from ' ~ t.source.type.replace('_', ' ')) }}</span>
                 {% endif %}
@@ -457,7 +458,6 @@
                 </form>
             </div>
             <div class="todo-right">
-                {% if t.due %}<span class="due">{{ t.due }}</span>{% endif %}
                 <button type="button" class="pill-btn edit-todo-btn" data-todo-id="{{ t.id }}" title="Edit">Edit</button>
                 <button type="button" class="pill-btn danger delete-todo-btn" data-todo-id="{{ t.id }}" title="Delete">×</button>
             </div>

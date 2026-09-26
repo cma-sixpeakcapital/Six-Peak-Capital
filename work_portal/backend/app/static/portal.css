@@ -584,3 +584,6 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .sc-tbl .sc-fixed { width:150px; min-width:150px; max-width:150px; white-space:nowrap; }
 .sc-tbl td.sc-fixed { overflow:hidden; text-overflow:ellipsis; }
 .sc-tbl .sc-c { min-width:56px; }
+/* To-do due date on every card; TBD when blank (9/26) */
+.todo-body .todo-due { font-size:0.74rem; font-weight:600; color:var(--text-sub); }
+.todo-body .todo-due-tbd { color:#B45309; }
