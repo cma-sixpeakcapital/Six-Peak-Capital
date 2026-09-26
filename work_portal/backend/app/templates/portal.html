@@ -28,6 +28,28 @@
 <div class="bar {{ cls }}"><div class="bar-fill" style="width:{{ pct or 0 }}%"></div></div>
 {%- endmacro %}
 
+{% macro fmt_d(v) -%}
+{%- if v %}{% set d = v[:10] %}{{ d[5:7]|int }}/{{ d[8:10]|int }}{% endif -%}
+{%- endmacro %}
+
+{% macro todo_dates(t) -%}
+<span class="todo-dates">
+    {%- if t.created_at %}<span class="td-created">Created {{ fmt_d(t.created_at) }}</span>{% endif -%}
+    <span class="todo-due{{ ' todo-due-tbd' if not t.due }}{{ ' todo-overdue' if (t.due and t.due < today_iso and not t.completed) }}">Due: {% if t.due %}{{ fmt_d(t.due) }}{% else %}TBD{% endif %}</span>
+    {%- if t.original_due and t.due and t.original_due != t.due %}<span class="td-orig" title="Moved {{ (t.due_changes or [])|length }} time{{ 's' if (t.due_changes or [])|length != 1 }}">orig {{ fmt_d(t.original_due) }}</span>{% endif -%}
+    {%- if t.completed and t.completed_at %}<span class="td-done">Done {{ fmt_d(t.completed_at) }}</span>{% endif -%}
+</span>
+{%- endmacro %}
+
+{% macro owner_picker(selected) -%}
+<fieldset class="owner-pick">
+    <legend>Owner</legend>
+    {% for p in todo_people %}<label class="owner-chip"><input type="checkbox" name="owners" value="{{ p }}"{% if p in selected %} checked{% endif %} /> {{ p }}</label>{% endfor %}
+    {% set others = selected|reject('in', todo_people)|list %}
+    <input type="text" name="owner_other" class="owner-other" placeholder="Other (outside party)" value="{{ others|join(', ') }}" />
+</fieldset>
+{%- endmacro %}
+
 {% macro file_icon() -%}
 <svg class="file-ic" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
 {%- endmacro %}
@@ -147,6 +169,91 @@
 {%- endmacro %}
 
 
+{% macro frac(f) -%}
+{%- if f.d %}<b>{{ f.pct }}%</b> <span class="frac">{{ f.n }} / {{ f.d }}</span>{% else %}<span class="muted">—</span>{% endif -%}
+{%- endmacro %}
+
+{% macro todo_hit_rate(ts) -%}
+<div class="part-divider part-divider-sm" id="todo-hit-rate"><span>To-Dos</span></div>
+<div class="td-kpis">
+    <div class="card td-headline {{ 'hit' if ts.headline_hit else ('miss' if ts.headline.d else '') }}">
+        <span class="section-label">7-day completion · last 7 days</span>
+        <div class="td-big">{% if ts.headline.d %}{{ ts.headline.pct }}%{% else %}—{% endif %}</div>
+        <div class="td-sub">{% if ts.headline.d %}{{ ts.headline.n }} / {{ ts.headline.d }} done within 7 days{% else %}No to-dos reached their 7-day mark yet{% endif %} · standard {{ ts.standard_pct }}%</div>
+    </div>
+    <div class="card td-stat"><span class="section-label">On time vs original due</span><div class="td-mid">{{ frac(ts.on_time) }}</div><div class="td-sub">this quarter · pushing the date doesn't count</div></div>
+    <div class="card td-stat"><span class="section-label">Open</span><div class="td-mid"><b>{{ ts.open }}</b></div><div class="td-sub">avg age {% if ts.avg_age is not none %}{{ ts.avg_age }} days{% else %}—{% endif %}</div></div>
+    <div class="card td-stat"><span class="section-label">Overdue</span><div class="td-mid"><b class="{{ 'td-bad' if ts.overdue else '' }}">{{ ts.overdue }}</b></div><div class="td-sub">past current due date</div></div>
+    <div class="card td-stat"><span class="section-label">Dropped</span><div class="td-mid"><b>{{ ts.dropped }}</b></div><div class="td-sub">this quarter · not in any rate</div></div>
+</div>
+
+<div class="sb-grid">
+    <div class="card sb-card">
+        <div class="card-head"><span class="section-label">Trend</span><h3>7-day completion · trailing 13 weeks</h3></div>
+        {% set W, H, L, R, T, B = 600, 170, 36, 12, 12, 28 %}
+        {% set n = ts.trend|length %}
+        {% set ns = namespace(d='', pen=false) %}
+        {% for p in ts.trend %}
+            {% set x = L + loop.index0 * (W - L - R) / (n - 1) %}
+            {% if p.pct is not none %}{% set y = T + (100 - p.pct) * (H - T - B) / 100 %}
+                {% set ns.d = ns.d ~ ('L' if ns.pen else 'M') ~ (x|round(1)) ~ ',' ~ (y|round(1)) ~ ' ' %}{% set ns.pen = true %}
+            {% else %}{% set ns.pen = false %}{% endif %}
+        {% endfor %}
+        <svg class="td-trend" viewBox="0 0 {{ W }} {{ H }}" role="img" aria-label="7-day completion rate by week, last 13 weeks, against the {{ ts.standard_pct }}% standard">
+            {% for g in [0, 50, 100] %}{% set gy = T + (100 - g) * (H - T - B) / 100 %}
+            <line class="tt-grid" x1="{{ L }}" x2="{{ W - R }}" y1="{{ gy }}" y2="{{ gy }}"/><text class="tt-ax" x="{{ L - 6 }}" y="{{ gy + 4 }}" text-anchor="end">{{ g }}%</text>{% endfor %}
+            {% set sy = T + (100 - ts.standard_pct) * (H - T - B) / 100 %}
+            <line class="tt-std" x1="{{ L }}" x2="{{ W - R }}" y1="{{ sy }}" y2="{{ sy }}"/><text class="tt-std-l" x="{{ W - R }}" y="{{ sy - 4 }}" text-anchor="end">{{ ts.standard_pct }}% standard</text>
+            {% if ns.d %}<path class="tt-line" d="{{ ns.d }}"/>{% endif %}
+            {% for p in ts.trend %}{% set x = L + loop.index0 * (W - L - R) / (n - 1) %}
+                {% if p.pct is not none %}{% set y = T + (100 - p.pct) * (H - T - B) / 100 %}<circle class="tt-pt {{ 'hit' if p.pct >= ts.standard_pct else 'miss' }}" cx="{{ x|round(1) }}" cy="{{ y|round(1) }}" r="4"><title>Week ending {{ fmt_d(p.week_ending) }}: {{ p.pct }}% ({{ p.n }} / {{ p.d }})</title></circle>{% endif %}
+                {% if loop.index0 % 2 == 0 or loop.last %}<text class="tt-ax" x="{{ x|round(1) }}" y="{{ H - 8 }}" text-anchor="middle">{{ fmt_d(p.week_ending) }}</text>{% endif %}
+            {% endfor %}
+        </svg>
+        <p class="sb-note muted">Each point: to-dos whose 7-day mark fell in the week ending that Tuesday. Tracking began {{ fmt_d(ts.tracking_from) }}; earlier weeks are blank.</p>
+    </div>
+    <div class="card sb-card">
+        <div class="card-head"><span class="section-label">Aging</span><h3>Open to-dos by age</h3></div>
+        {% set mx = namespace(v=1) %}{% for b in ts.buckets %}{% if b.count > mx.v %}{% set mx.v = b.count %}{% endif %}{% endfor %}
+        <ul class="age-list">
+            {% for b in ts.buckets %}
+            <li><span class="age-l">{{ b.label }} days</span>{{ bar((100 * b.count / mx.v)|round|int, 'bar-sm' ~ (' bar-warn' if loop.index0 >= 2 else '')) }}<span class="age-n">{{ b.count }}</span></li>
+            {% endfor %}
+        </ul>
+        <p class="sb-note muted">Age = days since the to-do was created.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head row-between">
+        <div><span class="section-label">Leaderboard</span><h3>To-dos by owner · 7-day completion, trailing 13 weeks</h3></div>
+        <span class="muted sb-legend">shared to-dos credit every owner · ranked with {{ ts.min_ranked }}+ to-dos · dropped excluded from rates</span>
+    </div>
+    {% if ts.owners %}
+    <div class="tbl-wrap">
+    <table class="tbl lb-tbl">
+        <thead><tr><th class="num">#</th><th>Owner</th><th>7-day completion</th><th class="num">%</th><th>On time</th><th class="num">Open</th><th class="num">Overdue</th><th class="num">Oldest</th><th class="num">Dropped</th></tr></thead>
+        <tbody>
+        {% for r in ts.owners %}
+        <tr class="{{ 'lb-top' if r.rank == 1 else '' }}{{ ' lb-unranked' if not r.ranked else '' }}">
+            <td class="num rank-cell">{{ r.rank if r.ranked else '' }}</td>
+            <td class="strong">{{ r.owner }}</td>
+            <td class="lb-bar">{{ bar(r.rate.pct, 'bar-sm') }}<span class="lb-n">{{ r.rate.n }}/{{ r.rate.d }}</span></td>
+            <td class="num">{% if r.rate.pct is not none %}{{ r.rate.pct }}%{% else %}<span class="muted">—</span>{% endif %}</td>
+            <td>{{ frac(r.on_time) }}</td>
+            <td class="num">{{ r.open }}</td>
+            <td class="num{{ ' td-bad' if r.overdue else '' }}">{{ r.overdue }}</td>
+            <td class="num">{% if r.oldest_age is not none %}{{ r.oldest_age }}d{% else %}<span class="muted">—</span>{% endif %}</td>
+            <td class="num">{{ r.dropped }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}<p class="muted">No to-dos yet.</p>{% endif %}
+</div>
+{%- endmacro %}
+
 {% macro scoreboard_section() -%}
 {% if scoreboard and scoreboard.quarters %}
 <section class="rocks-section" id="scoreboard">
@@ -237,6 +344,8 @@
         </div>
     </div>
     {% endif %}
+
+    {% if todo_stats %}{{ todo_hit_rate(todo_stats) }}{% endif %}
 </section>
 {% endif %}
 {%- endmacro %}
@@ -406,6 +515,8 @@
 </section>
 {% endif %}
 
+<div class="part-divider" id="todos-divider"><span>To-Dos</span></div>
+
 <section class="card" id="todos">
     <div class="card-head row-between">
         <div>
@@ -415,10 +526,10 @@
         <button type="button" class="btn-primary small" id="add-todo-open">+ Add To-Do</button>
     </div>
 
-    <form class="add-form hidden" id="add-todo-form" autocomplete="off">
-        <input type="text" name="owner" placeholder="Owner" />
+    <form class="add-form todo-form hidden" id="add-todo-form" autocomplete="off">
+        {{ owner_picker([]) }}
         <input type="text" name="task" placeholder="Task (required)" required />
-        <input type="text" name="due" placeholder="Due (e.g. 2026-04-25)" />
+        <label class="due-field">Due <input type="date" name="due" /> <span class="muted">blank = 7 days</span></label>
         <div class="form-actions">
             <button type="submit" class="btn-primary small">Save</button>
             <button type="button" class="pill-btn" id="add-todo-cancel">Cancel</button>
@@ -433,26 +544,34 @@
                     aria-label="Toggle complete"
                     title="Click to toggle complete">{% if t.completed %}✓{% else %}◻{% endif %}</button>
             <div class="todo-body">
-                {% if t.owner %}<span class="owner">{{ t.owner }}</span>{% endif %}
+                {% if t.owner %}<span class="owner">{{ t.owner }}</span>{% else %}<span class="owner owner-none">Unassigned</span>{% endif %}
                 <span class="task">{{ t.task }}</span>
-                <span class="todo-due{{ ' todo-due-tbd' if not (t.due and t.due|trim) }}">Due: {{ t.due|trim if (t.due and t.due|trim) else 'TBD' }}</span>
+                {{ todo_dates(t) }}
                 {% if t.source and t.source.type and t.source.type != 'manual' %}
                 <span class="source-tag" title="{{ t.source.type }}">{{ t.source.label or ('from ' ~ t.source.type.replace('_', ' ')) }}</span>
                 {% endif %}
                 {% if t.detail %}<div class="todo-detail">{{ t.detail }}</div>{% endif %}
-                <form class="add-form edit-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
-                    <input type="text" name="owner" placeholder="Owner" value="{{ t.owner or '' }}" />
+                <form class="add-form todo-form edit-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
+                    {{ owner_picker(t.owners or []) }}
                     <input type="text" name="task" placeholder="Task" value="{{ t.task or '' }}" required />
-                    <input type="text" name="due" placeholder="Due" value="{{ t.due or '' }}" />
+                    <label class="due-field">Due <input type="date" name="due" value="{{ t.due or '' }}" /></label>
                     <div class="form-actions">
                         <button type="submit" class="btn-primary small">Save</button>
                         <button type="button" class="pill-btn cancel-edit-todo">Cancel</button>
+                        <button type="button" class="pill-btn danger delete-todo-btn" data-todo-id="{{ t.id }}" title="Only for a to-do entered by mistake. To stop working on it, use Drop.">Delete (entered by mistake)</button>
+                    </div>
+                </form>
+                <form class="add-form drop-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
+                    <input type="text" name="reason" placeholder="Why drop it? (optional)" maxlength="300" />
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary small">Drop to-do</button>
+                        <button type="button" class="pill-btn cancel-drop-todo">Cancel</button>
                     </div>
                 </form>
             </div>
             <div class="todo-right">
                 <button type="button" class="pill-btn edit-todo-btn" data-todo-id="{{ t.id }}" title="Edit">Edit</button>
-                <button type="button" class="pill-btn danger delete-todo-btn" data-todo-id="{{ t.id }}" title="Delete">×</button>
+                {% if not t.completed %}<button type="button" class="pill-btn drop-todo-btn" data-todo-id="{{ t.id }}" title="Drop: stop tracking it. Counted separately; not in the completion rate.">Drop</button>{% endif %}
             </div>
         </li>
         {% endfor %}
@@ -460,7 +579,22 @@
     {% else %}
     <p class="muted">No to-dos yet. Move action items or rocks here, or click + Add To-Do.</p>
     {% endif %}
+
+    {% if dropped_todos %}
+    <details class="dropped-list">
+        <summary>Dropped this quarter ({{ dropped_todos|length }})</summary>
+        <ul>
+            {% for t in dropped_todos %}
+            <li><span class="owner">{{ t.owner or 'Unassigned' }}</span> {{ t.task }}
+                <span class="muted">· dropped {{ fmt_d(t.dropped_at) }}{% if t.dropped_by %} by {{ t.dropped_by }}{% endif %}{% if t.drop_reason %} · “{{ t.drop_reason }}”{% endif %}</span>
+                <button type="button" class="pill-btn restore-todo-btn" data-todo-id="{{ t.id }}">Restore</button></li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
 </section>
+
+{% if current_quarter %}<div class="part-divider" id="rocks-divider"><span>{{ current_quarter.label.split(' ')[0] if current_quarter.label else '' }} Rocks</span></div>{% endif %}
 
 <section class="rocks-section" id="rocks">
     {% if current_quarter %}
