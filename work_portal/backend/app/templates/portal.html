@@ -150,7 +150,7 @@
 {% if scoreboard and scoreboard.quarters %}
 <section class="rocks-section" id="scoreboard">
     <div class="section-heading">
-        <span class="section-label">Scoreboard</span>
+        <span class="section-label">Hit Rate</span>
         <h2>Rock hit-rate — company and by person</h2>
     </div>
 
@@ -240,6 +240,99 @@
 {% endif %}
 {%- endmacro %}
 
+
+{% macro sc_cell(c, unit) -%}
+{% if c.state == 'pre' %}<td class="sc-c sc-pre" title="Before the first live week">·</td>
+{% elif c.state == 'missing' %}<td class="sc-c sc-red" title="Week of {{ c.week.month }}/{{ c.week.day }}: not reported · target {{ c.target_display }}">–</td>
+{% else %}<td class="sc-c sc-{{ c.color }}{% if c.state == 'carried' %} sc-carried{% endif %}" title="Week of {{ c.week.month }}/{{ c.week.day }}: {{ c.display }}{% if c.state == 'carried' %} (carried from {{ c.as_of.month }}/{{ c.as_of.day }}){% endif %}{% if c.state == 'stale' %} (stale){% endif %} · target {{ c.target_display }}{% if c.note %} · {{ c.note }}{% endif %}">{{ c.display }}</td>
+{% endif %}
+{%- endmacro %}
+
+{% macro scorecard_section() -%}
+<section class="rocks-section" id="scorecard">
+    <div class="section-heading row-between">
+        <div>
+            <span class="section-label">Scorecard</span>
+            <h2>Weekly measurables{% if scorecard.available %} · week of {{ scorecard.view.week_of.strftime('%b') }} {{ scorecard.view.week_of.day }}{% endif %}</h2>
+        </div>
+        <div class="sc-actions">
+            <button type="button" class="pill-btn" id="scorecard-refresh" title="Pull the latest numbers from the Sheet now">↻ Refresh from Sheet</button>
+            {% if sheet_edit_url %}<a class="pill-btn" href="{{ sheet_edit_url }}" target="_blank" rel="noopener">Open Sheet ↗</a>{% endif %}
+        </div>
+    </div>
+
+    {% if not scorecard.available %}
+    <div class="card"><p class="muted">Scorecard unavailable: {{ scorecard.fetch_error }}. Numbers are entered on the <b>actuals</b> tab of the Six Peak L10 Data Sheet.</p></div>
+    {% else %}
+    {% set v = scorecard.view %}
+    {% set snap = scorecard.snapshot %}
+    <p class="sc-meta muted">
+        {% if scorecard.frozen %}<span class="sc-badge sc-badge-frozen">Meeting snapshot</span> Frozen {{ snap.taken_at_display }}{% if snap.kind == 'manual' %} · refreshed{% if snap.refreshed_by %} by {{ snap.refreshed_by }}{% endif %}{% endif %}. Sheet edits after that don't change what the meeting sees.
+        {% else %}Data as of {{ snap.taken_at_display }}{% if snap.kind == 'manual' and snap.refreshed_by %} · refreshed by {{ snap.refreshed_by }}{% endif %}.{% endif %}
+        {% if scorecard.fetch_error %}<span class="sc-warn">Couldn't reach the Sheet just now ({{ scorecard.fetch_error }}); showing the last good data.</span>{% endif %}
+    </p>
+
+    {% if v.pre_launch %}
+    <div class="card sc-note"><b>First live week is {{ v.start_week.strftime('%b') }} {{ v.start_week.day }}.</b> Owners enter one number per metric on the Sheet's <b>actuals</b> tab by Monday (week_of = that Monday). Anything missing at meeting time shows red, "not reported".</div>
+    {% else %}
+    <div class="sc-chips">
+        <span class="sc-chip sc-green">{{ v.counts.green }} green</span>
+        <span class="sc-chip sc-yellow">{{ v.counts.yellow }} yellow</span>
+        <span class="sc-chip sc-red">{{ v.counts.red }} red</span>
+        {% if v.counts.grey %}<span class="sc-chip sc-grey">{{ v.counts.grey }} no target</span>{% endif %}
+        {% if v.counts.missing %}<span class="sc-chip sc-missing">{{ v.counts.missing }} not reported</span>{% endif %}
+    </div>
+    {% if v.missing_by_owner %}
+    <p class="sc-missing-list"><b>Missing numbers:</b>
+        {% for owner, names in v.missing_by_owner.items() %}<span class="sc-owner" title="{{ names|join(', ') }}">{{ owner }} ({{ names|length }})</span>{% if not loop.last %} · {% endif %}{% endfor %}
+    </p>
+    {% endif %}
+    {% endif %}
+
+    {% if v.errors or v.warnings %}
+    <details class="sc-errors" {% if v.errors %}open{% endif %}>
+        <summary>{{ v.errors|length }} Sheet row{{ 's' if v.errors|length != 1 }} rejected{% if v.warnings %} · {{ v.warnings|length }} warning{{ 's' if v.warnings|length != 1 }}{% endif %}</summary>
+        <table class="tbl"><thead><tr><th>Tab</th><th class="num">Row</th><th>Problem</th></tr></thead><tbody>
+        {% for e in v.errors + v.warnings %}<tr class="{{ 'sc-err-row' if e.level == 'error' else '' }}"><td>{{ e.tab }}</td><td class="num">{{ e.row or '' }}</td><td>{{ e.reason }}</td></tr>{% endfor %}
+        </tbody></table>
+    </details>
+    {% endif %}
+
+    <div class="card sc-card">
+    <div class="tbl-wrap">
+    <table class="tbl sc-tbl">
+        <thead><tr>
+            <th>Metric</th><th>Owner</th><th>Target</th><th class="sc-now">This week</th>
+            {% for w in v.weeks %}<th class="sc-wk">{{ w.month }}/{{ w.day }}</th>{% endfor %}
+            <th>Updated</th>
+        </tr></thead>
+        <tbody>
+        {% for cat in v.categories %}
+        <tr class="sc-cat"><td colspan="{{ 5 + v.weeks|length }}">{{ cat.name }}</td></tr>
+        {% for r in cat.rows %}
+        {% set c = r.current %}
+        <tr>
+            <td class="strong sc-name" title="{{ r.definition }}">{{ r.name }}{% if r.streak_flag %} <span class="sc-flag" title="Red {{ r.streak }} weeks in a row: this is now an Issue">{{ r.streak }} wks red → Issue</span>{% endif %}{% if r.trend_down %} <span class="sc-trend" title="Two weeks of deterioration while still green">↓</span>{% endif %}{% if r.cadence == 'monthly_reported_weekly' %} <span class="sc-monthly" title="Reported monthly; the last value carries forward">monthly</span>{% endif %}</td>
+            <td>{{ r.owner_name }}</td>
+            <td class="num">{{ c.target_display }}{% if c.glide %} <span class="muted" title="Glidepath from the targets tab">(path)</span>{% endif %}</td>
+            {% if c.state == 'pre' %}<td class="sc-now sc-pre">·</td>
+            {% elif c.state == 'missing' %}<td class="sc-now sc-red"><b>not reported</b></td>
+            {% else %}<td class="sc-now sc-{{ c.color }}{% if c.state == 'carried' %} sc-carried{% endif %}"><b>{{ c.display }}</b>{% if c.state == 'carried' %}<small> as of {{ c.as_of.month }}/{{ c.as_of.day }}</small>{% endif %}{% if c.state == 'stale' %}<small> stale</small>{% endif %}</td>
+            {% endif %}
+            {% for cell in r.cells %}{{ sc_cell(cell, r.unit) }}{% endfor %}
+            <td class="muted sc-upd">{{ r.last_updated[:10] if r.last_updated else '—' }}</td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <p class="sc-legend muted">Green meets target · yellow is inside the watch band · red is off target or not reported and drops to IDS · grey has no target set yet · "·" is before the first live week. Hover a metric for its definition.</p>
+    </div>
+    {% endif %}
+</section>
+{%- endmacro %}
+
 {% block content %}
 <section class="hero">
     <span class="section-label">This Week · Level 10</span>
@@ -263,6 +356,8 @@
     <div class="kpi"><div class="v" id="kpi-todos-v">{{ kpis.todos_open }}</div><div class="l">Open To-Dos</div><div class="track"><div class="fill" id="kpi-todos-fill" data-pct="{{ kpis.todos_pct }}"></div></div></div>
     <div class="kpi"><div class="v" id="kpi-cats-v">{% if scoreboard.last_closed %}{{ scoreboard.last_closed.official.complete if scoreboard.last_closed.official else scoreboard.last_closed.complete }}<small>/{{ scoreboard.last_closed.official.total if scoreboard.last_closed.official else scoreboard.last_closed.total }}</small>{% else %}{{ kpis.owners }}{% endif %}</div><div class="l">{% if scoreboard.last_closed %}{{ scoreboard.last_closed.label }} Result{% else %}Rock Owners{% endif %}</div><div class="track"><div class="fill" id="kpi-cats-fill" data-pct="{% if scoreboard.last_closed %}{{ (100 * scoreboard.last_closed.official.complete / scoreboard.last_closed.official.total)|round|int if scoreboard.last_closed.official else scoreboard.last_closed.pct }}{% else %}100{% endif %}"></div></div></div>
 </div>
+
+{{ scorecard_section() }}
 
 {% if latest %}
 <section class="card">

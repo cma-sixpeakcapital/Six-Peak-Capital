@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Change log — L10 Weekly{% endblock %}
+
+{% macro show(v) -%}
+{%- if v is none -%}<span class="muted">(empty)</span>
+{%- elif v is mapping or (v is iterable and v is not string) -%}<code class="ch-json">{{ v|tojson }}</code>
+{%- else -%}{{ v }}{%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+<section class="hero hero-slim">
+    <span class="section-label">Change log</span>
+    <h1 class="hero-title">Every edit made in the portal</h1>
+    <p class="hero-sub">Anyone with the link can edit rocks and to-dos. Each edit is recorded here with what changed. The name is self-reported (the "You are" picker), so it is not proof of who made the change; the IP address and browser are recorded alongside it.</p>
+</section>
+
+<section class="card">
+    <form class="ch-filter" method="get" action="{{ url_for('changes_page') }}">
+        <input type="text" name="actor" placeholder="Person" value="{{ args.get('actor', '') }}" />
+        <input type="text" name="item" placeholder="Item or text (e.g. Reseda)" value="{{ args.get('item', '') }}" />
+        <input type="date" name="since" value="{{ args.get('since', '') }}" title="From" />
+        <input type="date" name="until" value="{{ args.get('until', '') }}" title="To" />
+        <button type="submit" class="btn-primary small">Filter</button>
+        <a class="pill-btn" href="{{ url_for('changes_page') }}">Clear</a>
+    </form>
+
+    {% if rows %}
+    <div class="tbl-wrap">
+    <table class="tbl ch-tbl">
+        <thead><tr><th>When (ET)</th><th>Who</th><th>Action</th><th>What changed</th></tr></thead>
+        <tbody>
+        {% for r in rows %}
+        <tr>
+            <td class="ch-when">{{ r.at_display }}</td>
+            <td>{% if r.actor %}<b>{{ r.actor }}</b>{% else %}<span class="muted">name not picked</span>{% endif %}<div class="muted ch-ip" title="{{ r.user_agent }}">{{ r.ip }}</div></td>
+            <td>{{ r.action }}</td>
+            <td>
+                {% if not r.changes %}<span class="muted">no rock or to-do content changed</span>{% endif %}
+                {% for c in r.changes %}
+                <div class="ch-item">
+                    <span class="ch-op ch-op-{{ c.op }}">{{ c.op }}</span>
+                    <span class="ch-type">{{ c.type|replace('_', ' ') }}</span>
+                    <b>{{ c.title }}</b>
+                    {% if c.op == 'changed' %}
+                    <ul class="ch-fields">
+                        {% for f in c.fields %}
+                        <li><span class="ch-f">{{ f }}</span>: {{ show(c.before[f]) }} → {{ show(c.after[f]) }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% elif c.op == 'removed' %}
+                    <details><summary class="muted">what was removed</summary><code class="ch-json">{{ c.before|tojson }}</code></details>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="muted">No changes recorded{% if args %} for this filter{% endif %} yet.</p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <div class="card-head"><span class="section-label">Restore</span><h2>Saved versions of the rocks and to-dos</h2></div>
+    <p class="muted">Every save keeps the version it replaced. To undo a mistake (for example a deleted rock), restore from the server shell:
+        <code>python scripts/restore_rocks_doc.py --at "2026-09-29T10:15"</code> (preview), then add <code>--apply</code>. The restore is itself saved, so it can be undone the same way.</p>
+    {% if history %}
+    <ul class="ch-hist">{% for h in history %}<li>version #{{ h.id }} · replaced {{ h.saved_at[:19].replace('T', ' ') }} UTC</li>{% endfor %}</ul>
+    {% endif %}
+</section>
+{% endblock %}
