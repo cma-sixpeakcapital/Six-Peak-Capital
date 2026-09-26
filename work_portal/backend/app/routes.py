@@ -3,12 +3,17 @@ from typing import Any, Callable
 
 from flask import Flask, abort, current_app, jsonify, render_template, request
 
+from datetime import date, datetime
+
+from .audit import actor_name, register_audit
 from .ingest import IngestService
 from .readai import ReadAIClient
 from .rock_files import FileArchivedError, FileValidationError
 from .scoring import scoreboard as build_scoreboard, current_quarter, quarters as list_quarters
 from .storage import bullet_split
 from .summarizer import Summarizer
+from .scorecard.service import ET, ScorecardService
+from .scorecard.sheet import SheetFetchError, make_fetcher, parse_gids
 
 
 def _group_by_category(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
@@ -168,6 +173,15 @@ def _collect_archive(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def _actor_names(rocks_data: dict[str, Any]) -> list[str]:
+    """Names offered in the "You are" picker: the roster on the rocks document."""
+    names = [p.get("name") for p in rocks_data.get("team", []) or [] if p.get("name")]
+    for owner in (rocks_data.get("rocks") or {}):
+        if owner not in names:
+            names.append(owner)
+    return sorted(set(names), key=str.lower)
+
+
 def _get_storage():
     return current_app.config["STORAGE"]
 
@@ -187,6 +201,40 @@ def _get_ingest_service() -> IngestService:
         readai=readai_client,
         title_pattern=cfg.ingest_title_pattern,
     )
+
+
+def _get_scorecard_service() -> ScorecardService:
+    cfg = current_app.config["APP_CONFIG"]
+    fetcher = current_app.config.get("SCORECARD_FETCHER")
+    if fetcher is None and cfg.sheet_pub_url:
+        fetcher = make_fetcher(cfg.sheet_pub_url, parse_gids(cfg.sheet_gids))
+    try:
+        start = date.fromisoformat(cfg.scorecard_start_week)
+    except ValueError:
+        start = date(2026, 9, 28)
+    return ScorecardService(
+        storage=_get_storage(), fetcher=fetcher, start_week=start,
+        now_fn=current_app.config.get("SCORECARD_NOW"),
+    )
+
+
+def _scorecard_or_error() -> dict[str, Any]:
+    """The Scorecard must never take the page down."""
+    try:
+        return _get_scorecard_service().current()
+    except Exception as exc:  # pragma: no cover - defensive
+        current_app.logger.exception("scorecard failed")
+        return {"available": False, "fetch_error": f"{type(exc).__name__}: {exc}"}
+
+
+def _jsonable(obj: Any) -> Any:
+    if isinstance(obj, dict):
+        return {str(k): _jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_jsonable(v) for v in obj]
+    if isinstance(obj, (date, datetime)):
+        return obj.isoformat()
+    return obj
 
 
 def _truthy(value: Any) -> bool:
@@ -209,6 +257,8 @@ def require_api_key(fn: Callable[..., Any]) -> Callable[..., Any]:
 
 
 def register_routes(app: Flask) -> None:
+    register_audit(app, _get_storage)
+
     @app.route("/health")
     def health() -> Any:
         return {"status": "ok"}
@@ -244,7 +294,64 @@ def register_routes(app: Flask) -> None:
             closed_quarters=closed_qs,
             quarter_views=[_quarter_view(rocks_data, q["id"]) for q in closed_qs],
             parked_issues=rocks_data.get("parked_issues") or [],
+            scorecard=_scorecard_or_error(),
+            sheet_edit_url=current_app.config["APP_CONFIG"].sheet_edit_url,
+            actor_names=_actor_names(rocks_data),
         )
+
+    @app.route("/api/scorecard")
+    def api_scorecard() -> Any:
+        return jsonify(_jsonable(_scorecard_or_error()))
+
+    @app.route("/api/scorecard/refresh", methods=["POST"])
+    def api_scorecard_refresh() -> Any:
+        try:
+            meta = _get_scorecard_service().refresh(actor_name())
+        except SheetFetchError as exc:
+            abort(502, description=f"Could not read the Sheet: {exc}")
+        return jsonify({"status": "ok", "snapshot": meta})
+
+    @app.route("/api/jobs/ingest_scorecard", methods=["POST"])
+    @require_api_key
+    def api_ingest_scorecard() -> Any:
+        """Tuesday meeting freeze (kind=meeting, default) or an on-demand pull
+        (kind=manual). Called hourly by the GitHub Action; the freeze acts once,
+        on Tuesday at/after 8:00 a.m. ET. ?force=true freezes now."""
+        svc = _get_scorecard_service()
+        kind = (request.args.get("kind") or "meeting").strip()
+        try:
+            if kind == "meeting":
+                result = svc.freeze(force=_truthy(request.args.get("force")))
+            else:
+                result = {"status": "fetched", "snapshot": svc.refresh("api")}
+        except SheetFetchError as exc:
+            abort(502, description=f"Could not read the Sheet: {exc}")
+        return jsonify(result)
+
+    @app.route("/changes")
+    def changes_page() -> Any:
+        args = request.args
+        since = (args.get("since") or "").strip()
+        until = (args.get("until") or "").strip()
+        rows = _get_storage().list_audit(
+            limit=int(args.get("limit") or 300),
+            actor=(args.get("actor") or "").strip() or None,
+            text=(args.get("item") or "").strip() or None,
+            since=since or None,
+            until=(until + "T23:59:59") if until and "T" not in until else (until or None),
+        )
+        for r in rows:
+            try:
+                at = datetime.fromisoformat(r["at"]).astimezone(ET)
+                r["at_display"] = at.strftime("%a %b ") + str(at.day) + at.strftime(", %I:%M %p").replace(" 0", " ")
+            except (ValueError, TypeError):
+                r["at_display"] = r.get("at", "")
+        history = _get_storage().list_rocks_history(limit=10)
+        return render_template("changes.html", rows=rows, args=args, history=history)
+
+    @app.route("/api/changes")
+    def api_changes() -> Any:
+        return jsonify({"changes": _get_storage().list_audit(limit=int(request.args.get("limit") or 100))})
 
     @app.route("/meetings/<meeting_id>")
     def meeting_detail(meeting_id: str) -> Any:

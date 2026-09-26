@@ -3,6 +3,20 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+# Published (read-only) link to the "Six Peak L10 Data" Sheet, owned by Bob
+# Kennedy, published by Chris Aiello 9/25/2026 (entire document, auto-republish).
+DEFAULT_SHEET_PUB_URL = (
+    "https://docs.google.com/spreadsheets/d/e/"
+    "2PACX-1vQ-latgOFWYtor54SaFcdn8lX8aDpxRLF-HJEdX24FfHmENU-9QhJ1SgQVJns5l1ORfhu6GuER1XAgZ"
+)
+# Tab ids (the gid= in each tab's URL). A new tab needs its gid added here or in
+# the L10_SHEET_GIDS env var.
+DEFAULT_SHEET_GIDS = "metrics=1795679728,actuals=164962406,targets=623785428,people=1276387306"
+DEFAULT_SHEET_EDIT_URL = (
+    "https://docs.google.com/spreadsheets/d/1i40lTWxp5oBXuvnOj0_BjD4xEOSWdGuJI1jeLvl8pJU/edit"
+)
+
+
 def _bool_env(name: str, default: bool) -> bool:
     raw = os.environ.get(name)
     if raw is None:
@@ -65,6 +79,13 @@ class Config:
     followup_reminder_min_age_days: int = 3
     followup_reminder_max_age_days: int = 10
     followup_reminder_dry_run: bool = True
+    # Weekly Scorecard (Phase 1, 9/2026). The portal reads the "Six Peak L10
+    # Data" Sheet through its Publish-to-web link, one CSV per tab. Empty
+    # sheet_pub_url disables the fetch (tests). None of these are secrets.
+    sheet_pub_url: str = ""
+    sheet_gids: str = ""
+    sheet_edit_url: str = ""
+    scorecard_start_week: str = "2026-09-28"
 
     def __post_init__(self) -> None:
         # Derive the list from the legacy single ID when callers (e.g. tests)
@@ -135,4 +156,8 @@ class Config:
                 env("FOLLOWUP_REMINDER_MAX_AGE_DAYS", "10")
             ),
             followup_reminder_dry_run=env_bool("FOLLOWUP_REMINDER_DRY_RUN", True),
+            sheet_pub_url=env("SHEET_PUB_URL", DEFAULT_SHEET_PUB_URL),
+            sheet_gids=env("SHEET_GIDS", DEFAULT_SHEET_GIDS),
+            sheet_edit_url=env("SHEET_EDIT_URL", DEFAULT_SHEET_EDIT_URL),
+            scorecard_start_week=env("SCORECARD_START_WEEK", "2026-09-28"),
         )

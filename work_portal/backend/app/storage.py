@@ -82,8 +82,64 @@ class Storage:
 
     def save_rocks(self, data: dict[str, Any]) -> None:
         self.rocks_path.parent.mkdir(parents=True, exist_ok=True)
+        # Keep the version being replaced (change log / restore). Mirrors the
+        # rocks_doc_history table in PostgresStorage.
+        if self.rocks_path.exists():
+            prior = json.loads(self.rocks_path.read_text(encoding="utf-8"))
+            _append_jsonl(self.data_dir / "rocks_history.jsonl", {
+                "id": _new_id("h"), "saved_at": _utcnow_iso(), "data": prior,
+            })
         with self.rocks_path.open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, sort_keys=True)
+
+    # ---- rocks document history (restore) ---------------------------------
+    def list_rocks_history(self, limit: int | None = 50, ascending: bool = False) -> list[dict[str, Any]]:
+        rows = [{"id": r["id"], "saved_at": r["saved_at"]}
+                for r in _read_jsonl(self.data_dir / "rocks_history.jsonl")]
+        rows.sort(key=lambda r: r["saved_at"], reverse=not ascending)
+        return rows[:limit] if limit else rows
+
+    def get_rocks_history(self, history_id: str) -> dict[str, Any] | None:
+        for r in _read_jsonl(self.data_dir / "rocks_history.jsonl"):
+            if r["id"] == history_id:
+                return r
+        return None
+
+    # ---- change log --------------------------------------------------------
+    def record_audit(self, entry: dict[str, Any]) -> None:
+        entry = dict(entry)
+        entry.setdefault("id", _new_id("a"))
+        entry.setdefault("at", _utcnow_iso())
+        _append_jsonl(self.data_dir / "audit.jsonl", entry)
+
+    def list_audit(self, limit: int = 200, actor: str | None = None, text: str | None = None,
+                   since: str | None = None, until: str | None = None) -> list[dict[str, Any]]:
+        rows = _read_jsonl(self.data_dir / "audit.jsonl")
+        rows.sort(key=lambda r: r.get("at", ""), reverse=True)
+        return [r for r in rows if _audit_match(r, actor, text, since, until)][:limit]
+
+    # ---- scorecard snapshots ----------------------------------------------
+    def save_scorecard_snapshot(self, kind: str, payload: dict[str, Any],
+                                refreshed_by: str = "",
+                                taken_at: datetime | None = None) -> dict[str, Any]:
+        stamp = taken_at.isoformat() if taken_at else _utcnow_iso()
+        row = {"id": _new_id("s"), "taken_at": stamp, "kind": kind,
+               "refreshed_by": refreshed_by, "payload": payload}
+        _append_jsonl(self.data_dir / "scorecard_snapshots.jsonl", row)
+        return _snap_out(row)
+
+    def latest_scorecard_snapshot(self, kinds: tuple[str, ...] | None = None,
+                                  since: datetime | None = None) -> dict[str, Any] | None:
+        best = None
+        for r in _read_jsonl(self.data_dir / "scorecard_snapshots.jsonl"):
+            if kinds and r["kind"] not in kinds:
+                continue
+            taken = datetime.fromisoformat(r["taken_at"])
+            if since is not None and taken < since:
+                continue
+            if best is None or taken >= datetime.fromisoformat(best["taken_at"]):
+                best = r
+        return _snap_out(best) if best else None
 
     def set_person_rocks(self, person: str, rocks: list[dict[str, Any]]) -> dict[str, Any]:
         data = self.load_rocks()
@@ -517,3 +573,43 @@ class Storage:
 
 def today_iso() -> str:
     return date.today().isoformat()
+
+
+def _utcnow_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _append_jsonl(path: Path, row: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(row, default=str) + "\n")
+
+
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    with path.open("r", encoding="utf-8") as f:
+        return [json.loads(line) for line in f if line.strip()]
+
+
+def _snap_out(row: dict[str, Any]) -> dict[str, Any]:
+    out = dict(row)
+    out["taken_at"] = datetime.fromisoformat(row["taken_at"])
+    return out
+
+
+def _audit_match(row: dict[str, Any], actor: str | None, text: str | None,
+                 since: str | None, until: str | None) -> bool:
+    """Shared filter for the change log (file backend; PG does the same in SQL)."""
+    at = row.get("at", "")
+    if since and at < since:
+        return False
+    if until and at > until:
+        return False
+    if actor and actor.lower() not in (row.get("actor") or "").lower():
+        return False
+    if text:
+        blob = json.dumps(row.get("changes") or [], default=str).lower() + " " + (row.get("action") or "").lower()
+        if text.lower() not in blob:
+            return False
+    return True
