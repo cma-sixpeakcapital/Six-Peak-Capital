@@ -587,3 +587,10 @@ button.is-loading { opacity:.6; pointer-events:none; }
 /* To-do due date on every card; TBD when blank (9/26) */
 .todo-body .todo-due { font-size:0.74rem; font-weight:600; color:var(--text-sub); }
 .todo-body .todo-due-tbd { color:#B45309; }
+/* Weekly summary grouped by topic, one bubble per topic (9/26) */
+.topic-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:0.9rem; }
+.topic-bubble { background:var(--surface-alt); border:1px solid var(--border); border-radius:16px; padding:0.95rem 1.1rem 0.8rem; }
+.topic-title { display:inline-block; font-family:var(--display); font-weight:700; font-size:0.78rem; letter-spacing:.06em; text-transform:uppercase; color:var(--rust); background:var(--rust-06); border:1px solid var(--rust-12); border-radius:99px; padding:0.2rem 0.7rem; margin-bottom:0.55rem; }
+.topic-notes { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.4rem; }
+.topic-notes li { position:relative; padding-left:0.9rem; font-size:0.86rem; line-height:1.45; color:var(--text-sub); }
+.topic-notes li::before { content:""; position:absolute; left:0; top:0.55em; width:5px; height:5px; border-radius:50%; background:var(--rust); }
