@@ -21,12 +21,23 @@
             </div>
             <nav class="top-nav">
                 <a href="{{ url_for('portal') }}">Dashboard</a>
-                <a href="{{ url_for('portal') }}#todos">To-Dos</a>
+                <a href="{{ url_for('portal') }}#scorecard">Scorecard</a>
                 <a href="{{ url_for('portal') }}#rocks">Rocks</a>
-                <a href="{{ url_for('portal') }}#scoreboard">Scoreboard</a>
+                <a href="{{ url_for('portal') }}#todos">To-Dos</a>
+                <a href="{{ url_for('portal') }}#scoreboard">Hit Rate</a>
                 <a href="{{ url_for('portal') }}#issues">Issues</a>
                 <a href="{{ url_for('portal') }}#history">History</a>
+                <a href="{{ url_for('changes_page') }}" class="nav-changes" title="Change log: every edit made in the portal">Changes</a>
             </nav>
+            {% if actor_names %}
+            <label class="actor-pick" title="Recorded with each edit you make in the change log. Self-reported, not verified.">
+                <span>You are</span>
+                <select id="actor-select">
+                    <option value="">— pick —</option>
+                    {% for n in actor_names %}<option value="{{ n }}">{{ n }}</option>{% endfor %}
+                </select>
+            </label>
+            {% endif %}
         </div>
     </header>
     <main class="main-content">

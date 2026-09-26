@@ -13,7 +13,7 @@ def _rolled_doc():
 def test_portal_renders_scoreboard_sections(client, storage):
     storage.save_rocks(_rolled_doc())
     body = client.get("/").data.decode()
-    for needle in ("Scoreboard", "Leaderboard", "Q3 2026 post-mortem", "Issues List",
+    for needle in ("Hit Rate", "Leaderboard", "Q3 2026 post-mortem", "Issues List",
                    "Rule this quarter", "#1", "Controllable action", "official 18/32",
                    "Q4 2026", "77 days left" if False else "days left"):
         assert needle in body, needle

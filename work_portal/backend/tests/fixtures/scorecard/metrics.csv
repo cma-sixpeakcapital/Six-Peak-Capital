@@ -1,0 +1,15 @@
+metric_id,category,metric_name,owner_email,unit,direction,target,yellow_floor,cadence,active,sort_order,definition
+fin_runway_months,Liquidity & Overhead,Months of runway (net unrestricted cash after liquidity requirements),candresen@sixpeakcapital.com,number,higher_better,3,2.5,monthly_reported_weekly,TRUE,10,"Net unrestricted consolidated cash divided by monthly burn. Green >= 3.0, yellow 2.5-3.0, red < 2.5."
+bd_developer_contacts,Business Development,Developer contacts (cumulative #),tpt@sixpeakcapital.com,count,higher_better,20,,weekly,TRUE,20,Running total of qualified developer / owner contacts.
+bd_meetings_weekly,Business Development,Substantive BD meetings held (weekly #),tpt@sixpeakcapital.com,count,higher_better,2,1,weekly,TRUE,21,"Green >= 2, yellow 1, red 0."
+bd_qualified_pipeline,Business Development,"Qualified Pipeline value ($, cumulative) - Section 6.4 criteria",tpt@sixpeakcapital.com,dollars,higher_better,30000000,,weekly,TRUE,22,Glidepath to $30M by Month 12.
+bd_cumulative_sourced_gmp,Business Development,"Cumulative sourced signed GMP ($, excl. HVN)",tpt@sixpeakcapital.com,dollars,higher_better,20000000,,weekly,TRUE,23,$20M by Month 24.
+gc_signed_backlog,Business Development,Signed contracted backlog ($),tpt@sixpeakcapital.com,dollars,higher_better,,,weekly,TRUE,30,Baseline pending finance.
+gc_jobs_behind,Construction / GC,Jobs behind original schedule (#),grady@lvllc.com,count,lower_better,0,1,weekly,TRUE,31,"Green 0, yellow 1, red >= 2."
+gc_contingency_burn,Construction / GC,Jobs with contingency burn rate >= 1.0 (#),grady@lvllc.com,count,lower_better,0,1,weekly,TRUE,32,"Green 0, yellow 1, red >= 2."
+gc_schedule_pct,Construction / GC,Construction schedule -- % of milestones achieved (%),grady@lvllc.com,percent,higher_better,95,85,weekly,TRUE,33,"Green >= 95%, yellow 85-95%, red < 85%."
+gc_buyout_savings,Construction / GC,Buyout savings -- actual vs. budget (%),grady@lvllc.com,percent,higher_better,0,-2,weekly,TRUE,34,"Green >= 0%, yellow -2% to 0%, red < -2%."
+gc_safety,Construction / GC,Safety performance -- recordable incidents (weekly #),grady@lvllc.com,count,lower_better,0,1,weekly,TRUE,35,"Green 0, yellow 1, red >= 2."
+gc_sub_score,Construction / GC,Subcontractor performance -- avg. trade partner score (1-5),grady@lvllc.com,number,higher_better,4,3.5,weekly,TRUE,36,"Green >= 4.0, yellow 3.5-4.0, red < 3.5."
+gc_jobs_per_pm,Construction / GC,Construction team workload -- active jobs per PM (#),grady@lvllc.com,count,lower_better,4,5,weekly,TRUE,37,"Green <= 4, yellow 5, red >= 6."
+proc_board_portal,Process & Reporting,Board portal published on time (Y/N),cma@sixpeakcapital.com,boolean,binary,1,,monthly_reported_weekly,TRUE,40,1 = published by the 10th business day; 0 = late.

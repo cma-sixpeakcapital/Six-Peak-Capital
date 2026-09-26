@@ -50,6 +50,43 @@ ALTER TABLE meetings ADD COLUMN IF NOT EXISTS followup_log JSONB NULL;
 -- reminder_log:    JSONB record of {sent_at, recipients, dry_run, gmail_id, error}.
 ALTER TABLE meetings ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMPTZ NULL;
 ALTER TABLE meetings ADD COLUMN IF NOT EXISTS reminder_log JSONB NULL;
+
+-- Change log (Phase 1, 9/2026). rocks_doc_history keeps every replaced version
+-- of the rocks document, including Render-shell edits that bypass the page, so
+-- any change can be restored (scripts/restore_rocks_doc.py).
+CREATE TABLE IF NOT EXISTS rocks_doc_history (
+    id BIGSERIAL PRIMARY KEY,
+    saved_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    data JSONB NOT NULL
+);
+CREATE INDEX IF NOT EXISTS rocks_doc_history_saved_idx ON rocks_doc_history (saved_at DESC);
+
+-- One row per edit made through the portal: who (self-reported), IP, browser,
+-- and the before/after of every item that changed.
+CREATE TABLE IF NOT EXISTS audit_log (
+    id BIGSERIAL PRIMARY KEY,
+    at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    actor TEXT,
+    ip TEXT,
+    user_agent TEXT,
+    method TEXT,
+    path TEXT,
+    action TEXT,
+    status INTEGER,
+    changes JSONB
+);
+CREATE INDEX IF NOT EXISTS audit_log_at_idx ON audit_log (at DESC);
+
+-- Weekly Scorecard: raw CSV pulled from the published Sheet. kind is
+-- on_view (page cache), manual (Refresh button) or meeting (Tuesday freeze).
+CREATE TABLE IF NOT EXISTS scorecard_snapshots (
+    id BIGSERIAL PRIMARY KEY,
+    taken_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    kind TEXT NOT NULL,
+    refreshed_by TEXT,
+    payload JSONB NOT NULL
+);
+CREATE INDEX IF NOT EXISTS scorecard_snapshots_taken_idx ON scorecard_snapshots (taken_at DESC);
 """
 
 CONNECT_TIMEOUT = 30  # seconds — covers Neon cold-start from idle
@@ -88,6 +125,14 @@ class PostgresStorage:
     def save_rocks(self, data: dict[str, Any]) -> None:
         with self._connect() as conn:
             with conn.cursor() as cur:
+                # Keep the version being replaced (same transaction).
+                cur.execute(
+                    "INSERT INTO rocks_doc_history (data) SELECT data FROM rocks_doc WHERE id = 1"
+                )
+                # Bound storage on Neon: versions older than a year are dropped.
+                cur.execute(
+                    "DELETE FROM rocks_doc_history WHERE saved_at < now() - interval '365 days'"
+                )
                 cur.execute(
                     """
                     INSERT INTO rocks_doc (id, data, updated_at)
@@ -577,6 +622,127 @@ class PostgresStorage:
                     (Json(log), meeting_id),
                 )
             conn.commit()
+
+    # ---- rocks document history (restore) ---------------------------------
+    def list_rocks_history(self, limit: int | None = 50, ascending: bool = False) -> list[dict[str, Any]]:
+        order = "ASC" if ascending else "DESC"
+        sql = f"SELECT id, saved_at FROM rocks_doc_history ORDER BY saved_at {order}, id {order}"
+        params: tuple = ()
+        if limit:
+            sql += " LIMIT %s"
+            params = (limit,)
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+        return [{"id": str(r[0]), "saved_at": r[1].isoformat()} for r in rows]
+
+    def get_rocks_history(self, history_id: str) -> dict[str, Any] | None:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, saved_at, data FROM rocks_doc_history WHERE id = %s",
+                            (int(history_id),))
+                r = cur.fetchone()
+        if r is None:
+            return None
+        return {"id": str(r[0]), "saved_at": r[1].isoformat(), "data": r[2]}
+
+    # ---- change log --------------------------------------------------------
+    def record_audit(self, entry: dict[str, Any]) -> None:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO audit_log (actor, ip, user_agent, method, path, action, status, changes)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (entry.get("actor"), entry.get("ip"), entry.get("user_agent"),
+                     entry.get("method"), entry.get("path"), entry.get("action"),
+                     entry.get("status"), Json(entry.get("changes") or [])),
+                )
+            conn.commit()
+
+    def list_audit(self, limit: int = 200, actor: str | None = None, text: str | None = None,
+                   since: str | None = None, until: str | None = None) -> list[dict[str, Any]]:
+        where = []
+        params: list[Any] = []
+        if actor:
+            where.append("actor ILIKE %s")
+            params.append(f"%{actor}%")
+        if text:
+            where.append("(changes::text ILIKE %s OR action ILIKE %s)")
+            params += [f"%{text}%", f"%{text}%"]
+        if since:
+            where.append("at >= %s")
+            params.append(since)
+        if until:
+            where.append("at <= %s")
+            params.append(until)
+        sql = ("SELECT id, at, actor, ip, user_agent, method, path, action, status, changes "
+               "FROM audit_log")
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        sql += " ORDER BY at DESC, id DESC LIMIT %s"
+        params.append(limit)
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+        keys = ("id", "at", "actor", "ip", "user_agent", "method", "path", "action", "status", "changes")
+        out = []
+        for r in rows:
+            d = dict(zip(keys, r))
+            d["id"] = str(d["id"])
+            d["at"] = d["at"].isoformat()
+            out.append(d)
+        return out
+
+    # ---- scorecard snapshots ----------------------------------------------
+    def save_scorecard_snapshot(self, kind: str, payload: dict[str, Any],
+                                refreshed_by: str = "",
+                                taken_at: datetime | None = None) -> dict[str, Any]:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO scorecard_snapshots (kind, refreshed_by, payload, taken_at)
+                    VALUES (%s, %s, %s, COALESCE(%s, now())) RETURNING id, taken_at
+                    """,
+                    (kind, refreshed_by, Json(payload), taken_at),
+                )
+                sid, taken = cur.fetchone()
+                # Page-cache snapshots are only useful for a while; meeting and
+                # manual snapshots are the record and are kept.
+                cur.execute(
+                    "DELETE FROM scorecard_snapshots WHERE kind = 'on_view' "
+                    "AND taken_at < now() - interval '30 days'"
+                )
+            conn.commit()
+        return {"id": str(sid), "taken_at": taken, "kind": kind,
+                "refreshed_by": refreshed_by, "payload": payload}
+
+    def latest_scorecard_snapshot(self, kinds: tuple[str, ...] | None = None,
+                                  since: datetime | None = None) -> dict[str, Any] | None:
+        where = []
+        params: list[Any] = []
+        if kinds:
+            where.append("kind = ANY(%s)")
+            params.append(list(kinds))
+        if since is not None:
+            where.append("taken_at >= %s")
+            params.append(since)
+        sql = "SELECT id, taken_at, kind, refreshed_by, payload FROM scorecard_snapshots"
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        sql += " ORDER BY taken_at DESC, id DESC LIMIT 1"
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, params)
+                r = cur.fetchone()
+        if r is None:
+            return None
+        return {"id": str(r[0]), "taken_at": r[1], "kind": r[2], "refreshed_by": r[3] or "",
+                "payload": r[4]}
 
     def close(self) -> None:
         # Nothing to close — connections are per-request.
