@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_topics.html" import topic_bubbles %}
 
 {% block title %}{{ meeting.title }} — L10 Portal{% endblock %}
 
@@ -17,15 +18,7 @@
         <span class="section-label">Summary</span>
         <h2>What happened</h2>
     </div>
-    {% if summary_bullets %}
-    <ul class="bullet-summary">
-        {% for b in summary_bullets %}<li>{{ b }}</li>{% endfor %}
-    </ul>
-    {% elif meeting.summary %}
-    <p class="lede">{{ meeting.summary }}</p>
-    {% else %}
-    <p class="muted">No summary available.</p>
-    {% endif %}
+    {{ topic_bubbles(meeting, summary_bullets) }}
 </section>
 
 <section class="card">
