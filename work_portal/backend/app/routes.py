@@ -173,14 +173,25 @@ def _collect_archive(rocks_data: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
-def _actor_names(rocks_data: dict[str, Any]) -> list[str]:
-    """Names offered in the "You are" picker: the roster on the rocks document."""
+def _is_single_person(name: str) -> bool:
+    """'Chris Aiello and Grady Lakamp', 'A & B', 'A / B', 'A, B' are shared owners, not people."""
+    n = f" {name.strip().lower()} "
+    return bool(name.strip()) and not any(sep in n for sep in (" and ", "&", "/", ",", "+"))
+
+
+def _actor_names(rocks_data: dict[str, Any], scorecard: dict[str, Any] | None = None) -> list[str]:
+    """Names offered in the "You are" picker: one person per entry.
+
+    Uses the people tab of the L10 Data Sheet when the Scorecard has it;
+    otherwise the rocks roster, with shared owners ("A and B") left out.
+    """
+    people = ((scorecard or {}).get("view") or {}).get("people") or []
+    if people:
+        return [n for n in people if _is_single_person(n)]
     names = [p.get("name") for p in rocks_data.get("team", []) or [] if p.get("name")]
     for owner in (rocks_data.get("rocks") or {}):
-        if owner not in names:
-            names.append(owner)
-    return sorted(set(names), key=str.lower)
-
+        names.append(owner)
+    return sorted({n.strip() for n in names if _is_single_person(n)}, key=str.lower)
 
 def _get_storage():
     return current_app.config["STORAGE"]
@@ -295,7 +306,8 @@ def register_routes(app: Flask) -> None:
         cur_q = current_quarter(rocks_data)
         scored_ids = {q["quarter"] for q in sb["quarters"] if q["closed"]}
         closed_qs = [q for q in list_quarters(rocks_data) if q.get("closed") and q["id"] in scored_ids]
-        closed_qs.reverse()  # newest first; pre-EOS quarters (Q2) stay in the "Earlier" list
+        closed_qs.reverse()
+        scorecard = _scorecard_or_error()  # newest first; pre-EOS quarters (Q2) stay in the "Earlier" list
         return render_template(
             "portal.html",
             team=rocks_data.get("team", []),
@@ -314,9 +326,9 @@ def register_routes(app: Flask) -> None:
             closed_quarters=closed_qs,
             quarter_views=[_quarter_view(rocks_data, q["id"]) for q in closed_qs],
             parked_issues=rocks_data.get("parked_issues") or [],
-            scorecard=_scorecard_or_error(),
+            scorecard=scorecard,
             sheet_edit_url=current_app.config["APP_CONFIG"].sheet_edit_url,
-            actor_names=_actor_names(rocks_data),
+            actor_names=_actor_names(rocks_data, scorecard),
         )
 
     @app.route("/api/scorecard")
