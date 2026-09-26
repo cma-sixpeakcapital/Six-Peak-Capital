@@ -11,6 +11,9 @@ from .readai import ReadAIClient
 from .rock_files import FileArchivedError, FileValidationError
 from .scoring import scoreboard as build_scoreboard, current_quarter, quarters as list_quarters
 from .storage import bullet_split
+from . import todos as todo_lib
+from .scoring import ROSTER
+from .todo_metrics import build as build_todo_metrics
 from .summarizer import Summarizer, clean_topics
 from .scorecard.service import ET, ScorecardService
 from .scorecard.sheet import SheetFetchError, make_fetcher, parse_gids
@@ -136,7 +139,7 @@ def _kpis(rocks_data: dict[str, Any], latest: dict[str, Any] | None) -> dict[str
         if not r.get("archived") and not r.get("deferred") and r.get("owner"):
             owners.add(r["owner"])
     done = len([r for r in active if r.get("status") == "complete"])
-    todos = rocks_data.get("todos") or []
+    todos = todo_lib.active_todos(rocks_data)
     todos_open = len([t for t in todos if not t.get("completed")])
     actions = (latest or {}).get("action_items") or []
     actions_done = len([a for a in actions if a.get("completed")])
@@ -229,6 +232,29 @@ def _get_scorecard_service() -> ScorecardService:
     )
 
 
+def _today_et() -> date:
+    return datetime.now(ET).date()
+
+
+def _todo_people(scorecard: dict[str, Any] | None = None) -> list[str]:
+    """Owner pick-list: the Sheet's active people, else the rock roster."""
+    people = ((scorecard or {}).get("view") or {}).get("people") or []
+    return [n for n in people if _is_single_person(n)] or list(ROSTER)
+
+
+def _todo_stats(rocks_data: dict[str, Any], cur_q: dict[str, Any] | None,
+                scorecard: dict[str, Any] | None = None) -> dict[str, Any]:
+    return build_todo_metrics(list(rocks_data.get("todos") or []), _today_et(), cur_q,
+                              _todo_people(scorecard))
+
+
+def _dropped_this_quarter(rocks_data: dict[str, Any], cur_q: dict[str, Any] | None) -> list[dict[str, Any]]:
+    start = todo_lib.parse_due((cur_q or {}).get("start")) or date.min
+    out = [t for t in todo_lib.dropped_todos(rocks_data)
+           if (todo_lib.et_date(t.get("dropped_at")) or date.min) >= start]
+    return sorted(out, key=lambda t: t.get("dropped_at") or "", reverse=True)
+
+
 def _scorecard_or_error() -> dict[str, Any]:
     """The Scorecard must never take the page down."""
     try:
@@ -316,7 +342,10 @@ def register_routes(app: Flask) -> None:
             company_deferred=company_deferred,
             owner_groups=_group_active_by_owner(rocks_data),
             archived_rocks=_collect_archive(rocks_data),
-            todos=rocks_data.get("todos", []),
+            todos=todo_lib.active_todos(rocks_data),
+            dropped_todos=_dropped_this_quarter(rocks_data, cur_q),
+            todo_people=_todo_people(scorecard),
+            todo_stats=_todo_stats(rocks_data, cur_q, scorecard),
             latest=latest,
             summary_bullets=summary_bullets,
             history=history,
@@ -443,7 +472,10 @@ def register_routes(app: Flask) -> None:
 
     @app.route("/api/scoreboard")
     def api_scoreboard() -> Any:
-        return jsonify(build_scoreboard(_get_storage().load_rocks()))
+        data = _get_storage().load_rocks()
+        out = build_scoreboard(data)
+        out["todos"] = _todo_stats(data, current_quarter(data))
+        return jsonify(out)
 
     @app.route("/api/quarters")
     def api_quarters() -> Any:
@@ -583,17 +615,17 @@ def register_routes(app: Flask) -> None:
         task = (body.get("task") or "").strip()
         if not task:
             abort(400, description="'task' is required")
-        todo = _get_storage().add_todo({
-            "owner": (body.get("owner") or "").strip(),
-            "task": task,
-            "due": (body.get("due") or "").strip(),
-        })
+        todo = {"task": task, "due": (body.get("due") or "").strip()}
+        for k in ("owners", "owner_other", "owner"):
+            if k in body:
+                todo[k] = body[k]
+        todo = _get_storage().add_todo(todo)
         return jsonify(todo)
 
     @app.route("/api/todos/<todo_id>", methods=["PATCH"])
     def api_todo_update(todo_id: str) -> Any:
         body = request.get_json(silent=True) or {}
-        todo = _get_storage().update_todo(todo_id, body)
+        todo = _get_storage().update_todo(todo_id, body, actor=actor_name())
         if todo is None:
             abort(404)
         return jsonify(todo)
@@ -601,6 +633,21 @@ def register_routes(app: Flask) -> None:
     @app.route("/api/todos/<todo_id>/toggle", methods=["POST"])
     def api_todo_toggle(todo_id: str) -> Any:
         todo = _get_storage().toggle_todo(todo_id)
+        if todo is None:
+            abort(404)
+        return jsonify(todo)
+
+    @app.route("/api/todos/<todo_id>/drop", methods=["POST"])
+    def api_todo_drop(todo_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        todo = _get_storage().drop_todo(todo_id, body.get("reason") or "", actor=actor_name())
+        if todo is None:
+            abort(404)
+        return jsonify(todo)
+
+    @app.route("/api/todos/<todo_id>/restore", methods=["POST"])
+    def api_todo_restore(todo_id: str) -> Any:
+        todo = _get_storage().restore_todo(todo_id)
         if todo is None:
             abort(404)
         return jsonify(todo)

@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 
 from flask import Flask
@@ -22,6 +23,12 @@ def create_app(config: Config | None = None) -> Flask:
     app.config["APP_CONFIG"] = cfg
     app.config["SECRET_KEY"] = cfg.secret_key
     app.config["STORAGE"] = make_storage(cfg)
+    try:  # dated to-do schema (9/26/2026); idempotent, never blocks startup
+        migrate = getattr(app.config["STORAGE"], "migrate_todos", None)
+        if migrate:
+            migrate()
+    except Exception:  # pragma: no cover
+        logging.getLogger(__name__).exception("to-do migration failed")
     app.jinja_env.filters["linkify"] = linkify
 
     @app.context_processor
@@ -29,7 +36,11 @@ def create_app(config: Config | None = None) -> Flask:
         today = date.today()
         # Format: "Monday, April 20, 2026" (cross-platform — strip zero-pad manually)
         display = today.strftime("%A, %B {day}, %Y").replace("{day}", str(today.day))
-        return {"today_display": display}
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        today_et = datetime.now(ZoneInfo("America/New_York")).date()
+        return {"today_display": display, "today_iso": today_et.isoformat(),
+                "todo_people": []}
 
     register_routes(app)
     return app
