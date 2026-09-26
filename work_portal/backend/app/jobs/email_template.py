@@ -102,7 +102,7 @@ def render_html(meeting: dict[str, Any], open_todos: list[dict[str, Any]],
             parts.append("<ul>")
             for t in items:
                 task = (t.get("task") or "").strip()
-                due = (t.get("due") or "").strip()
+                due = (t.get("due_note") or t.get("due") or "").strip()
                 tail = f" <i>({escape(due)})</i>" if due else ""
                 parts.append(f"  <li>{escape(task)}{tail}</li>")
             parts.append("</ul>")
@@ -160,7 +160,7 @@ def render_text(meeting: dict[str, Any], open_todos: list[dict[str, Any]],
             lines.append(f"  {owner}")
             for t in items:
                 task = (t.get("task") or "").strip()
-                due = (t.get("due") or "").strip()
+                due = (t.get("due_note") or t.get("due") or "").strip()
                 tail = f" ({due})" if due else ""
                 lines.append(f"    - {task}{tail}")
     else:

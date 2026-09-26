@@ -218,9 +218,53 @@
     function wireDeleteTodo() {
         document.querySelectorAll(".delete-todo-btn").forEach(function (btn) {
             btn.addEventListener("click", function () {
-                if (!confirm("Delete this to-do?")) return;
+                if (!confirm("Delete permanently? Only for a to-do entered by mistake. To stop working on it, use Drop instead.")) return;
                 const id = btn.dataset.todoId;
                 handleAction(btn, () => apiRequest(`/api/todos/${encodeURIComponent(id)}`, { method: "DELETE" }));
+            });
+        });
+    }
+
+    // To-do forms: owners is a multi-pick, so FormData.entries() would keep only one.
+    function todoFormData(form) {
+        const fd = new FormData(form);
+        const data = Object.fromEntries(fd.entries());
+        data.owners = fd.getAll("owners");
+        return data;
+    }
+
+    function wireDropTodo() {
+        document.querySelectorAll(".drop-todo-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const form = document.querySelector(`.drop-todo-form[data-todo-id="${btn.dataset.todoId}"]`);
+                if (!form) return;
+                form.classList.remove("hidden");
+                const input = form.querySelector("input[name=reason]");
+                if (input) input.focus();
+            });
+        });
+        document.querySelectorAll(".cancel-drop-todo").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const form = btn.closest(".drop-todo-form");
+                if (form) form.classList.add("hidden");
+            });
+        });
+        document.querySelectorAll(".drop-todo-form").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const id = form.dataset.todoId;
+                const reason = (form.querySelector("input[name=reason]") || {}).value || "";
+                const submit = form.querySelector("button[type=submit]");
+                handleAction(submit, () => apiRequest(`/api/todos/${encodeURIComponent(id)}/drop`, {
+                    method: "POST",
+                    body: JSON.stringify({ reason: reason }),
+                }));
+            });
+        });
+        document.querySelectorAll(".restore-todo-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const id = btn.dataset.todoId;
+                handleAction(btn, () => apiRequest(`/api/todos/${encodeURIComponent(id)}/restore`, { method: "POST" }));
             });
         });
     }
@@ -246,7 +290,7 @@
             form.addEventListener("submit", async function (e) {
                 e.preventDefault();
                 const id = form.dataset.todoId;
-                const data = Object.fromEntries(new FormData(form).entries());
+                const data = todoFormData(form);
                 const submit = form.querySelector("button[type=submit]");
                 handleAction(submit, () => apiRequest(`/api/todos/${encodeURIComponent(id)}`, {
                     method: "PATCH",
@@ -280,7 +324,7 @@
         if (!form) return;
         form.addEventListener("submit", async function (e) {
             e.preventDefault();
-            const data = Object.fromEntries(new FormData(form).entries());
+            const data = todoFormData(form);
             const submit = form.querySelector("button[type=submit]");
             handleAction(submit, () => apiRequest("/api/todos", {
                 method: "POST",
@@ -359,6 +403,7 @@
         wireToggleTodo();
         wireDeleteTodo();
         wireEditTodo();
+        wireDropTodo();
         wireAddTodo();
         wireAddCompanyRock();
         wireAddPersonRock();

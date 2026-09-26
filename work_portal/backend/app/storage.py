@@ -6,6 +6,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from . import todos as _todos
 from .rock_files import (
     FileArchivedError,
     apply_add_file,
@@ -320,46 +321,53 @@ class Storage:
             "created_at": datetime.now(timezone.utc).isoformat(),
             "source": source_hint or {"type": "rock"},
         }
+        todo = _todos.init_new(todo, _roster())
         data.setdefault("todos", []).append(todo)
         self.save_rocks(data)
         return todo
 
     def list_todos(self) -> list[dict[str, Any]]:
+        """To-dos on the list: not dropped, not archived (completed ones stay until the next L10)."""
+        return _todos.active_todos(self.load_rocks())
+
+    def list_all_todos(self) -> list[dict[str, Any]]:
+        """Every to-do ever recorded, including archived and dropped (for metrics)."""
         return list(self.load_rocks().get("todos", []) or [])
 
     def add_todo(self, todo: dict[str, Any]) -> dict[str, Any]:
         data = self.load_rocks()
         todo = dict(todo)
         todo.setdefault("id", _new_id("td"))
-        todo.setdefault("completed", False)
-        todo.setdefault("created_at", datetime.now(timezone.utc).isoformat())
         todo.setdefault("source", {"type": "manual"})
+        todo = _todos.init_new(todo, _roster())
         data.setdefault("todos", []).append(todo)
         self.save_rocks(data)
         return todo
 
-    def update_todo(self, todo_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
-        """Patch editable fields on a todo. Returns the updated todo or None if not found."""
-        allowed = {"owner", "task", "due"}
-        clean = {k: v for k, v in updates.items() if k in allowed}
+    def _edit_todo(self, todo_id: str, fn) -> dict[str, Any] | None:
         data = self.load_rocks()
         for t in data.get("todos", []) or []:
             if t.get("id") == todo_id:
-                t.update(clean)
+                fn(t)
                 self.save_rocks(data)
                 return t
         return None
+
+    def update_todo(self, todo_id: str, updates: dict[str, Any], actor: str = "") -> dict[str, Any] | None:
+        """Patch owner(s) / task / due. Due changes are logged; original_due never moves."""
+        return self._edit_todo(todo_id, lambda t: _todos.apply_update(t, updates, _roster(), actor))
 
     def toggle_todo(self, todo_id: str) -> dict[str, Any] | None:
-        data = self.load_rocks()
-        for t in data.get("todos", []) or []:
-            if t.get("id") == todo_id:
-                t["completed"] = not bool(t.get("completed"))
-                self.save_rocks(data)
-                return t
-        return None
+        return self._edit_todo(todo_id, _todos.toggle)
+
+    def drop_todo(self, todo_id: str, reason: str = "", actor: str = "") -> dict[str, Any] | None:
+        return self._edit_todo(todo_id, lambda t: _todos.drop(t, reason, actor))
+
+    def restore_todo(self, todo_id: str) -> dict[str, Any] | None:
+        return self._edit_todo(todo_id, _todos.restore)
 
     def delete_todo(self, todo_id: str) -> bool:
+        """Hard delete - for to-dos entered by mistake. Use drop_todo otherwise."""
         data = self.load_rocks()
         before = len(data.get("todos", []) or [])
         data["todos"] = [t for t in (data.get("todos") or []) if t.get("id") != todo_id]
@@ -369,13 +377,27 @@ class Storage:
         return True
 
     def purge_completed_todos(self) -> int:
+        """Called after each L10 is ingested. Completed to-dos leave the list but are
+        ARCHIVED, not deleted, so completion history survives for the Hit Rate tab."""
         data = self.load_rocks()
-        before = len(data.get("todos", []) or [])
-        data["todos"] = [t for t in (data.get("todos") or []) if not t.get("completed")]
-        removed = before - len(data["todos"])
-        if removed:
+        n = _todos.archive_completed(data)
+        if n:
             self.save_rocks(data)
-        return removed
+        return n
+
+    def migrate_todos(self) -> int:
+        """Bring older to-dos onto the dated schema (idempotent)."""
+        data = self.load_rocks()
+        if all(t.get("schema") == _todos.SCHEMA for t in data.get("todos") or []):
+            return 0
+        try:
+            completions = _todos.completions_from_audit(self.list_audit(limit=5000, text="todo"))
+        except Exception:  # audit is best-effort
+            completions = {}
+        n = _todos.migrate(data, _roster(), completions)
+        if n:
+            self.save_rocks(data)
+        return n
 
     def save_meeting(self, meeting: dict[str, Any]) -> Path:
         if "id" not in meeting or "date" not in meeting:
@@ -453,6 +475,7 @@ class Storage:
             },
         }
         data = self.load_rocks()
+        todo = _todos.init_new(todo, _roster())
         data.setdefault("todos", []).append(todo)
         self.save_rocks(data)
         return todo
@@ -613,3 +636,8 @@ def _audit_match(row: dict[str, Any], actor: str | None, text: str | None,
         if text.lower() not in blob:
             return False
     return True
+
+
+def _roster() -> list[str]:
+    from .scoring import ROSTER
+    return list(ROSTER)

@@ -72,7 +72,7 @@ def test_toggle_todo_missing(storage: Storage):
 def test_update_todo_patches_allowed_fields(storage: Storage):
     t = storage.add_todo({"owner": "Chris", "task": "old", "due": "2026-05-01"})
     out = storage.update_todo(t["id"], {"owner": "Bob", "task": "new", "due": "2026-06-01"})
-    assert out["owner"] == "Bob"
+    assert out["owner"] == "Bob Kennedy"  # first names map to the roster (9/26)
     assert out["task"] == "new"
     assert out["due"] == "2026-06-01"
 
@@ -428,7 +428,7 @@ def test_api_todo_update(client, storage):
     body = r.get_json()
     assert body["task"] == "new"
     assert body["due"] == "2026-07-01"
-    assert body["owner"] == "Bob"
+    assert body["owner"] == "Bob Kennedy"
 
 
 def test_api_todo_update_missing(client):

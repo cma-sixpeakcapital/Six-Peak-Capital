@@ -594,3 +594,62 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .topic-notes { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.4rem; }
 .topic-notes li { position:relative; padding-left:0.9rem; font-size:0.86rem; line-height:1.45; color:var(--text-sub); }
 .topic-notes li::before { content:""; position:absolute; left:0; top:0.55em; width:5px; height:5px; border-radius:50%; background:var(--rust); }
+/* Section dividers: To-Dos -> Q4 Rocks (Bob 9/26) */
+.part-divider { display:flex; align-items:center; gap:1rem; margin:2.6rem 0 1.1rem; }
+.part-divider span { font-family:var(--display); font-weight:700; font-size:1.55rem; letter-spacing:-.01em; color:var(--denim); white-space:nowrap; }
+.part-divider::before { content:""; width:6px; height:1.6rem; border-radius:3px; background:var(--rust); flex:none; order:-1; }
+.part-divider::after { content:""; flex:1; height:2px; background:linear-gradient(90deg,var(--rust-12),transparent); }
+.part-divider-sm span { font-size:1.2rem; }
+/* To-do dates, owner pick-list, drop (9/26) */
+.todo-dates { display:flex; flex-wrap:wrap; gap:0.25rem 0.7rem; font-size:0.72rem; color:var(--muted); }
+.todo-body .todo-overdue { color:#B91C1C; }
+.td-orig { text-decoration:line-through; }
+.td-done { color:#047857; font-weight:600; }
+.owner-none { color:var(--muted) !important; }
+.todo-form { flex-direction:column; align-items:stretch; }
+.todo-form input[type=text] { width:100%; }
+.owner-pick { border:1px solid var(--border-md); border-radius:10px; padding:0.45rem 0.6rem 0.6rem; display:flex; flex-wrap:wrap; gap:0.35rem 0.5rem; margin:0; }
+.owner-pick legend { font-size:0.68rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:0 0.3rem; }
+.owner-chip { display:inline-flex; align-items:center; gap:0.3rem; font-size:0.78rem; background:var(--surface-alt); border:1px solid var(--border); border-radius:99px; padding:0.15rem 0.6rem; cursor:pointer; }
+.owner-chip:has(input:checked) { background:var(--rust-06); border-color:var(--rust); color:var(--rust); font-weight:600; }
+.owner-pick .owner-other { flex-basis:100%; font-size:0.8rem; }
+.due-field { display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; font-weight:600; color:var(--text-sub); }
+.due-field .muted { font-weight:400; }
+.dropped-list { margin-top:1rem; font-size:0.82rem; }
+.dropped-list summary { cursor:pointer; color:var(--muted); font-weight:600; }
+.dropped-list ul { list-style:none; margin:0.5rem 0 0; padding:0; }
+.dropped-list li { padding:0.35rem 0; border-bottom:1px solid var(--border); display:flex; flex-wrap:wrap; gap:0.4rem; align-items:center; }
+.dropped-list .owner { font-weight:600; color:var(--rust); }
+/* Hit Rate: to-do section (9/26) */
+.td-kpis { display:grid; grid-template-columns:1.6fr repeat(4,1fr); gap:1rem; margin-bottom:1rem; }
+@media (max-width:980px) { .td-kpis { grid-template-columns:repeat(2,1fr); } .td-headline { grid-column:1 / -1; } }
+.td-kpis .card { margin:0; }
+.td-big { font-family:var(--display); font-weight:700; font-size:3rem; line-height:1.05; margin-top:0.4rem; color:var(--text); }
+.td-headline.hit .td-big { color:#047857; }
+.td-headline.miss .td-big { color:#B91C1C; }
+.td-headline.hit { border-left:5px solid var(--success); }
+.td-headline.miss { border-left:5px solid #B91C1C; }
+.td-mid { font-family:var(--display); font-size:1.6rem; margin-top:0.45rem; }
+.td-mid .frac, .frac { font-size:0.8rem; color:var(--muted); font-weight:600; }
+.td-sub { font-size:0.72rem; color:var(--muted); margin-top:0.35rem; }
+.td-bad { color:#B91C1C; }
+.td-trend { width:100%; height:auto; display:block; }
+.tt-grid { stroke:var(--border-md); stroke-width:1; }
+.tt-ax { font-size:10px; fill:var(--muted); }
+.tt-std { stroke:var(--denim); stroke-width:1.5; stroke-dasharray:5 4; opacity:.6; }
+.tt-std-l { font-size:10px; fill:var(--denim); opacity:.75; }
+.tt-line { fill:none; stroke:var(--rust); stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round; }
+.tt-pt { stroke:#fff; stroke-width:1.5; }
+.tt-pt.hit { fill:var(--success); }
+.tt-pt.miss { fill:var(--rust); }
+.age-list { list-style:none; margin:0; padding:0; }
+.age-list li { display:flex; align-items:center; gap:0.8rem; padding:0.5rem 0; border-bottom:1px solid var(--border); font-size:0.84rem; }
+.age-list li:last-child { border-bottom:none; }
+.age-l { width:6.5rem; flex:none; }
+.age-n { font-family:var(--display); font-weight:700; width:2rem; text-align:right; }
+.bar-warn .bar-fill { background:linear-gradient(90deg,#B45309,#D97706); }
+.lb-unranked td { color:var(--muted); }
+.lb-unranked td.strong { color:var(--text-sub); }
+.add-form .owner-chip input[type=checkbox] { width:auto; min-width:0; flex:none; padding:0; margin:0; border:none; box-shadow:none; background:none; accent-color:var(--rust); }
+.owner-chip { white-space:nowrap; }
+.add-form .due-field input[type=date] { flex:0 0 auto; width:auto; min-width:0; }
