@@ -1,7 +1,25 @@
 (function () {
+    // "You are" picker: a self-reported name sent with every edit so the change
+    // log (/changes) can show who made it. Not verified; editing stays open.
+    const ACTOR_KEY = "l10_actor";
+    function getActor() {
+        try { return localStorage.getItem(ACTOR_KEY) || ""; } catch (e) { return ""; }
+    }
+    function wireActorPicker() {
+        const sel = document.getElementById("actor-select");
+        if (!sel) return;
+        const cur = getActor();
+        if (cur) sel.value = cur;
+        sel.addEventListener("change", function () {
+            try { localStorage.setItem(ACTOR_KEY, sel.value); } catch (e) { /* private mode */ }
+        });
+    }
+
     async function apiRequest(path, options) {
         options = options || {};
         const headers = Object.assign({}, options.headers || {});
+        const actor = getActor();
+        if (actor) headers["X-Actor"] = actor;
         if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
         const res = await fetch(path, Object.assign({}, options, { headers }));
         if (!res.ok) throw new Error("HTTP " + res.status);
@@ -320,7 +338,17 @@
         });
     }
 
+    function wireScorecardRefresh() {
+        const btn = document.getElementById("scorecard-refresh");
+        if (!btn) return;
+        btn.addEventListener("click", function () {
+            handleAction(btn, () => apiRequest("/api/scorecard/refresh", { method: "POST" }));
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
+        wireActorPicker();
+        wireScorecardRefresh();
         wireToggleRock();
         wireMoveRock();
         wireEditRock();
