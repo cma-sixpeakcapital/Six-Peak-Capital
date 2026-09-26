@@ -79,3 +79,21 @@ jobs:
                -H "Content-Type: application/json" \
                "${{ matrix.portal.base_url }}/api/jobs/send_reminders"
           echo
+
+      - name: Freeze L10 scorecard for the Tuesday meeting
+        # Weekly Scorecard (Phase 1). The portal only acts on Tuesday at/after
+        # 8:00 a.m. ET, once per week, so every other hourly run is a no-op and
+        # DST shifts or a late cron run don't matter. Runs even if the step
+        # above failed.
+        if: ${{ !cancelled() && matrix.portal.name == 'l10' }}
+        env:
+          API_KEY: ${{ secrets[matrix.portal.secret] }}
+        run: |
+          curl --fail-with-body \
+               --max-time 90 \
+               --retry 2 --retry-delay 15 \
+               --silent --show-error \
+               -X POST \
+               -H "X-API-Key: $API_KEY" \
+               "${{ matrix.portal.base_url }}/api/jobs/ingest_scorecard?kind=meeting"
+          echo
