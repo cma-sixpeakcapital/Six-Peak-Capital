@@ -3,10 +3,10 @@ from typing import Any, Callable
 
 from flask import Flask, abort, current_app, jsonify, render_template, request
 
-from .ingest import IngestService
+from .ingest import IngestService, ensure_topics
 from .readai import ReadAIClient
 from .storage import bullet_split
-from .summarizer import Summarizer
+from .summarizer import Summarizer, clean_topics
 
 
 def _get_storage():
@@ -28,6 +28,26 @@ def _get_ingest_service() -> IngestService:
         readai=readai_client,
         title_pattern=cfg.ingest_title_pattern,
     )
+
+
+def _with_topics(meeting: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Make sure the meeting summary is grouped by topic (one Claude call per
+    meeting, then stored). Never breaks the page: on any failure the plain
+    bullet list is shown instead."""
+    if not meeting or meeting.get("topics") or meeting.get("topics_error"):
+        return meeting
+    cfg = current_app.config["APP_CONFIG"]
+    summarizer = current_app.config.get("SUMMARIZER")
+    if summarizer is None:
+        if not cfg.anthropic_api_key:
+            return meeting
+        summarizer = Summarizer(api_key=cfg.anthropic_api_key, model=cfg.summarizer_model)
+    try:
+        if ensure_topics(meeting, summarizer):
+            _get_storage().save_meeting(meeting)
+    except Exception:  # pragma: no cover - defensive
+        current_app.logger.exception("topic grouping failed")
+    return meeting
 
 
 def _truthy(value: Any) -> bool:
@@ -58,7 +78,7 @@ def register_routes(app: Flask) -> None:
     def portal() -> Any:
         storage = _get_storage()
         doc = storage.load_doc()
-        latest = storage.latest_meeting()
+        latest = _with_topics(storage.latest_meeting())
         history = storage.list_meetings(limit=12)
         summary_bullets = bullet_split(latest.get("summary", "")) if latest else []
         return render_template(
@@ -72,11 +92,43 @@ def register_routes(app: Flask) -> None:
 
     @app.route("/meetings/<meeting_id>")
     def meeting_detail(meeting_id: str) -> Any:
-        meeting = _get_storage().get_meeting(meeting_id)
+        meeting = _with_topics(_get_storage().get_meeting(meeting_id))
         if not meeting:
             abort(404)
         summary_bullets = bullet_split(meeting.get("summary", ""))
         return render_template("meeting.html", meeting=meeting, summary_bullets=summary_bullets)
+
+    @app.route("/api/meetings/<meeting_id>/topics", methods=["PUT"])
+    def api_meeting_set_topics(meeting_id: str) -> Any:
+        """Store a topic grouping produced outside the portal (e.g. a scheduled
+        Claude task when the server has no Anthropic key). Open like the
+        other portal edits."""
+        storage = _get_storage()
+        meeting = storage.get_meeting(meeting_id)
+        if not meeting:
+            abort(404)
+        body = request.get_json(silent=True) or {}
+        topics = clean_topics(body.get("topics"))
+        if not topics:
+            abort(400, description="'topics' must be a list of {topic, notes[]} with at least one note")
+        meeting["topics"] = topics
+        meeting.pop("topics_error", None)
+        meeting["topics_source"] = (body.get("source") or "external")[:60]
+        storage.save_meeting(meeting)
+        return jsonify({"status": "ok", "id": meeting_id, "topics": topics})
+
+    @app.route("/api/meetings/<meeting_id>/topics", methods=["POST"])
+    @require_api_key
+    def api_meeting_regroup(meeting_id: str) -> Any:
+        """Re-run the topic grouping for one meeting (clears the stored result)."""
+        storage = _get_storage()
+        meeting = storage.get_meeting(meeting_id)
+        if not meeting:
+            abort(404)
+        meeting.pop("topics", None)
+        meeting.pop("topics_error", None)
+        meeting = _with_topics(meeting)
+        return jsonify({"topics": meeting.get("topics") or [], "error": meeting.get("topics_error")})
 
     # --- Read endpoints ---
 

@@ -54,6 +54,32 @@ def _assign_action_item_ids(items: list[dict[str, Any]]) -> list[dict[str, Any]]
     return out
 
 
+def ensure_topics(meeting: dict[str, Any] | None, summarizer: Any) -> bool:
+    """Group the meeting summary by topic (stored on the meeting as ``topics``).
+
+    Tried once per meeting: on failure ``topics_error`` is recorded and the
+    page falls back to the plain bullet list. Returns True when the meeting
+    changed and should be saved.
+    """
+    if not meeting or not (meeting.get("summary") or "").strip():
+        return False
+    if meeting.get("topics") or meeting.get("topics_error"):
+        return False
+    group = getattr(summarizer, "group_topics", None)
+    if group is None:
+        return False
+    try:
+        topics = group(meeting["summary"], title=meeting.get("title", "Six Peak IC Weekly Meeting"))
+    except Exception as exc:  # network, missing key, bad response
+        meeting["topics_error"] = f"{type(exc).__name__}: {exc}"[:300]
+        return True
+    if topics:
+        meeting["topics"] = topics
+    else:
+        meeting["topics_error"] = "no topics returned"
+    return True
+
+
 @dataclass
 class IngestService:
     storage: Storage
@@ -100,6 +126,7 @@ class IngestService:
                 meeting["action_items"] = extracted.get("action_items", [])
             if not meeting.get("files"):
                 meeting["files"] = extracted.get("files", [])
+        ensure_topics(meeting, self.summarizer)
         meeting["action_items"] = _assign_action_item_ids(meeting.get("action_items") or [])
         meeting.setdefault("ingested_at", datetime.now(timezone.utc).isoformat())
         if not meeting.get("id"):
