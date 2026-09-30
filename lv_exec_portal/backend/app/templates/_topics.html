@@ -1,0 +1,20 @@
+{% macro topic_bubbles(meeting, bullets) -%}
+{% if meeting.topics %}
+<div class="topic-grid">
+    {% for t in meeting.topics %}
+    <div class="topic-bubble">
+        <div class="topic-title">{{ t.topic }}</div>
+        <ul class="topic-notes">{% for n in t.notes %}<li>{{ n }}</li>{% endfor %}</ul>
+    </div>
+    {% endfor %}
+</div>
+{% elif bullets %}
+<ul class="bullet-summary">
+    {% for b in bullets %}<li>{{ b }}</li>{% endfor %}
+</ul>
+{% elif meeting.summary %}
+<p class="lede">{{ meeting.summary }}</p>
+{% else %}
+<p class="muted">No summary available.</p>
+{% endif %}
+{%- endmacro %}
