@@ -671,3 +671,22 @@ button.is-loading { opacity:.6; pointer-events:none; }
 /* The KPI band normally tucks under the hero; when the Weekly Summary sits
    between them it needs ordinary spacing instead. */
 .summary-card + .kpi-band { margin-top:1.4rem; }
+
+/* ---------- IDS issues list (10/7/2026) ---------- */
+.issue-list { list-style:none; margin:0.4rem 0 0; padding:0; display:flex; flex-direction:column; gap:0.6rem; }
+.issue { display:flex; gap:0.8rem; align-items:flex-start; background:var(--surface); border:1px solid var(--border);
+  border-left:4px solid var(--rust); border-radius:12px; padding:0.9rem 1.1rem; min-width:0; }
+.issue-n { flex:none; width:1.6rem; height:1.6rem; border-radius:50%; background:var(--rust-12); color:var(--rust);
+  font-family:var(--display); font-weight:700; font-size:0.8rem; display:flex; align-items:center; justify-content:center; }
+.issue-body { flex:1; min-width:0; }
+.issue-title { font-size:0.95rem; font-weight:600; color:var(--text); line-height:1.4; overflow-wrap:anywhere; }
+.issue-meta { display:flex; flex-wrap:wrap; align-items:center; gap:0.25rem 0.7rem; margin-top:0.25rem; }
+.issue-meta .owner { font-family:var(--display); font-weight:600; font-size:0.74rem; color:var(--rust); }
+.issue-detail { margin-top:0.35rem; }
+.issue .todo-right { flex-direction:row; flex-wrap:wrap; justify-content:flex-end; }
+.issue .add-form { width:100%; margin:0.7rem 0 0.2rem; }
+.issue-mk-todo { display:flex; align-items:center; gap:0.35rem; font-size:0.8rem; color:var(--text-sub); }
+@media(max-width:640px){ .issue { flex-wrap:wrap; } .issue .todo-right { width:100%; justify-content:flex-start; } }
+.issue-meta .td-created { font-size:0.72rem; color:var(--muted); }
+.add-form .issue-mk-todo input { flex:none; min-width:0; width:auto; margin:0; }
+.issue-mk-todo { flex:none; }

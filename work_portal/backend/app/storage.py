@@ -334,6 +334,14 @@ class Storage:
         """Every to-do ever recorded, including archived and dropped (for metrics)."""
         return list(self.load_rocks().get("todos", []) or [])
 
+    def edit_rocks(self, fn):
+        """Load the rocks document, apply ``fn(data)``, save, return its result.
+        Used by the IDS issues list (app/ids.py)."""
+        data = self.load_rocks()
+        result = fn(data)
+        self.save_rocks(data)
+        return result
+
     def add_todo(self, todo: dict[str, Any]) -> dict[str, Any]:
         data = self.load_rocks()
         todo = dict(todo)

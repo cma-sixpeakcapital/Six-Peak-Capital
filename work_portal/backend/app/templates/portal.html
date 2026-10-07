@@ -683,6 +683,93 @@
     {% endif %}
 </section>
 
+<div class="part-divider" id="ids-divider"><span>IDS</span></div>
+
+<section class="card" id="ids">
+    <div class="card-head row-between">
+        <div>
+            <span class="section-label">Issues List · Identify, Discuss, Solve</span>
+            <h2>Open issues{% if ids.open %} · {{ ids.open|length }}{% endif %}</h2>
+        </div>
+        <button type="button" class="btn-primary small" id="add-issue-open">+ Add Issue</button>
+    </div>
+
+    <form class="add-form todo-form hidden" id="add-issue-form" autocomplete="off">
+        {{ owner_picker([]) }}
+        <input type="text" name="title" placeholder="Issue (required)" required maxlength="200" />
+        <input type="text" name="detail" placeholder="Context (optional)" />
+        <div class="form-actions">
+            <button type="submit" class="btn-primary small">Save</button>
+            <button type="button" class="pill-btn" id="add-issue-cancel">Cancel</button>
+        </div>
+    </form>
+
+    {% if ids.open %}
+    <ol class="issue-list">
+        {% for i in ids.open %}
+        <li class="issue" data-issue-id="{{ i.id }}">
+            <span class="issue-n">{{ loop.index }}</span>
+            <div class="issue-body">
+                <div class="issue-title">{{ i.title }}</div>
+                <div class="issue-meta">
+                    {% if i.owner %}<span class="owner">{{ i.owner }}</span>{% endif %}
+                    <span class="source-tag">{{ (i.source or {}).label or 'added in portal' }}</span>
+                    {% if i.raised_at %}<span class="td-created">Raised {{ fmt_d(i.raised_at) }}</span>{% endif %}
+                </div>
+                {% if i.detail %}<div class="todo-detail issue-detail">{{ i.detail }}</div>{% endif %}
+                <form class="add-form todo-form edit-issue-form hidden" data-issue-id="{{ i.id }}" autocomplete="off">
+                    {{ owner_picker(i.owners or []) }}
+                    <input type="text" name="title" value="{{ i.title }}" required maxlength="200" />
+                    <input type="text" name="detail" value="{{ i.detail or '' }}" placeholder="Context (optional)" />
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary small">Save</button>
+                        <button type="button" class="pill-btn cancel-issue-form">Cancel</button>
+                        <button type="button" class="pill-btn danger delete-issue-btn" data-issue-id="{{ i.id }}" title="Only for an issue entered by mistake. To close it, use Solve or Drop.">Delete (entered by mistake)</button>
+                    </div>
+                </form>
+                <form class="add-form solve-issue-form hidden" data-issue-id="{{ i.id }}" autocomplete="off">
+                    <input type="text" name="resolution" placeholder="What did we decide? (becomes the to-do)" maxlength="300" />
+                    <label class="issue-mk-todo"><input type="checkbox" name="make_todo" checked /> Create to-do for {{ i.owner or 'owner' }}</label>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary small">Mark solved</button>
+                        <button type="button" class="pill-btn cancel-issue-form">Cancel</button>
+                    </div>
+                </form>
+                <form class="add-form drop-issue-form hidden" data-issue-id="{{ i.id }}" autocomplete="off">
+                    <input type="text" name="reason" placeholder="Why drop it? (optional)" maxlength="300" />
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary small">Drop issue</button>
+                        <button type="button" class="pill-btn cancel-issue-form">Cancel</button>
+                    </div>
+                </form>
+            </div>
+            <div class="todo-right">
+                <button type="button" class="pill-btn issue-btn" data-form="solve-issue-form" data-issue-id="{{ i.id }}">Solve</button>
+                <button type="button" class="pill-btn issue-btn" data-form="edit-issue-form" data-issue-id="{{ i.id }}">Edit</button>
+                <button type="button" class="pill-btn issue-btn" data-form="drop-issue-form" data-issue-id="{{ i.id }}">Drop</button>
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p class="muted">No open issues. Anything off track on the scorecard or rocks, or that comes up during the week, goes here.</p>
+    {% endif %}
+
+    {% if ids.closed %}
+    <details class="dropped-list">
+        <summary>Solved &amp; dropped this quarter ({{ ids.closed|length }})</summary>
+        <ul>
+            {% for i in ids.closed %}
+            <li><span class="res {{ 'res-complete' if i.status == 'solved' else 'res-killed' }}">{{ 'Solved' if i.status == 'solved' else 'Dropped' }}</span>
+                <b>{{ i.title }}</b>
+                <span class="muted">· {{ fmt_d(i.closed_at) }}{% if i.resolution %} · “{{ i.resolution }}”{% endif %}{% if i.todo_ids %} · → to-do{% endif %}</span>
+                <button type="button" class="pill-btn reopen-issue-btn" data-issue-id="{{ i.id }}">Reopen</button></li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+</section>
+
 <div class="part-divider" id="hitrate-divider"><span>Rock Results</span></div>
 
 {{ scoreboard_section() }}

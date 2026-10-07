@@ -6,6 +6,7 @@ from flask import Flask, abort, current_app, jsonify, render_template, request
 from datetime import date, datetime
 
 from .audit import actor_name, register_audit
+from . import ids as ids_lib
 from .ingest import IngestService, ensure_topics
 from .readai import ReadAIClient
 from .rock_files import FileArchivedError, FileValidationError
@@ -355,6 +356,7 @@ def register_routes(app: Flask) -> None:
             closed_quarters=closed_qs,
             quarter_views=[_quarter_view(rocks_data, q["id"]) for q in closed_qs],
             parked_issues=rocks_data.get("parked_issues") or [],
+            ids=ids_lib.view(rocks_data, since=str((cur_q or {}).get("start") or "")[:10] or None),
             scorecard=scorecard,
             sheet_edit_url=current_app.config["APP_CONFIG"].sheet_edit_url,
             actor_names=_actor_names(rocks_data, scorecard),
@@ -441,6 +443,74 @@ def register_routes(app: Flask) -> None:
         meeting["topics_source"] = (body.get("source") or "external")[:60]
         storage.save_meeting(meeting)
         return jsonify({"status": "ok", "id": meeting_id, "topics": topics})
+
+    # ---- IDS issues list (10/7/2026) -------------------------------------
+    def _issue_or_404(data, issue_id):
+        issue = ids_lib.find(data, issue_id)
+        if issue is None:
+            abort(404)
+        return issue
+
+    def _ids_call(fn):
+        try:
+            return _get_storage().edit_rocks(fn)
+        except ids_lib.IssueError as exc:
+            abort(400, description=str(exc))
+
+    @app.route("/api/meetings/<meeting_id>/issues", methods=["PUT"])
+    def api_meeting_set_issues(meeting_id: str) -> Any:
+        """IDS issues extracted from a meeting by the weekly scheduled Claude
+        task. Idempotent on meeting + title; never changes a status set in the
+        portal."""
+        meeting = _get_storage().get_meeting(meeting_id)
+        if not meeting:
+            abort(404)
+        body = request.get_json(silent=True) or {}
+        res = _ids_call(lambda d: ids_lib.upsert_from_meeting(
+            d, meeting, body.get("issues"), list(ROSTER), actor_name()))
+        return jsonify({"status": "ok", "added": len(res["added"]),
+                        "refreshed": len(res["refreshed"]),
+                        "ids": [i["id"] for i in res["added"]]})
+
+    @app.route("/api/issues")
+    def api_issues() -> Any:
+        return jsonify(ids_lib.view(_get_storage().load_rocks()))
+
+    @app.route("/api/issues", methods=["POST"])
+    def api_issue_add() -> Any:
+        body = request.get_json(silent=True) or {}
+        return jsonify(_ids_call(lambda d: ids_lib.add(d, body, list(ROSTER), actor_name())))
+
+    @app.route("/api/issues/<issue_id>", methods=["PATCH"])
+    def api_issue_update(issue_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        return jsonify(_ids_call(lambda d: ids_lib.update(_issue_or_404(d, issue_id), body, list(ROSTER))))
+
+    @app.route("/api/issues/<issue_id>/solve", methods=["POST"])
+    def api_issue_solve(issue_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        make_todo = str(body.get("make_todo") or "").lower() in ("1", "true", "on", "yes")
+        def fn(d):
+            issue = _issue_or_404(d, issue_id)
+            todo = ids_lib.solve(d, issue, body.get("resolution") or "", make_todo,
+                                 list(ROSTER), actor_name())
+            return {"issue": issue, "todo": todo}
+        return jsonify(_ids_call(fn))
+
+    @app.route("/api/issues/<issue_id>/drop", methods=["POST"])
+    def api_issue_drop(issue_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        return jsonify(_ids_call(lambda d: ids_lib.drop(_issue_or_404(d, issue_id), body.get("reason") or "", actor_name())))
+
+    @app.route("/api/issues/<issue_id>/reopen", methods=["POST"])
+    def api_issue_reopen(issue_id: str) -> Any:
+        return jsonify(_ids_call(lambda d: ids_lib.reopen(_issue_or_404(d, issue_id))))
+
+    @app.route("/api/issues/<issue_id>", methods=["DELETE"])
+    def api_issue_delete(issue_id: str) -> Any:
+        if not _ids_call(lambda d: ids_lib.delete(d, issue_id)):
+            abort(404)
+        return jsonify({"status": "deleted", "id": issue_id})
 
     @app.route("/api/meetings/<meeting_id>/topics", methods=["POST"])
     @require_api_key

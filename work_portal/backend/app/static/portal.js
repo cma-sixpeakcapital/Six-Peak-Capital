@@ -390,6 +390,61 @@
         });
     }
 
+    // ---- IDS issues list ----
+    function wireIssues() {
+        toggleForm("add-issue-form", "add-issue-open", "add-issue-cancel");
+        const add = document.getElementById("add-issue-form");
+        if (add) add.addEventListener("submit", function (e) {
+            e.preventDefault();
+            handleAction(add.querySelector("button[type=submit]"),
+                () => apiRequest("/api/issues", { method: "POST", body: JSON.stringify(todoFormData(add)) }));
+        });
+        document.querySelectorAll(".issue-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const li = btn.closest(".issue");
+                li.querySelectorAll("form").forEach(f => f.classList.add("hidden"));
+                showForm(li.querySelector("." + btn.dataset.form));
+            });
+        });
+        document.querySelectorAll(".cancel-issue-form").forEach(function (btn) {
+            btn.addEventListener("click", function () { btn.closest("form").classList.add("hidden"); });
+        });
+        const id = f => encodeURIComponent(f.dataset.issueId);
+        document.querySelectorAll(".edit-issue-form").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                handleAction(form.querySelector("button[type=submit]"),
+                    () => apiRequest(`/api/issues/${id(form)}`, { method: "PATCH", body: JSON.stringify(todoFormData(form)) }));
+            });
+        });
+        document.querySelectorAll(".solve-issue-form").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const data = { resolution: form.resolution.value, make_todo: form.make_todo.checked };
+                handleAction(form.querySelector("button[type=submit]"),
+                    () => apiRequest(`/api/issues/${id(form)}/solve`, { method: "POST", body: JSON.stringify(data) }));
+            });
+        });
+        document.querySelectorAll(".drop-issue-form").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                handleAction(form.querySelector("button[type=submit]"),
+                    () => apiRequest(`/api/issues/${id(form)}/drop`, { method: "POST", body: JSON.stringify({ reason: form.reason.value }) }));
+            });
+        });
+        document.querySelectorAll(".reopen-issue-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                handleAction(btn, () => apiRequest(`/api/issues/${id(btn)}/reopen`, { method: "POST" }));
+            });
+        });
+        document.querySelectorAll(".delete-issue-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                if (!confirm("Delete this issue? Use only for one entered by mistake.")) return;
+                handleAction(btn, () => apiRequest(`/api/issues/${id(btn)}`, { method: "DELETE" }));
+            });
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         wireActorPicker();
         wireScorecardRefresh();
@@ -407,5 +462,6 @@
         wireAddTodo();
         wireAddCompanyRock();
         wireAddPersonRock();
+        wireIssues();
     });
 })();
