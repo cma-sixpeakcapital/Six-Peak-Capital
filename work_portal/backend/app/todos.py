@@ -268,3 +268,84 @@ def completions_from_audit(entries: Iterable[dict[str, Any]]) -> dict[str, str]:
             if after.get("completed") is True and at:
                 out[item[5:]] = str(at)
     return out
+
+
+# --- meeting action items -> to-dos (Chris, 10/7/2026) ----------------------
+# Every Read.ai action item becomes a to-do at ingest; there is no manual
+# "move" step any more. The meeting keeps its action-item list (each item gets
+# ``todo_id``) so the follow-up email and meeting pages still read it.
+
+def _norm_text(s: Any) -> str:
+    return re.sub(r"\s+", " ", str(s or "")).strip().lower()
+
+
+def _meeting_source_label(meeting: dict[str, Any]) -> str:
+    kind = "Rock Session" if meeting.get("kind") == "rock_session" else "L10"
+    d = str(meeting.get("date") or "")[:10]
+    try:
+        dd = date.fromisoformat(d)
+        return f"from {kind} {dd.month}/{dd.day}"
+    except ValueError:
+        return f"from {kind}"
+
+
+def todos_from_action_items(meeting: dict[str, Any], data: dict[str, Any],
+                            people: Iterable[str] = (), now: datetime | None = None,
+                            new_id: Any = None) -> list[dict[str, Any]]:
+    """Create a to-do for each open action item on ``meeting`` (mutates both).
+
+    Idempotent: an item already carrying ``todo_id`` is skipped, and an item
+    whose text matches a to-do already created from the same meeting (a
+    webhook re-send regenerates item ids) is linked to that to-do instead of
+    duplicated. Completed items are not converted. Returns the new to-dos.
+    """
+    import uuid as _uuid
+    new_id = new_id or (lambda: f"td_{_uuid.uuid4().hex[:10]}")
+    meeting_id = meeting.get("id") or ""
+    todos = data.setdefault("todos", [])
+    existing: dict[str, str] = {}
+    for t in todos:
+        src = t.get("source") or {}
+        if src.get("meeting_id") == meeting_id and meeting_id:
+            existing.setdefault(_norm_text(src.get("text") or t.get("task")), t.get("id"))
+    known_ids = {t.get("id") for t in todos}
+    created: list[dict[str, Any]] = []
+    label = _meeting_source_label(meeting)
+    for item in meeting.get("action_items") or []:
+        if item.get("todo_id") and item["todo_id"] in known_ids:
+            continue
+        text = item.get("task") or item.get("text") or ""
+        key = _norm_text(text)
+        if not key or item.get("completed"):
+            continue
+        if key in existing:
+            item["todo_id"] = existing[key]
+            continue
+        owner = item.get("owner") or ""
+        if not owner:
+            from .ingest import _extract_owner  # lazy: ingest imports storage
+            owner = _extract_owner(text)
+        todo = {
+            "id": new_id(),
+            "owner": owner,
+            "task": text,
+            "due": item.get("due", ""),
+            "completed": False,
+            "source": {
+                "type": "action_item",
+                "label": label,
+                "meeting_id": meeting_id,
+                "action_id": item.get("id"),
+                "meeting_title": meeting.get("title", ""),
+                "text": text,
+            },
+        }
+        if now is not None:
+            todo["created_at"] = now.isoformat()
+        todo = init_new(todo, people, now)
+        todos.append(todo)
+        item["todo_id"] = todo["id"]
+        existing[key] = todo["id"]
+        known_ids.add(todo["id"])
+        created.append(todo)
+    return created

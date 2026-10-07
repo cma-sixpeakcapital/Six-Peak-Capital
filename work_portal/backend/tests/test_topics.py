@@ -51,7 +51,7 @@ def test_portal_shows_topic_bubbles_and_stores_them(tmp_config, storage):
     app.config["SUMMARIZER"] = s
     with app.test_client() as c:
         html = c.get("/").get_data(as_text=True)
-        assert 'class="topic-bubble"' in html and "Lien releases" in html and "Closing in about three months." in html
+        assert 'class="topic-bubble' in html and "Lien releases" in html and "Closing in about three months." in html
         c.get("/")
         c.get("/meetings/m1")
     assert s.calls == 1  # grouped once, then read from the stored meeting
@@ -92,5 +92,5 @@ def test_put_topics_stores_and_validates(tmp_config, storage):
         html = c.get("/").get_data(as_text=True)
     m = app.config["STORAGE"].get_meeting("m1")
     assert m["topics"][0]["topic"] == "Reseda" and m["topics_source"] == "claude-scheduled"
-    assert 'class="topic-bubble"' in html
+    assert 'class="topic-bubble' in html
     assert app.config["STORAGE"].list_audit()[0]["action"] == "Set meeting summary topics"

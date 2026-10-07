@@ -293,7 +293,9 @@ def test_portal_renders_text_only_action_items(client, storage):
             {"id": "ai_1", "text": "Tom will follow up with the lender by Friday", "completed": False},
         ],
     })
-    body = client.get("/").data.decode()
+    # Action items no longer sit on the dashboard (they become to-dos at
+    # ingest); the meeting page still lists them.
+    body = client.get("/meetings/legacy").data.decode()
     assert "Tom will follow up with the lender by Friday" in body
 
 
@@ -500,8 +502,10 @@ def test_ingest_assigns_action_ids_and_purges_todos(client, storage):
     for item in m["action_items"]:
         assert item["id"].startswith("ai_")
         assert item["completed"] is False
-    # Completed todo should have been purged
-    assert storage.list_todos() == []
+    # Completed todo purged; the two action items are now to-dos (10/7/2026)
+    tasks = sorted(t["task"] for t in storage.list_todos())
+    assert tasks == ["t", "u"]
+    assert all(item.get("todo_id") for item in m["action_items"])
 
 
 def test_portal_renders_bulleted_summary(client, storage):

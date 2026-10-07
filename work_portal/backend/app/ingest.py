@@ -26,6 +26,10 @@ _OWNER_RE = re.compile(
 _ROCK_SESSION_RE = re.compile(r"(?i)\brock session\b")
 
 
+def _norm(text: Any) -> str:
+    return re.sub(r"\s+", " ", str(text or "")).strip().lower()
+
+
 def _classify_kind(title: str) -> str:
     return "rock_session" if _ROCK_SESSION_RE.search(title or "") else "l10"
 
@@ -152,6 +156,19 @@ class IngestService:
         meeting.setdefault("ingested_at", datetime.now(timezone.utc).isoformat())
         if not meeting.get("id"):
             meeting["id"] = meeting.get("date") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%S")
+        # Action items go straight to the to-do list (no manual move step).
+        # On a re-ingest, carry over the todo links already on the stored copy.
+        prior = self.storage.get_meeting(meeting["id"])
+        if prior:
+            links = {_norm(a.get("task") or a.get("text")): a.get("todo_id")
+                     for a in prior.get("action_items") or [] if a.get("todo_id")}
+            for a in meeting["action_items"]:
+                tid = links.get(_norm(a.get("task") or a.get("text")))
+                if tid and not a.get("todo_id"):
+                    a["todo_id"] = tid
+        convert = getattr(self.storage, "convert_action_items", None)
+        if convert is not None:
+            convert(meeting)
         self.storage.save_meeting(meeting)
         try:
             self.storage.purge_completed_todos()
