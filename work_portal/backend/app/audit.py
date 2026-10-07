@@ -52,6 +52,13 @@ ACTION_LABELS = {
     "api_action_move": "Move action item to To-Dos",
     "api_scorecard_refresh": "Refresh scorecard from Sheet",
     "api_meeting_set_topics": "Set meeting summary topics",
+    "api_meeting_set_issues": "Add IDS issues from meeting",
+    "api_issue_add": "Add IDS issue",
+    "api_issue_update": "Edit IDS issue",
+    "api_issue_solve": "Solve IDS issue",
+    "api_issue_drop": "Drop IDS issue",
+    "api_issue_reopen": "Reopen IDS issue",
+    "api_issue_delete": "Delete IDS issue (entered by mistake)",
 }
 
 
