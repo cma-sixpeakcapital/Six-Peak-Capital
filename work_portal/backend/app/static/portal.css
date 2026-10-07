@@ -227,7 +227,7 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .rocks-list { list-style:none; display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:0.8rem; }
 .rock {
   background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.1rem 1.2rem;
-  transition:.3s; display:flex; gap:0.75rem; align-items:flex-start;
+  transition:.3s; display:flex; gap:0.75rem; align-items:flex-start; min-width:0;
 }
 .rock:hover { box-shadow:var(--sh-hover); border-color:rgba(196,88,26,.35); }
 .rock > .check { border-radius:50%; }  /* goals/rocks toggle reads as a circle, per mockup */
@@ -247,11 +247,11 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .category-heading h3 { font-family:var(--display); font-weight:600; font-size:1.05rem; color:var(--text); }
 .category-count { margin-left:auto; font-size:0.78rem; font-weight:600; color:var(--rust); background:var(--rust-12); padding:0.2rem 0.6rem; border-radius:999px; }
 .people-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:1rem; }
-.person-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.2rem; box-shadow:var(--sh-card); }
+.person-card { min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.2rem; box-shadow:var(--sh-card); }
 .person-head { margin-bottom:0.8rem; }
 .person-head strong { font-family:var(--display); font-weight:600; font-size:0.95rem; }
 .person-count { font-size:0.74rem; color:var(--muted); margin-left:0.5rem; }
-.person-card .rocks-list { grid-template-columns:1fr; gap:0.6rem; margin-top:0.8rem; }
+.person-card .rocks-list { grid-template-columns:minmax(0,1fr); gap:0.6rem; margin-top:0.8rem; }
 
 /* ---------- Inline add/edit forms ---------- */
 .add-form { display:flex; flex-wrap:wrap; gap:0.6rem; margin:0.8rem 0 1.2rem; align-items:flex-start; }
@@ -354,7 +354,7 @@ button.is-loading { opacity:.6; pointer-events:none; }
    blowing out the card even if a raw token slips through. */
 .rock-inline-link { color:var(--rust); border-bottom:1px dashed rgba(196,88,26,.5);
   overflow-wrap:anywhere; }
-.rock-files { margin-top:0.55rem; display:flex; flex-wrap:wrap; align-items:center; gap:0.4rem; }
+.rock-files { min-width:0; margin-top:0.55rem; display:flex; flex-wrap:wrap; align-items:center; gap:0.4rem; }
 .file-chips { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:0.4rem; width:100%; }
 .file-chip { display:inline-flex; flex-wrap:wrap; align-items:center; gap:0.1rem 0.3rem;
   min-width:0; max-width:100%;
@@ -653,3 +653,21 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .add-form .owner-chip input[type=checkbox] { width:auto; min-width:0; flex:none; padding:0; margin:0; border:none; box-shadow:none; background:none; accent-color:var(--rust); }
 .owner-chip { white-space:nowrap; }
 .add-form .due-field input[type=date] { flex:0 0 auto; width:auto; min-width:0; }
+
+/* ---------- Weekly Summary: collapsible topics (10/7/2026) ----------
+   Titles only by default; click a title to read its notes. */
+.topic-grid-collapsible { align-items:start; }
+.topic-collapsible { padding:0.6rem 0.8rem; }
+.topic-collapsible > summary { list-style:none; cursor:pointer; user-select:none; margin-bottom:0;
+  display:inline-flex; align-items:center; gap:0.45rem; }
+.topic-collapsible > summary::-webkit-details-marker { display:none; }
+.topic-collapsible > summary::before { content:"▸"; font-size:0.7rem; transition:transform .15s; }
+.topic-collapsible[open] > summary::before { transform:rotate(90deg); }
+.topic-collapsible[open] > summary { margin-bottom:0.55rem; }
+.topic-n { font-size:0.66rem; font-weight:600; letter-spacing:0; color:var(--muted);
+  background:var(--surface); border-radius:99px; padding:0 0.4rem; }
+.summary-files { margin-top:0.9rem; display:block; }
+.summary-files .files-list { margin-top:0.2rem; }
+/* The KPI band normally tucks under the hero; when the Weekly Summary sits
+   between them it needs ordinary spacing instead. */
+.summary-card + .kpi-band { margin-top:1.4rem; }

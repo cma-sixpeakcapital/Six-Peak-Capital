@@ -1,19 +1,40 @@
-{% macro topic_bubbles(meeting, bullets) -%}
+{% macro topic_bubbles(meeting, bullets, collapsible=False) -%}
 {% if meeting.topics %}
-<div class="topic-grid">
+<div class="topic-grid{{ ' topic-grid-collapsible' if collapsible }}">
     {% for t in meeting.topics %}
+    {% if collapsible %}
+    <details class="topic-bubble topic-collapsible">
+        <summary class="topic-title">{{ t.topic }} <span class="topic-n">{{ t.notes|length }}</span></summary>
+        <ul class="topic-notes">{% for n in t.notes %}<li>{{ n }}</li>{% endfor %}</ul>
+    </details>
+    {% else %}
     <div class="topic-bubble">
         <div class="topic-title">{{ t.topic }}</div>
         <ul class="topic-notes">{% for n in t.notes %}<li>{{ n }}</li>{% endfor %}</ul>
     </div>
+    {% endif %}
     {% endfor %}
 </div>
 {% elif bullets %}
+{% if collapsible %}
+<details class="topic-bubble topic-collapsible">
+    <summary class="topic-title">Summary <span class="topic-n">{{ bullets|length }}</span></summary>
+    <ul class="bullet-summary">{% for b in bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+</details>
+{% else %}
 <ul class="bullet-summary">
     {% for b in bullets %}<li>{{ b }}</li>{% endfor %}
 </ul>
+{% endif %}
 {% elif meeting.summary %}
+{% if collapsible %}
+<details class="topic-bubble topic-collapsible">
+    <summary class="topic-title">Summary</summary>
+    <p class="lede">{{ meeting.summary }}</p>
+</details>
+{% else %}
 <p class="lede">{{ meeting.summary }}</p>
+{% endif %}
 {% else %}
 <p class="muted">No summary available.</p>
 {% endif %}

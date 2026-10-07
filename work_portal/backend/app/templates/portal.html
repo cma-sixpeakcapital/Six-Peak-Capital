@@ -56,7 +56,7 @@
 
 {% macro file_chip(f, rock_id, readonly=False) -%}
 <li class="file-chip" data-file-id="{{ f.id }}">
-    <a class="file-chip-link" href="{{ f.url }}" target="_blank" rel="noopener noreferrer" title="{{ f.url }}">{{ file_icon() }}<span class="file-label">{{ f.label }}</span></a>
+    <a class="file-chip-link" href="{{ f.url }}" target="_blank" rel="noopener noreferrer" title="{{ f.url }}">{{ file_icon() }}<span class="file-label" title="{{ f.label }}">{{ f.label }}</span></a>
     {% if not readonly %}
     <button type="button" class="file-edit-btn" data-rock-id="{{ rock_id }}" data-file-id="{{ f.id }}" title="Edit link" aria-label="Edit link">✎</button>
     <button type="button" class="file-remove-btn" data-rock-id="{{ rock_id }}" data-file-id="{{ f.id }}" title="Remove link" aria-label="Remove link">×</button>
@@ -151,22 +151,6 @@
 </li>
 {%- endmacro %}
 
-{% macro action_row(item, meeting_id) -%}
-<li class="action-item action-{{ 'complete' if item.completed else 'incomplete' }}" data-action-id="{{ item.id }}">
-    <button type="button" class="check" data-action-id="{{ item.id }}" data-meeting-id="{{ meeting_id }}"
-            aria-label="Toggle complete"
-            title="Click to toggle complete">{% if item.completed %}✓{% else %}◻{% endif %}</button>
-    <div class="action-body">
-        <span class="owner">{{ item.owner or "Unassigned" }}</span>
-        <span class="task">{{ item.task or item.text or "" }}</span>
-    </div>
-    <div class="action-right">
-        {% if item.due %}<span class="due">due {{ item.due }}</span>{% endif %}
-        <button type="button" class="pill-btn move-action-btn" data-action-id="{{ item.id }}" data-meeting-id="{{ meeting_id }}"
-                title="Move to To-Dos">→ To-Dos</button>
-    </div>
-</li>
-{%- endmacro %}
 
 
 {% macro frac(f) -%}
@@ -174,8 +158,7 @@
 {%- endmacro %}
 
 {% macro todo_hit_rate(ts) -%}
-<div class="part-divider part-divider-sm" id="todo-hit-rate"><span>To-Dos</span></div>
-<div class="td-kpis">
+<div class="td-kpis" id="todo-hit-rate">
     <div class="card td-headline {{ 'hit' if ts.headline_hit else ('miss' if ts.headline.d else '') }}">
         <span class="section-label">7-day completion · last 7 days</span>
         <div class="td-big">{% if ts.headline.d %}{{ ts.headline.pct }}%{% else %}—{% endif %}</div>
@@ -328,8 +311,14 @@
         </div>
     </div>
 
-    {# ---- Post-mortem ---- #}
-    {% if scoreboard.postmortem %}
+</section>
+{% endif %}
+{%- endmacro %}
+
+
+{% macro postmortem_section() -%}
+{% if scoreboard and scoreboard.postmortem %}
+<section class="rocks-section" id="postmortem">
     <div class="card">
         <div class="card-head"><span class="section-label">{{ scoreboard.last_closed.label }} post-mortem</span><h3>What didn't land, and what it became</h3></div>
         <div class="tbl-wrap">
@@ -343,13 +332,9 @@
         </table>
         </div>
     </div>
-    {% endif %}
-
-    {% if todo_stats %}{{ todo_hit_rate(todo_stats) }}{% endif %}
 </section>
 {% endif %}
 {%- endmacro %}
-
 
 {% macro sc_cell(c, unit) -%}
 {% if c.state == 'pre' %}<td class="sc-c sc-pre" title="Before the first live week">·</td>
@@ -460,139 +445,43 @@
     </div>
 </section>
 
+{% if latest %}
+<section class="card summary-card" id="summary">
+    <div class="card-head row-between">
+        <div>
+            <span class="section-label">Weekly Summary</span>
+            <h2>{{ latest.date }} — {{ latest.title }}</h2>
+        </div>
+        <button type="button" class="pill-btn" id="summary-toggle-all" aria-expanded="false">Expand all</button>
+    </div>
+    {{ topic_bubbles(latest, summary_bullets, collapsible=True) }}
+    {% if latest.files %}
+    <details class="topic-bubble topic-collapsible summary-files">
+        <summary class="topic-title">Files referenced <span class="topic-n">{{ latest.files|length }}</span></summary>
+        <ul class="files-list">
+            {% for f in latest.files %}
+            <li>
+                {% if f.url %}<a href="{{ f.url }}">{{ f.name }}</a>{% else %}<span>{{ f.name }}</span>{% endif %}
+                {% if f.note %}<span class="file-note">— {{ f.note }}</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+    {% if latest.source_url %}
+    <p class="source"><a href="{{ latest.source_url }}" target="_blank" rel="noopener">Open in Read.ai →</a></p>
+    {% endif %}
+</section>
+{% endif %}
+
 <div class="kpi-band reveal">
     <div class="kpi"><div class="v" id="kpi-rocks-v">{{ kpis.rocks_done }}<small>/{{ kpis.rocks_total }}</small></div><div class="l">Rocks Complete{% if current_quarter %} · {{ current_quarter.label }}{% endif %}</div><div class="track"><div class="fill" id="kpi-rocks-fill" data-pct="{{ kpis.rocks_pct }}"></div></div></div>
-    <div class="kpi"><div class="v" id="kpi-actions-v">{{ kpis.actions_done }}<small>/{{ kpis.actions_total }}</small></div><div class="l">Actions Closed</div><div class="track"><div class="fill" id="kpi-actions-fill" data-pct="{{ kpis.actions_pct }}"></div></div></div>
+    <div class="kpi"><div class="v" id="kpi-actions-v">{% if todo_stats and todo_stats.headline.d %}{{ todo_stats.headline.pct }}<small>%</small>{% else %}—{% endif %}</div><div class="l">To-Dos Done in 7 Days</div><div class="track"><div class="fill" id="kpi-actions-fill" data-pct="{{ todo_stats.headline.pct if (todo_stats and todo_stats.headline.d) else 0 }}"></div></div></div>
     <div class="kpi"><div class="v" id="kpi-todos-v">{{ kpis.todos_open }}</div><div class="l">Open To-Dos</div><div class="track"><div class="fill" id="kpi-todos-fill" data-pct="{{ kpis.todos_pct }}"></div></div></div>
     <div class="kpi"><div class="v" id="kpi-cats-v">{% if scoreboard.last_closed %}{{ scoreboard.last_closed.official.complete if scoreboard.last_closed.official else scoreboard.last_closed.complete }}<small>/{{ scoreboard.last_closed.official.total if scoreboard.last_closed.official else scoreboard.last_closed.total }}</small>{% else %}{{ kpis.owners }}{% endif %}</div><div class="l">{% if scoreboard.last_closed %}{{ scoreboard.last_closed.label }} Result{% else %}Rock Owners{% endif %}</div><div class="track"><div class="fill" id="kpi-cats-fill" data-pct="{% if scoreboard.last_closed %}{{ (100 * scoreboard.last_closed.official.complete / scoreboard.last_closed.official.total)|round|int if scoreboard.last_closed.official else scoreboard.last_closed.pct }}{% else %}100{% endif %}"></div></div></div>
 </div>
 
 {{ scorecard_section() }}
-
-{% if latest %}
-<section class="card">
-    <div class="card-head">
-        <span class="section-label">Weekly Summary</span>
-        <h2>{{ latest.date }} — {{ latest.title }}</h2>
-    </div>
-    {{ topic_bubbles(latest, summary_bullets) }}
-    {% if latest.source_url %}
-    <p class="source"><a href="{{ latest.source_url }}" target="_blank" rel="noopener">Open in Read.ai →</a></p>
-    {% endif %}
-</section>
-
-<section class="card">
-    <div class="card-head">
-        <span class="section-label">Action Items</span>
-        <h2>From {{ latest.date }}</h2>
-    </div>
-    {% if latest.action_items %}
-    <ul class="action-list">
-        {% for item in latest.action_items %}{{ action_row(item, latest.id) }}{% endfor %}
-    </ul>
-    {% else %}
-    <p class="muted">No action items remaining.</p>
-    {% endif %}
-</section>
-
-<section class="card">
-    <div class="card-head">
-        <span class="section-label">Files Referenced</span>
-        <h2>Needed to keep moving</h2>
-    </div>
-    {% if latest.files %}
-    <ul class="files-list">
-        {% for f in latest.files %}
-        <li>
-            {% if f.url %}<a href="{{ f.url }}">{{ f.name }}</a>{% else %}<span>{{ f.name }}</span>{% endif %}
-            {% if f.note %}<span class="file-note">— {{ f.note }}</span>{% endif %}
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p class="muted">No files referenced.</p>
-    {% endif %}
-</section>
-{% endif %}
-
-<div class="part-divider" id="todos-divider"><span>To-Dos</span></div>
-
-<section class="card" id="todos">
-    <div class="card-head row-between">
-        <div>
-            <span class="section-label">To-Dos</span>
-            <h2>Active this week</h2>
-        </div>
-        <button type="button" class="btn-primary small" id="add-todo-open">+ Add To-Do</button>
-    </div>
-
-    <form class="add-form todo-form hidden" id="add-todo-form" autocomplete="off">
-        {{ owner_picker([]) }}
-        <input type="text" name="task" placeholder="Task (required)" required />
-        <label class="due-field">Due <input type="date" name="due" /> <span class="muted">blank = 7 days</span></label>
-        <div class="form-actions">
-            <button type="submit" class="btn-primary small">Save</button>
-            <button type="button" class="pill-btn" id="add-todo-cancel">Cancel</button>
-        </div>
-    </form>
-
-    {% if todos %}
-    <ul class="todo-list">
-        {% for t in todos %}
-        <li class="todo todo-{{ 'complete' if t.completed else 'incomplete' }}" data-todo-id="{{ t.id }}">
-            <button type="button" class="check" data-todo-id="{{ t.id }}"
-                    aria-label="Toggle complete"
-                    title="Click to toggle complete">{% if t.completed %}✓{% else %}◻{% endif %}</button>
-            <div class="todo-body">
-                {% if t.owner %}<span class="owner">{{ t.owner }}</span>{% else %}<span class="owner owner-none">Unassigned</span>{% endif %}
-                <span class="task">{{ t.task }}</span>
-                {{ todo_dates(t) }}
-                {% if t.source and t.source.type and t.source.type != 'manual' %}
-                <span class="source-tag" title="{{ t.source.type }}">{{ t.source.label or ('from ' ~ t.source.type.replace('_', ' ')) }}</span>
-                {% endif %}
-                {% if t.detail %}<div class="todo-detail">{{ t.detail }}</div>{% endif %}
-                <form class="add-form todo-form edit-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
-                    {{ owner_picker(t.owners or []) }}
-                    <input type="text" name="task" placeholder="Task" value="{{ t.task or '' }}" required />
-                    <label class="due-field">Due <input type="date" name="due" value="{{ t.due or '' }}" /></label>
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary small">Save</button>
-                        <button type="button" class="pill-btn cancel-edit-todo">Cancel</button>
-                        <button type="button" class="pill-btn danger delete-todo-btn" data-todo-id="{{ t.id }}" title="Only for a to-do entered by mistake. To stop working on it, use Drop.">Delete (entered by mistake)</button>
-                    </div>
-                </form>
-                <form class="add-form drop-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
-                    <input type="text" name="reason" placeholder="Why drop it? (optional)" maxlength="300" />
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary small">Drop to-do</button>
-                        <button type="button" class="pill-btn cancel-drop-todo">Cancel</button>
-                    </div>
-                </form>
-            </div>
-            <div class="todo-right">
-                <button type="button" class="pill-btn edit-todo-btn" data-todo-id="{{ t.id }}" title="Edit">Edit</button>
-                {% if not t.completed %}<button type="button" class="pill-btn drop-todo-btn" data-todo-id="{{ t.id }}" title="Drop: stop tracking it. Counted separately; not in the completion rate.">Drop</button>{% endif %}
-            </div>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p class="muted">No to-dos yet. Move action items or rocks here, or click + Add To-Do.</p>
-    {% endif %}
-
-    {% if dropped_todos %}
-    <details class="dropped-list">
-        <summary>Dropped this quarter ({{ dropped_todos|length }})</summary>
-        <ul>
-            {% for t in dropped_todos %}
-            <li><span class="owner">{{ t.owner or 'Unassigned' }}</span> {{ t.task }}
-                <span class="muted">· dropped {{ fmt_d(t.dropped_at) }}{% if t.dropped_by %} by {{ t.dropped_by }}{% endif %}{% if t.drop_reason %} · “{{ t.drop_reason }}”{% endif %}</span>
-                <button type="button" class="pill-btn restore-todo-btn" data-todo-id="{{ t.id }}">Restore</button></li>
-            {% endfor %}
-        </ul>
-    </details>
-    {% endif %}
-</section>
 
 {% if current_quarter %}<div class="part-divider" id="rocks-divider"><span>{{ current_quarter.label.split(' ')[0] if current_quarter.label else '' }} Rocks</span></div>{% endif %}
 
@@ -713,6 +602,93 @@
     {% endif %}
 </section>
 
+<div class="part-divider" id="todos-divider"><span>To-Dos</span></div>
+
+{% if todo_stats %}{{ todo_hit_rate(todo_stats) }}{% endif %}
+
+<section class="card" id="todos">
+    <div class="card-head row-between">
+        <div>
+            <span class="section-label">To-Dos</span>
+            <h2>Active this week</h2>
+        </div>
+        <button type="button" class="btn-primary small" id="add-todo-open">+ Add To-Do</button>
+    </div>
+
+    <form class="add-form todo-form hidden" id="add-todo-form" autocomplete="off">
+        {{ owner_picker([]) }}
+        <input type="text" name="task" placeholder="Task (required)" required />
+        <label class="due-field">Due <input type="date" name="due" /> <span class="muted">blank = 7 days</span></label>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary small">Save</button>
+            <button type="button" class="pill-btn" id="add-todo-cancel">Cancel</button>
+        </div>
+    </form>
+
+    {% if todos %}
+    <ul class="todo-list">
+        {% for t in todos %}
+        <li class="todo todo-{{ 'complete' if t.completed else 'incomplete' }}" data-todo-id="{{ t.id }}">
+            <button type="button" class="check" data-todo-id="{{ t.id }}"
+                    aria-label="Toggle complete"
+                    title="Click to toggle complete">{% if t.completed %}✓{% else %}◻{% endif %}</button>
+            <div class="todo-body">
+                {% if t.owner %}<span class="owner">{{ t.owner }}</span>{% else %}<span class="owner owner-none">Unassigned</span>{% endif %}
+                <span class="task">{{ t.task }}</span>
+                {{ todo_dates(t) }}
+                {% if t.source and t.source.type and t.source.type != 'manual' %}
+                <span class="source-tag" title="{{ t.source.type }}">{{ t.source.label or ('from ' ~ t.source.type.replace('_', ' ')) }}</span>
+                {% endif %}
+                {% if t.detail %}<div class="todo-detail">{{ t.detail }}</div>{% endif %}
+                <form class="add-form todo-form edit-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
+                    {{ owner_picker(t.owners or []) }}
+                    <input type="text" name="task" placeholder="Task" value="{{ t.task or '' }}" required />
+                    <label class="due-field">Due <input type="date" name="due" value="{{ t.due or '' }}" /></label>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary small">Save</button>
+                        <button type="button" class="pill-btn cancel-edit-todo">Cancel</button>
+                        <button type="button" class="pill-btn danger delete-todo-btn" data-todo-id="{{ t.id }}" title="Only for a to-do entered by mistake. To stop working on it, use Drop.">Delete (entered by mistake)</button>
+                    </div>
+                </form>
+                <form class="add-form drop-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
+                    <input type="text" name="reason" placeholder="Why drop it? (optional)" maxlength="300" />
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary small">Drop to-do</button>
+                        <button type="button" class="pill-btn cancel-drop-todo">Cancel</button>
+                    </div>
+                </form>
+            </div>
+            <div class="todo-right">
+                <button type="button" class="pill-btn edit-todo-btn" data-todo-id="{{ t.id }}" title="Edit">Edit</button>
+                {% if not t.completed %}<button type="button" class="pill-btn drop-todo-btn" data-todo-id="{{ t.id }}" title="Drop: stop tracking it. Counted separately; not in the completion rate.">Drop</button>{% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No to-dos yet. Meeting action items land here automatically, or click + Add To-Do.</p>
+    {% endif %}
+
+    {% if dropped_todos %}
+    <details class="dropped-list">
+        <summary>Dropped this quarter ({{ dropped_todos|length }})</summary>
+        <ul>
+            {% for t in dropped_todos %}
+            <li><span class="owner">{{ t.owner or 'Unassigned' }}</span> {{ t.task }}
+                <span class="muted">· dropped {{ fmt_d(t.dropped_at) }}{% if t.dropped_by %} by {{ t.dropped_by }}{% endif %}{% if t.drop_reason %} · “{{ t.drop_reason }}”{% endif %}</span>
+                <button type="button" class="pill-btn restore-todo-btn" data-todo-id="{{ t.id }}">Restore</button></li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+</section>
+
+<div class="part-divider" id="hitrate-divider"><span>Rock Results</span></div>
+
+{{ scoreboard_section() }}
+
+{{ postmortem_section() }}
+
 {% if quarter_views or archived_rocks %}
 <section class="rocks-section" id="past-quarters">
     <div class="section-heading">
@@ -767,8 +743,6 @@
 </section>
 {% endif %}
 
-{{ scoreboard_section() }}
-
 {% if parked_issues %}
 <section class="card" id="issues">
     <div class="card-head">
@@ -813,6 +787,18 @@
 
 {% block scripts %}
 <script>
+  // Weekly Summary: one button opens / closes every topic.
+  (function () {
+    var btn = document.getElementById('summary-toggle-all');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var items = document.querySelectorAll('#summary details.topic-collapsible');
+      var open = btn.getAttribute('aria-expanded') !== 'true';
+      items.forEach(function (d) { d.open = open; });
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.textContent = open ? 'Collapse all' : 'Expand all';
+    });
+  })();
   // KPI band values are rendered server-side (routes._kpis); JS only animates the fills.
   (function () {
     setTimeout(function () {

@@ -30,17 +30,13 @@
     <ul class="action-list">
         {% for item in meeting.action_items %}
         <li class="action-item action-{{ 'complete' if item.completed else 'incomplete' }}">
-            <button type="button" class="check" data-action-id="{{ item.id }}" data-meeting-id="{{ meeting.id }}"
-                    aria-label="Toggle complete"
-                    title="Click to toggle complete">{% if item.completed %}✓{% else %}◻{% endif %}</button>
             <div class="action-body">
                 <span class="owner">{{ item.owner or "Unassigned" }}</span>
                 <span class="task">{{ item.task or item.text or "" }}</span>
             </div>
             <div class="action-right">
                 {% if item.due %}<span class="due">due {{ item.due }}</span>{% endif %}
-                <button type="button" class="pill-btn move-action-btn" data-action-id="{{ item.id }}" data-meeting-id="{{ meeting.id }}"
-                        title="Move to To-Dos">→ To-Dos</button>
+                {% if item.todo_id %}<a class="source-tag" href="{{ url_for('portal') }}#todos" title="Created as a to-do automatically">In To-Dos</a>{% endif %}
             </div>
         </li>
         {% endfor %}

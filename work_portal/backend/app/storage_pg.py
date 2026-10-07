@@ -454,6 +454,16 @@ class PostgresStorage:
                 return item
         return None
 
+    def convert_action_items(self, meeting: dict[str, Any]) -> list[dict[str, Any]]:
+        """Turn the meeting's open action items into to-dos (meeting is mutated,
+        caller saves it). See todos.todos_from_action_items."""
+        data = self.load_rocks()
+        created = _todos.todos_from_action_items(meeting, data, _roster(),
+                                                 new_id=lambda: _new_id("td"))
+        if created:
+            self.save_rocks(data)
+        return created
+
     def move_action_item_to_todos(self, meeting_id: str, action_id: str) -> dict[str, Any] | None:
         meeting = self.get_meeting(meeting_id)
         if meeting is None:
