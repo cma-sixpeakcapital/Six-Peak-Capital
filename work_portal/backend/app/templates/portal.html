@@ -625,46 +625,57 @@
         </div>
     </form>
 
-    {% if todos %}
-    <ul class="todo-list">
-        {% for t in todos %}
-        <li class="todo todo-{{ 'complete' if t.completed else 'incomplete' }}" data-todo-id="{{ t.id }}">
-            <button type="button" class="check" data-todo-id="{{ t.id }}"
-                    aria-label="Toggle complete"
-                    title="Click to toggle complete">{% if t.completed %}✓{% else %}◻{% endif %}</button>
-            <div class="todo-body">
-                {% if t.owner %}<span class="owner">{{ t.owner }}</span>{% else %}<span class="owner owner-none">Unassigned</span>{% endif %}
-                <span class="task">{{ t.task }}</span>
-                {{ todo_dates(t) }}
-                {% if t.source and t.source.type and t.source.type != 'manual' %}
-                <span class="source-tag" title="{{ t.source.type }}">{{ t.source.label or ('from ' ~ t.source.type.replace('_', ' ')) }}</span>
-                {% endif %}
-                {% if t.detail %}<div class="todo-detail">{{ t.detail }}</div>{% endif %}
-                <form class="add-form todo-form edit-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
-                    {{ owner_picker(t.owners or []) }}
-                    <input type="text" name="task" placeholder="Task" value="{{ t.task or '' }}" required />
-                    <label class="due-field">Due <input type="date" name="due" value="{{ t.due or '' }}" /></label>
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary small">Save</button>
-                        <button type="button" class="pill-btn cancel-edit-todo">Cancel</button>
-                        <button type="button" class="pill-btn danger delete-todo-btn" data-todo-id="{{ t.id }}" title="Only for a to-do entered by mistake. To stop working on it, use Drop.">Delete (entered by mistake)</button>
-                    </div>
-                </form>
-                <form class="add-form drop-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
-                    <input type="text" name="reason" placeholder="Why drop it? (optional)" maxlength="300" />
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary small">Drop to-do</button>
-                        <button type="button" class="pill-btn cancel-drop-todo">Cancel</button>
-                    </div>
-                </form>
+    {% if todo_groups %}
+    <div class="todo-people">
+        {% for g in todo_groups %}
+        <div class="todo-person">
+            <div class="todo-person-head">
+                <h3>{{ g.name }}</h3>
+                <span class="todo-person-count">{{ g.open }} open{% if g.overdue %} · <span class="todo-overdue">{{ g.overdue }} overdue</span>{% endif %}{% if g.done %} · {{ g.done }} done{% endif %}</span>
             </div>
-            <div class="todo-right">
-                <button type="button" class="pill-btn edit-todo-btn" data-todo-id="{{ t.id }}" title="Edit">Edit</button>
-                {% if not t.completed %}<button type="button" class="pill-btn drop-todo-btn" data-todo-id="{{ t.id }}" title="Drop: stop tracking it. Counted separately; not in the completion rate.">Drop</button>{% endif %}
-            </div>
-        </li>
+            <ul class="todo-list">
+            {% for t in g.todos %}
+            <li class="todo todo-{{ 'complete' if t.completed else 'incomplete' }}" data-todo-id="{{ t.id }}">
+                <button type="button" class="check" data-todo-id="{{ t.id }}"
+                        aria-label="Toggle complete"
+                        title="Click to toggle complete">{% if t.completed %}✓{% else %}◻{% endif %}</button>
+                <div class="todo-body">
+                    {% set others = g.shared.get(t.id) or [] %}
+                    {% if others %}<span class="shared-with">Shared with {{ others|join(', ') }}</span>{% endif %}
+                    <span class="task">{{ t.task }}</span>
+                    {{ todo_dates(t) }}
+                    {% if t.source and t.source.type and t.source.type != 'manual' %}
+                    <span class="source-tag" title="{{ t.source.type }}">{{ t.source.label or ('from ' ~ t.source.type.replace('_', ' ')) }}</span>
+                    {% endif %}
+                    {% if t.detail %}<div class="todo-detail">{{ t.detail }}</div>{% endif %}
+                    <form class="add-form todo-form edit-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
+                        {{ owner_picker(t.owners or []) }}
+                        <input type="text" name="task" placeholder="Task" value="{{ t.task or '' }}" required />
+                        <label class="due-field">Due <input type="date" name="due" value="{{ t.due or '' }}" /></label>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary small">Save</button>
+                            <button type="button" class="pill-btn cancel-edit-todo">Cancel</button>
+                            <button type="button" class="pill-btn danger delete-todo-btn" data-todo-id="{{ t.id }}" title="Only for a to-do entered by mistake. To stop working on it, use Drop.">Delete (entered by mistake)</button>
+                        </div>
+                    </form>
+                    <form class="add-form drop-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
+                        <input type="text" name="reason" placeholder="Why drop it? (optional)" maxlength="300" />
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary small">Drop to-do</button>
+                            <button type="button" class="pill-btn cancel-drop-todo">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="todo-right">
+                    <button type="button" class="pill-btn edit-todo-btn" data-todo-id="{{ t.id }}" title="Edit">Edit</button>
+                    {% if not t.completed %}<button type="button" class="pill-btn drop-todo-btn" data-todo-id="{{ t.id }}" title="Drop: stop tracking it. Counted separately; not in the completion rate.">Drop</button>{% endif %}
+                </div>
+            </li>
+            {% endfor %}
+            </ul>
+        </div>
         {% endfor %}
-    </ul>
+    </div>
     {% else %}
     <p class="muted">No to-dos yet. Meeting action items land here automatically, or click + Add To-Do.</p>
     {% endif %}

@@ -221,6 +221,13 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .todo-body .task { font-size:0.9rem; color:var(--text-sub); line-height:1.45; }
 .todo-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem; }
 .todo-right .due { font-size:0.7rem; color:var(--muted); background:var(--surface-alt); padding:0.15rem 0.5rem; border-radius:6px; white-space:nowrap; }
+.todo-people { display:flex; flex-direction:column; gap:1.4rem; }
+.todo-person-head { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; border-bottom:1px solid var(--border); padding-bottom:0.4rem; margin-bottom:0.7rem; }
+.todo-person-head h3 { font-family:var(--display); font-size:1rem; font-weight:600; color:var(--text); }
+.todo-person-count { font-size:0.74rem; color:var(--muted); white-space:nowrap; }
+.todo-person-count .todo-overdue { color:#B91C1C; font-weight:600; }
+.shared-with { font-family:var(--display); font-weight:600; font-size:0.7rem; color:var(--slate); }
+.rock-tag { color:var(--rust); }
 .source-tag { font-size:0.6rem; text-transform:uppercase; letter-spacing:.06em; color:var(--slate); font-weight:600; }
 
 /* ---------- Rocks / goals cards ---------- */

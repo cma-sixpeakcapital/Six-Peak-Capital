@@ -37,6 +37,10 @@
             <div class="action-right">
                 {% if item.due %}<span class="due">due {{ item.due }}</span>{% endif %}
                 {% if item.todo_id %}<a class="source-tag" href="{{ url_for('portal') }}#todos" title="Created as a to-do automatically">In To-Dos</a>{% endif %}
+                {% if item.rock_id and not item.todo_id %}
+                <span class="source-tag rock-tag" title="Matches this owner's rock, so it was not added to the to-do list">Rock: {{ item.rock_title }}</span>
+                <button type="button" class="pill-btn keep-todo-btn" data-meeting-id="{{ meeting.id }}" data-action-id="{{ item.id }}" title="It is a separate task, not the rock itself">Make it a to-do</button>
+                {% endif %}
             </div>
         </li>
         {% endfor %}

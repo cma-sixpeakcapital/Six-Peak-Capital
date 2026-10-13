@@ -28,6 +28,9 @@ SCHEMA = 2
 DEFAULT_DUE_DAYS = 7
 ROLLOUT_DUE = "2026-10-06"
 SEPARATORS = re.compile(r"\s+and\s+|\s*&\s*|\s*/\s*|\s*,\s*|\s*\+\s*", re.I)
+LEADING_CONJ = re.compile(r"^(?:and|or)\s+", re.I)  # "Bob, Chris, and Derek" -> "and Derek"
+# Read.ai's stand-in when it can't tell who spoke; treat as no owner.
+PLACEHOLDER_OWNERS = {"meeting participant", "participant", "speaker", "someone", "unknown"}
 
 
 def now_utc() -> datetime:
@@ -85,8 +88,11 @@ def resolve_owners(raw: Any, people: Iterable[str]) -> list[str]:
     tokens: list[str] = []
     for part in (raw if isinstance(raw, (list, tuple)) else [raw]):
         tokens += [t.strip() for t in SEPARATORS.split(str(part or "")) if t.strip()]
+    tokens = [LEADING_CONJ.sub("", t).strip() for t in tokens]
     out: list[str] = []
     for tok in tokens:
+        if not tok or tok.lower() in PLACEHOLDER_OWNERS:
+            continue
         low = tok.lower()
         match = next((p for p in people if p.lower() == low), None)
         if match is None:
@@ -289,6 +295,82 @@ def _meeting_source_label(meeting: dict[str, Any]) -> str:
         return f"from {kind}"
 
 
+# --- keep rocks off the to-do list (Chris, 10/13/2026) ----------------------
+# During the L10 rock review Read.ai records "Derek will prepare the GrindAI
+# roadmap memo" as an action item. That is the rock restated, not a to-do.
+# An action item is held back when it matches one of its owner's active rocks:
+# at least two meaningful words in common AND at least half the rock title's
+# meaningful words covered. Tested against the live list 10/13: rock
+# restatements cover 50-75% of the title, real to-dos 0-33%.
+
+_ROCK_STOP = set("""
+a an the and or of to for in on at by with from into about as is are be was this that these those it its
+will should must need needs plan plans agreed their his her our we they them next week weeks month
+end up out get make do send continue help work working new one two three first all any each other via
+memo memos doc docs document process review update updates draft final finalize finalized complete
+prepare provide team project v1 phase""".split())
+
+
+def _stem(w: str) -> str:
+    for suf in ("ing", "ed", "es", "s"):
+        if len(w) > 4 and w.endswith(suf):
+            return w[: -len(suf)]
+    return w
+
+
+def _rock_words(text: Any, drop: set[str]) -> set[str]:
+    raw = [w for w in re.split(r"[^a-z0-9]+", str(text or "").lower()) if w]
+    out: set[str] = set()
+    for i, w in enumerate(raw):
+        if w not in drop and w not in _ROCK_STOP and len(w) > 1:
+            out.add(_stem(w))
+        if i + 1 < len(raw) and raw[i + 1] not in drop:
+            joined = w + raw[i + 1]           # "Grind AI" ~ "GrindAI"
+            out.add("+" + joined)
+    return out
+
+
+def active_rocks(data: dict[str, Any]) -> list[dict[str, Any]]:
+    """Current company + individual rocks (not archived, not deferred), with owner set."""
+    out: list[dict[str, Any]] = []
+    for r in data.get("company_rocks") or []:
+        if not r.get("archived") and not r.get("deferred"):
+            out.append(r)
+    for person, rocks in (data.get("rocks") or {}).items():
+        for r in rocks or []:
+            if not r.get("archived") and not r.get("deferred"):
+                out.append(r if r.get("owner") else dict(r, owner=person))
+    return out
+
+
+def match_rock(text: Any, owners: Iterable[str], data: dict[str, Any],
+               people: Iterable[str] = ()) -> dict[str, Any] | None:
+    """The active rock this action item restates, or None.
+
+    Only the item's own owners' rocks are considered; with no owner, any rock.
+    """
+    owners = [o for o in owners if o]
+    names = {w.lower() for p in list(people) + owners for w in str(p).split()}
+    item = _rock_words(text, names)
+    item_joined = {w[1:] for w in item if w.startswith("+")}
+    best, best_score = None, 0.0
+    for rock in active_rocks(data):
+        if owners and rock.get("owner") not in owners:
+            continue
+        rw = _rock_words(rock.get("title"), names)
+        title = {w for w in rw if not w.startswith("+")}
+        # a rock word written as two words in the item ("GrindAI" / "Grind AI") counts
+        hits = {w for w in title if w in item or w in item_joined}
+        # and two rock words written as one in the item
+        hits |= {w for w in rw if w.startswith("+") and w[1:] in item}
+        if not title:
+            continue
+        score = len(hits) / len(title)
+        if len(hits) >= 2 and score >= 0.5 and score > best_score:
+            best, best_score = rock, score
+    return best
+
+
 def todos_from_action_items(meeting: dict[str, Any], data: dict[str, Any],
                             people: Iterable[str] = (), now: datetime | None = None,
                             new_id: Any = None) -> list[dict[str, Any]]:
@@ -297,7 +379,10 @@ def todos_from_action_items(meeting: dict[str, Any], data: dict[str, Any],
     Idempotent: an item already carrying ``todo_id`` is skipped, and an item
     whose text matches a to-do already created from the same meeting (a
     webhook re-send regenerates item ids) is linked to that to-do instead of
-    duplicated. Completed items are not converted. Returns the new to-dos.
+    duplicated. Completed items are not converted. An item that restates one of
+    its owner's active rocks is not converted either: it gets ``rock_id`` /
+    ``rock_title`` and stays on the meeting page, where "Make it a to-do" sets
+    ``keep_as_todo`` and converts it. Returns the new to-dos.
     """
     import uuid as _uuid
     new_id = new_id or (lambda: f"td_{_uuid.uuid4().hex[:10]}")
@@ -309,6 +394,7 @@ def todos_from_action_items(meeting: dict[str, Any], data: dict[str, Any],
         if src.get("meeting_id") == meeting_id and meeting_id:
             existing.setdefault(_norm_text(src.get("text") or t.get("task")), t.get("id"))
     known_ids = {t.get("id") for t in todos}
+    people = list(people)
     created: list[dict[str, Any]] = []
     label = _meeting_source_label(meeting)
     for item in meeting.get("action_items") or []:
@@ -325,6 +411,12 @@ def todos_from_action_items(meeting: dict[str, Any], data: dict[str, Any],
         if not owner:
             from .ingest import _extract_owner  # lazy: ingest imports storage
             owner = _extract_owner(text)
+        if not item.get("keep_as_todo"):
+            rock = match_rock(text, resolve_owners(owner, people), data, people)
+            if rock is not None:
+                item["rock_id"] = rock.get("id")
+                item["rock_title"] = rock.get("title", "")
+                continue
         todo = {
             "id": new_id(),
             "owner": owner,
@@ -349,3 +441,42 @@ def todos_from_action_items(meeting: dict[str, Any], data: dict[str, Any],
         known_ids.add(todo["id"])
         created.append(todo)
     return created
+
+
+# --- to-do list grouped by person (Chris, 10/13/2026) -----------------------
+
+def group_by_owner(todos: Iterable[dict[str, Any]], people: Iterable[str] = ()) -> list[dict[str, Any]]:
+    """One group per person, roster order first, then outside parties A-Z,
+    then Unassigned. A shared to-do appears under every named owner (the same
+    rule the hit-rate uses: shared to-dos credit every owner). Within a group:
+    open first by due date, then done."""
+    people = list(people)
+    groups: dict[str, list[dict[str, Any]]] = {}
+    shared: dict[str, dict[str, list[str]]] = {}
+    for t in todos:
+        # re-resolve: older rows hold "and Derek Sanders" / "Meeting participant"
+        owners = resolve_owners(t.get("owners") or t.get("owner"), people) or [""]
+        for o in owners:
+            groups.setdefault(o, []).append(t)
+            shared.setdefault(o, {})[t.get("id")] = [x for x in owners if x != o]
+    today = datetime.now(ET).date().isoformat()
+
+    def order(name: str) -> tuple[int, int, str]:
+        if not name:
+            return (2, 0, "")
+        return (0, people.index(name), "") if name in people else (1, 0, name.lower())
+
+    out: list[dict[str, Any]] = []
+    for name in sorted(groups, key=order):
+        items = sorted(groups[name], key=lambda t: (bool(t.get("completed")), t.get("due") or "9999",
+                                                    t.get("created_at") or ""))
+        open_items = [t for t in items if not t.get("completed")]
+        out.append({
+            "name": name or "Unassigned",
+            "todos": items,
+            "open": len(open_items),
+            "overdue": sum(1 for t in open_items if (t.get("due") or "9999") < today),
+            "done": len(items) - len(open_items),
+            "shared": shared.get(name, {}),
+        })
+    return out
