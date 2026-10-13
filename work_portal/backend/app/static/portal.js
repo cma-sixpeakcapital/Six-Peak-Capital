@@ -206,6 +206,19 @@
         });
     }
 
+    function wireKeepTodo() {
+        document.querySelectorAll(".keep-todo-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const mid = btn.dataset.meetingId;
+                const aid = btn.dataset.actionId;
+                handleAction(btn, () => apiRequest(
+                    `/api/action/${encodeURIComponent(mid)}/${encodeURIComponent(aid)}/keep-todo`,
+                    { method: "POST" }
+                ));
+            });
+        });
+    }
+
     function wireToggleTodo() {
         document.querySelectorAll("button.check[data-todo-id]").forEach(function (btn) {
             btn.addEventListener("click", function () {
@@ -236,7 +249,7 @@
     function wireDropTodo() {
         document.querySelectorAll(".drop-todo-btn").forEach(function (btn) {
             btn.addEventListener("click", function () {
-                const form = document.querySelector(`.drop-todo-form[data-todo-id="${btn.dataset.todoId}"]`);
+                const form = btn.closest("li.todo").querySelector(".drop-todo-form");
                 if (!form) return;
                 form.classList.remove("hidden");
                 const input = form.querySelector("input[name=reason]");
@@ -272,8 +285,7 @@
     function wireEditTodo() {
         document.querySelectorAll(".edit-todo-btn").forEach(function (btn) {
             btn.addEventListener("click", function () {
-                const id = btn.dataset.todoId;
-                const form = document.querySelector(`.edit-todo-form[data-todo-id="${id}"]`);
+                const form = btn.closest("li.todo").querySelector(".edit-todo-form");
                 if (!form) return;
                 form.classList.remove("hidden");
                 const first = form.querySelector("input[name=task]");
@@ -455,6 +467,7 @@
         wireFiles();
         wireToggleAction();
         wireMoveAction();
+        wireKeepTodo();
         wireToggleTodo();
         wireDeleteTodo();
         wireEditTodo();

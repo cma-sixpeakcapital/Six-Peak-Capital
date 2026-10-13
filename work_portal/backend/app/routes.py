@@ -344,6 +344,7 @@ def register_routes(app: Flask) -> None:
             owner_groups=_group_active_by_owner(rocks_data),
             archived_rocks=_collect_archive(rocks_data),
             todos=todo_lib.active_todos(rocks_data),
+            todo_groups=todo_lib.group_by_owner(todo_lib.active_todos(rocks_data), _todo_people(scorecard)),
             dropped_todos=_dropped_this_quarter(rocks_data, cur_q),
             todo_people=_todo_people(scorecard),
             todo_stats=_todo_stats(rocks_data, cur_q, scorecard),
@@ -741,6 +742,21 @@ def register_routes(app: Flask) -> None:
         if todo is None:
             abort(404)
         return jsonify(todo)
+
+    @app.route("/api/action/<meeting_id>/<action_id>/keep-todo", methods=["POST"])
+    def api_action_keep_todo(meeting_id: str, action_id: str) -> Any:
+        """An action item held back as a rock restatement -> make it a to-do anyway."""
+        st = _get_storage()
+        meeting = st.get_meeting(meeting_id)
+        item = next((a for a in (meeting or {}).get("action_items") or [] if a.get("id") == action_id), None)
+        if item is None:
+            abort(404)
+        item["keep_as_todo"] = True
+        item.pop("rock_id", None)
+        item.pop("rock_title", None)
+        st.convert_action_items(meeting)
+        st.save_meeting(meeting)
+        return jsonify(item)
 
     @app.route("/api/ingest/readai", methods=["POST"])
     @require_api_key
