@@ -445,6 +445,13 @@
     <p class="sc-meta muted">Entered here by Chris Andresen and Grady; the Monday 8:47 a.m. feed reads them, computes the metric, and writes the number to the Sheet. Saving records your name in the change log.</p>
 
     {% set ci = construction.doc %}
+    {% for n in ci.notices %}
+    <div class="card sc-note ci-notice" data-note-id="{{ n.id }}">
+        <div class="row-between"><b>Note for {{ n.to }}</b> <button type="button" class="pill-btn pill-btn-sm ci-notice-remove" data-note-id="{{ n.id }}" title="Remove this note for everyone">Remove</button></div>
+        <p>{{ n.text }}</p>
+        <p class="muted ci-notice-stamp">Temporary note (Chris Aiello, 10/31/2026). It goes away once you have read it; click Remove.</p>
+    </div>
+    {% endfor %}
     {% if ci.notice %}
     <div class="card sc-note ci-notice" id="ci-notice">
         <div class="row-between"><b>Note</b> <button type="button" class="pill-btn pill-btn-sm" id="ci-notice-clear" title="Remove this note for everyone">Remove note</button></div>

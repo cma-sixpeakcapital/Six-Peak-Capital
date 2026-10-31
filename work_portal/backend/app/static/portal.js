@@ -581,6 +581,12 @@
                 { method: "PUT", body: JSON.stringify({ required: required, available: available, note: note }) }));
         });
 
+        document.querySelectorAll(".ci-notice-remove").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                if (!confirm("Remove this note for everyone?")) return;
+                handleAction(btn, () => apiRequest("/api/construction_inputs/notices/" + encodeURIComponent(btn.dataset.noteId), { method: "DELETE" }));
+            });
+        });
         const clearNotice = document.getElementById("ci-notice-clear");
         if (clearNotice) clearNotice.addEventListener("click", function () {
             if (!confirm("Remove the note for everyone?")) return;

@@ -51,17 +51,29 @@ SEED_JOBS: list[dict[str, Any]] = [
 ]
 SEED_SOURCE = "benchmark (pending pay app)"
 
-SEED_NOTICE = (
-    "Temporary note (Chris Aiello, 10/31/2026; this box goes away once everyone has seen it). "
-    "Bob: the metrics tab gained two columns, green_low and yellow_ceiling, so the portal can color "
-    "the two-sided utilization bands; nothing else of yours changed. "
-    "Chris Andresen: this is where the pay-app contract completion dates, cause codes, contingency "
-    "explanations and the monthly utilization hours now go; the Monday feed reads them from here. "
-    "The dates shown today are the frozen benchmark dates as a stand-in, flagged as such on the "
-    "scorecard until you replace them. "
-    "Grady: please confirm the role list below (Superintendent, Project Manager, Assistant PM, "
-    "Project Coordinator) and send Chris Andresen November's hours by role per job by Fri 11/6."
-)
+SEED_NOTICES: list[dict[str, str]] = [
+    {"id": "bob", "to": "Bob",
+     "text": "The metrics tab gained two optional columns, green_low and yellow_ceiling, so the portal can color "
+             "the two-sided utilization bands (70 / 80 / 100 / 110). Nothing else of yours changed, and your "
+             "retired rows stay in the sheet; the portal now reads them quietly instead of flagging them. "
+             "One thing to be aware of: % milestones still measures against the original benchmarks while "
+             "jobs-behind now uses contract dates, so the two can disagree on a job."},
+    {"id": "chris-andresen", "to": "Chris Andresen",
+     "text": "This page is where the pay-app contract completion dates, cause codes, contingency explanations "
+             "and the monthly utilization hours now go; the Monday 8:47 a.m. feed reads them from here and "
+             "writes the number to the Sheet. The dates showing today are the frozen benchmark dates as a "
+             "stand-in, flagged as such on the scorecard until you replace them with pay-app dates. For "
+             "utilization, pick the month, enter Grady's required hours by job and role, and each person's "
+             "available hours net of PTO and holidays; the preview row shows the result before you save."},
+    {"id": "grady", "to": "Grady",
+     "text": "Please confirm the utilization role list below (Superintendent, Project Manager, Assistant PM, "
+             "Project Coordinator; edit the box and save if it needs changing) and send Chris Andresen "
+             "November's hours by role for each active job by Fri 11/6. Keep sending your schedule forecasts; "
+             "four of the current files are more than 45 days old and read as stale on the scorecard. "
+             "Subcontractors in default (out of money, off site 2+ weeks, supplier lien) are picked up from "
+             "what you report at the L10 or by email / Slack."},
+]
+_STAMP = "Temporary note (Chris Aiello, 10/31/2026). This box goes away once you have read it; click Remove."
 
 
 def default_doc() -> dict[str, Any]:
@@ -70,7 +82,8 @@ def default_doc() -> dict[str, Any]:
         "jobs": [_job_row({**j, "active": True, "contract_source": SEED_SOURCE if j["contract_completion"] else ""})
                  for j in SEED_JOBS],
         "utilization": {},
-        "notice": SEED_NOTICE,
+        "notices": [dict(n) for n in SEED_NOTICES],
+        "notice": "",
         "updated_at": "",
     }
 
@@ -85,7 +98,17 @@ def get_doc(data: dict[str, Any]) -> dict[str, Any]:
     doc.setdefault("jobs", [])
     doc.setdefault("utilization", {})
     doc.setdefault("notice", "")
+    if "notices" not in doc:
+        # Migration 10/31/2026: the first deploy seeded one combined note; Chris asked for one per person.
+        doc["notices"] = [dict(n) for n in SEED_NOTICES] if doc.get("notice") else []
+        doc["notice"] = ""
     return doc
+
+
+def remove_notice(doc: dict[str, Any], note_id: str) -> bool:
+    before = len(doc.get("notices") or [])
+    doc["notices"] = [n for n in doc.get("notices") or [] if n.get("id") != note_id]
+    return len(doc["notices"]) < before
 
 
 # ----------------------------------------------------------------- validation
@@ -230,4 +253,5 @@ def feed_view(doc: dict[str, Any]) -> dict[str, Any]:
         "utilization": {m: utilization_summary(doc, m) for m in months},
         "utilization_raw": doc.get("utilization") or {},
         "notice": doc.get("notice", ""),
+        "notices": list(doc.get("notices") or []),
     }
