@@ -59,6 +59,9 @@ ACTION_LABELS = {
     "api_issue_drop": "Drop IDS issue",
     "api_issue_reopen": "Reopen IDS issue",
     "api_issue_delete": "Delete IDS issue (entered by mistake)",
+    "api_construction_jobs": "Edit construction inputs (jobs / roles)",
+    "api_construction_utilization": "Edit construction utilization hours",
+    "api_construction_notice": "Edit construction inputs notice",
 }
 
 
@@ -83,8 +86,16 @@ def index_doc(doc: dict[str, Any]) -> dict[str, tuple[str, dict[str, Any]]]:
         out[f"rock:{r.get('id') or _title(r)}"] = ("company_rock", r)
     for t in doc.get("todos") or []:
         out[f"todo:{t.get('id') or _title(t)}"] = ("todo", t)
+    ci = doc.get("construction_inputs") or {}
+    if isinstance(ci, dict):
+        for j in ci.get("jobs") or []:
+            out[f"cjob:{j.get('job')}"] = ("construction_job", {**j, "title": j.get("job")})
+        for month, entry in (ci.get("utilization") or {}).items():
+            out[f"cutil:{month}"] = ("construction_utilization", {**(entry or {}), "title": f"Utilization {month}"})
+        out["doc:construction_roles"] = ("document", {"value": ci.get("roles")})
+        out["doc:construction_notice"] = ("document", {"value": ci.get("notice")})
     for k, v in doc.items():
-        if k not in {"rocks", "company_rocks", "todos"}:
+        if k not in {"rocks", "company_rocks", "todos", "construction_inputs"}:
             out[f"doc:{k}"] = ("document", {"value": v})
     return out
 

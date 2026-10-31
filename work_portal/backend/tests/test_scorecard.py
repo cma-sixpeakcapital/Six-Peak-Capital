@@ -49,6 +49,81 @@ def test_color_table(direction, value, target, yellow, expected):
     assert color_for(direction, value, target, yellow) == expected
 
 
+# gc_utilization_role (Bob, 10/28/2026): green 80-100, yellow 70-80 / 100-110, red outside.
+@pytest.mark.parametrize("value,expected", [
+    (69, RED), (70, YELLOW), (79.9, YELLOW), (80, GREEN), (90, GREEN), (100, GREEN),
+    (100.1, YELLOW), (110, YELLOW), (110.1, RED), (0, RED), (250, RED),
+])
+def test_range_color_table(value, expected):
+    assert color_for("range", value, 100, 70, 80, 110) == expected
+
+
+def test_range_without_edges_is_grey():
+    assert color_for("range", 90, 100, 70) == GREY
+
+
+RANGE_HDR = ("metric_id,category,metric_name,owner_email,unit,direction,target,yellow_floor,cadence,"
+             "active,sort_order,definition,green_low,yellow_ceiling\n")
+
+
+def _metrics_with(extra_rows: list[str]) -> str:
+    base = (FIX / "metrics.csv").read_text().splitlines()
+    rows = [base[0] + ",green_low,yellow_ceiling"] + [r + ",," for r in base[1:]] + extra_rows
+    return "\n".join(rows) + "\n"
+
+
+def test_range_metric_parses_and_colors_both_sides():
+    csvs = load_csvs(["gc_utilization_role,2026-09-28,105,grady@lvllc.com (auto),2026-09-28 09:00,Super 105%"])
+    csvs["metrics"] = _metrics_with([
+        "gc_utilization_role,Construction / GC,Construction team utilization -- highest role (%),"
+        "grady@lvllc.com,percent,range,100,70,monthly_reported_weekly,TRUE,37,two-sided,80,110",
+    ])
+    m = parse_sheet(csvs)
+    assert not [e for e in m.errors if "gc_utilization_role" in e["reason"]]
+    mt = next(x for x in m.metrics if x["metric_id"] == "gc_utilization_role")
+    assert (mt["green_low"], mt["yellow_ceiling"]) == (80, 110)
+    view = build_view(m, date(2026, 9, 30), START)
+    row = next(r for c in view["categories"] for r in c["rows"] if r["metric_id"] == "gc_utilization_role")
+    assert row["current"]["color"] == YELLOW
+    assert row["current"]["target_display"] == "80–100%"
+
+
+def test_range_metric_missing_edges_warns_and_reads_grey():
+    csvs = load_csvs(["gc_utilization_role,2026-09-28,90,,,"])
+    csvs["metrics"] = _metrics_with([
+        "gc_utilization_role,Construction / GC,Utilization,grady@lvllc.com,percent,range,100,70,"
+        "monthly_reported_weekly,TRUE,37,two-sided,,",
+    ])
+    m = parse_sheet(csvs)
+    warn = [e for e in m.errors if "gc_utilization_role" in e["reason"]]
+    assert warn and warn[0]["level"] == "warning" and "range needs" in warn[0]["reason"]
+    view = build_view(m, date(2026, 9, 30), START)
+    row = next(r for c in view["categories"] for r in c["rows"] if r["metric_id"] == "gc_utilization_role")
+    assert row["current"]["color"] == GREY
+
+
+def test_retired_metric_history_is_skipped_silently():
+    """Bob retires a metric with active=FALSE and keeps its rows (10/28/2026).
+    Those rows are not errors; a metric that never existed still is."""
+    csvs = load_csvs([
+        "gc_sub_score,2026-09-28,5,grady@lvllc.com (auto),2026-09-26,default 5",
+        "gc_sub_score,2026-10-05,5,grady@lvllc.com (auto),2026-10-05,default 5",
+        "ghost_metric,2026-09-28,1,,,",
+    ])
+    csvs["metrics"] = csvs["metrics"].replace(
+        "gc_sub_score,Construction / GC,Subcontractor performance -- avg. trade partner score (1-5),"
+        "grady@lvllc.com,number,higher_better,4,3.5,weekly,TRUE",
+        "gc_sub_score,Construction / GC,Subcontractor performance -- avg. trade partner score (1-5),"
+        "grady@lvllc.com,number,higher_better,4,3.5,weekly,FALSE")
+    assert ",FALSE," in csvs["metrics"], "fixture row did not match"
+    csvs["targets"] = csvs["targets"].rstrip("\n") + "\ngc_sub_score,2026-09-14,4,,FALSE,retired\n"
+    m = parse_sheet(csvs)
+    reasons = [e["reason"] for e in m.errors]
+    assert not [r for r in reasons if "gc_sub_score" in r]
+    assert any("unknown metric_id 'ghost_metric'" in r for r in reasons)
+    assert "gc_sub_score" not in {x["metric_id"] for x in m.metrics}
+
+
 # --------------------------------------------------------------- parsing ----
 def test_parse_number_and_dates():
     assert parse_number("$1,250,000") == 1250000
@@ -83,7 +158,7 @@ def test_validation_rejects_and_flags_rows():
         "gc_sub_score,2026-09-28,,,,",                # placeholder, no value: ignored
     ]))
     reasons = " | ".join(e["reason"] for e in m.errors)
-    assert "unknown or inactive metric_id 'not_a_metric'" in reasons
+    assert "unknown metric_id 'not_a_metric'" in reasons
     assert "week_of is not a date" in reasons
     assert "'lots' is not a number" in reasons
     assert "not a Monday" in reasons

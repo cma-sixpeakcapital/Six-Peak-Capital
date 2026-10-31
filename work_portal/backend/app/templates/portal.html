@@ -417,6 +417,9 @@
             {% for cell in r.cells %}{{ sc_cell(cell, r.unit) }}{% endfor %}
             <td class="muted sc-upd">{{ r.last_updated[:10] if r.last_updated else '—' }}</td>
         </tr>
+        {% if cat.name.startswith('Construction') and c.note %}
+        <tr class="sc-detail"><td colspan="{{ 5 + v.weeks|length }}"><span class="sc-detail-label">Behind the number</span> {{ c.note }}</td></tr>
+        {% endif %}
         {% endfor %}
         {% endfor %}
         </tbody>
@@ -425,6 +428,113 @@
     <p class="sc-legend muted">Green meets target · yellow is inside the watch band · red is off target or not reported and drops to IDS · grey has no target set yet · "·" is before the first live week. Hover a metric for its definition.</p>
     </div>
     {% endif %}
+</section>
+{%- endmacro %}
+
+{% macro construction_section() -%}
+<section class="rocks-section" id="construction">
+    <div class="section-heading row-between">
+        <div>
+            <span class="section-label">Construction inputs</span>
+            <h2>Numbers behind Grady's scorecard</h2>
+        </div>
+        <div class="sc-actions">
+            <a class="pill-btn" href="{{ url_for('portal') }}#scorecard">↑ Scorecard</a>
+        </div>
+    </div>
+    <p class="sc-meta muted">Entered here by Chris Andresen and Grady; the Monday 8:47 a.m. feed reads them, computes the metric, and writes the number to the Sheet. Saving records your name in the change log.</p>
+
+    {% set ci = construction.doc %}
+    {% if ci.notice %}
+    <div class="card sc-note ci-notice" id="ci-notice">
+        <div class="row-between"><b>Note</b> <button type="button" class="pill-btn pill-btn-sm" id="ci-notice-clear" title="Remove this note for everyone">Remove note</button></div>
+        <p>{{ ci.notice }}</p>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-head"><span class="section-label">Jobs</span><h3>Contract completion dates, cause codes, contingency notes</h3></div>
+        <p class="muted ci-help">Contract completion = the contract end date on the most recent pay application, including approved extensions (feeds <i>Jobs behind contract schedule</i>). Cause code is for a job forecasting later than that date. Contingency note is the one-line explanation for a job whose burn rate is at or above 1.0. Rows marked "benchmark (pending pay app)" are stand-ins until a pay-app date replaces them.</p>
+        <div class="tbl-wrap">
+        <table class="tbl ci-tbl" id="ci-jobs">
+            <thead><tr><th>Job</th><th>Active</th><th>Contract completion</th><th>Source</th><th>Pay app through</th><th>Cause code</th><th>Contingency note</th><th>Notes</th><th></th></tr></thead>
+            <tbody>
+            {% for j in ci.jobs %}
+            <tr data-job-row>
+                <td><input class="ci-in" name="job" value="{{ j.job }}" size="10"></td>
+                <td class="num"><input type="checkbox" name="active" {% if j.active %}checked{% endif %}></td>
+                <td><input class="ci-in" type="date" name="contract_completion" value="{{ j.contract_completion }}"></td>
+                <td><input class="ci-in" name="contract_source" value="{{ j.contract_source }}" size="16" placeholder="Pay app #12"></td>
+                <td><input class="ci-in" type="date" name="pay_app_through" value="{{ j.pay_app_through }}"></td>
+                <td><select class="ci-in" name="cause_code"><option value="">—</option>{% for cc in construction.cause_codes %}<option value="{{ cc }}" {% if j.cause_code == cc %}selected{% endif %}>{{ cc }}</option>{% endfor %}</select></td>
+                <td><input class="ci-in" name="contingency_note" value="{{ j.contingency_note }}" size="26"></td>
+                <td><input class="ci-in" name="notes" value="{{ j.notes }}" size="16"></td>
+                <td><button type="button" class="link-btn ci-row-del" title="Remove this job">×</button></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="row-between ci-foot">
+            <label class="ci-roles">Utilization roles (comma-separated) <input id="ci-roles" value="{{ ci.roles|join(', ') }}" size="60"></label>
+            <div>
+                <button type="button" class="pill-btn" id="ci-job-add">+ Add job</button>
+                <button type="button" class="pill-btn pill-btn-primary" id="ci-jobs-save">Save jobs &amp; roles</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-head row-between">
+            <div><span class="section-label">Utilization by role</span><h3>Hours required vs. hours available</h3></div>
+            <form method="get" action="{{ url_for('portal') }}#construction" class="ci-month">
+                <label>Month <select name="util_month" onchange="this.form.submit()">{% for m in construction.month_choices %}<option value="{{ m }}" {% if m == construction.month %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></label>
+            </form>
+        </div>
+        <p class="muted ci-help">Required = Grady's monthly staffing plan: hours each active job needs from each role this month. Available = each person's hours this month net of PTO and holidays (Chris Andresen, from payroll and the STAFFING tab). The scorecard shows the most stretched role; green 80–100%, yellow 70–80% or 100–110%, red below 70% or above 110%.</p>
+        {% set entry = construction.entry %}
+        {% set roles = ci.roles %}
+        <div class="tbl-wrap">
+        <table class="tbl ci-tbl" id="ci-required" data-month="{{ construction.month }}">
+            <thead><tr><th>Required hours · {{ construction.month }}</th>{% for r in roles %}<th class="num">{{ r }}</th>{% endfor %}<th class="num">Job total</th></tr></thead>
+            <tbody>
+            {% for j in ci.jobs if j.active %}
+            <tr data-job="{{ j.job }}"><td class="strong">{{ j.job }}</td>
+                {% for r in roles %}<td class="num"><input class="ci-in ci-h" type="number" min="0" step="0.5" data-role="{{ r }}" value="{{ (entry.required.get(j.job) or {}).get(r, '') }}"></td>{% endfor %}
+                <td class="num ci-rowtot">0</td></tr>
+            {% endfor %}
+            </tbody>
+            <tfoot><tr><td>Required total</td>{% for r in roles %}<td class="num ci-req-tot" data-role="{{ r }}">0</td>{% endfor %}<td></td></tr></tfoot>
+        </table>
+        </div>
+        <div class="tbl-wrap">
+        <table class="tbl ci-tbl" id="ci-available">
+            <thead><tr><th>Available hours · person</th><th>Role</th><th class="num">Hours</th><th></th></tr></thead>
+            <tbody>
+            {% for a in entry.available %}
+            <tr data-avail-row><td><input class="ci-in" name="person" value="{{ a.person }}" size="18"></td>
+                <td><select class="ci-in" name="role">{% for r in roles %}<option value="{{ r }}" {% if a.role == r %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></td>
+                <td class="num"><input class="ci-in ci-h" type="number" name="hours" min="0" step="0.5" value="{{ a.hours }}"></td>
+                <td><button type="button" class="link-btn ci-row-del" title="Remove">×</button></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="tbl-wrap">
+        <table class="tbl ci-tbl" id="ci-util-preview">
+            <thead><tr><th>Utilization preview</th>{% for r in roles %}<th class="num">{{ r }}</th>{% endfor %}</tr></thead>
+            <tbody><tr><td>Required / available</td>{% for r in roles %}<td class="num ci-util" data-role="{{ r }}">—</td>{% endfor %}</tr></tbody>
+        </table>
+        </div>
+        <div class="row-between ci-foot">
+            <label class="ci-roles">Month note <input id="ci-util-note" value="{{ entry.note }}" size="50" placeholder="e.g. Pedro out two weeks; Acama starts mid-month"></label>
+            <div>
+                <button type="button" class="pill-btn" id="ci-avail-add">+ Add person</button>
+                <button type="button" class="pill-btn pill-btn-primary" id="ci-util-save">Save {{ construction.month }} hours</button>
+            </div>
+        </div>
+        {% if construction.summary %}<p class="muted ci-help">Saved result for {{ construction.month }}: most stretched role <b>{{ construction.summary.highest.role }}</b> at <b>{{ construction.summary.highest.pct }}%</b>.</p>{% endif %}
+    </div>
 </section>
 {%- endmacro %}
 
@@ -482,6 +592,7 @@
 </div>
 
 {{ scorecard_section() }}
+{{ construction_section() }}
 
 {% if current_quarter %}<div class="part-divider" id="rocks-divider"><span>{{ current_quarter.label.split(' ')[0] if current_quarter.label else '' }} Rocks</span></div>{% endif %}
 

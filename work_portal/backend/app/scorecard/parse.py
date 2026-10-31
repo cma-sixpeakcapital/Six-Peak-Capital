@@ -4,6 +4,11 @@ Validation follows spec section 7. Bad rows are never silently dropped: each one
 becomes an entry in ``errors`` (tab, sheet row number, reason) that the portal
 shows on the Scorecard. A rejected actuals row simply leaves that metric
 "not reported" for the week.
+
+Two deliberate silences (Chris, 10/31/2026): an actuals or targets row for a
+metric that exists on the metrics tab but is ``active = FALSE`` is skipped
+without an error. Bob retires metrics by flipping ``active`` so their history
+stays in the Sheet; that history is not a problem to report every week.
 """
 from __future__ import annotations
 
@@ -14,7 +19,10 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 UNITS = {"number", "dollars", "percent", "count", "boolean"}
-DIRECTIONS = {"higher_better", "lower_better", "binary"}
+# "range" (added 10/31/2026 for gc_utilization_role): a two-sided band. For a
+# range metric the columns mean  yellow_floor <= green_low <= target <= yellow_ceiling
+# i.e. green inside [green_low, target], yellow in the two shoulders, red outside.
+DIRECTIONS = {"higher_better", "lower_better", "binary", "range"}
 CADENCES = {"weekly", "monthly_reported_weekly"}
 
 _TRUE = {"true", "yes", "y", "1"}
@@ -156,9 +164,22 @@ def parse_sheet(csvs: dict[str, str]) -> Model:
             try:
                 target = parse_number(r.get("target", ""), unit)
                 yellow = parse_number(r.get("yellow_floor", ""), unit)
+                green_low = parse_number(r.get("green_low", ""), unit)
+                yellow_ceiling = parse_number(r.get("yellow_ceiling", ""), unit)
             except ValueError:
-                m.error("metrics", rn, f"'{mid}': target / yellow_floor must be numbers")
+                m.error("metrics", rn, f"'{mid}': target / yellow_floor / green_low / yellow_ceiling must be numbers")
                 continue
+            if direction == "range":
+                edges = [yellow, green_low, target, yellow_ceiling]
+                if any(e is None for e in edges):
+                    m.error("metrics", rn,
+                            f"'{mid}': range needs yellow_floor, green_low, target and yellow_ceiling "
+                            f"(reads as no target set)", "warning")
+                elif not (edges[0] <= edges[1] <= edges[2] <= edges[3]):
+                    m.error("metrics", rn,
+                            f"'{mid}': range edges must be ordered yellow_floor <= green_low <= target "
+                            f"<= yellow_ceiling (reads as no target set)", "warning")
+                    green_low = yellow_ceiling = None
             try:
                 sort_order = float(r.get("sort_order") or 999)
             except ValueError:
@@ -180,20 +201,25 @@ def parse_sheet(csvs: dict[str, str]) -> Model:
                 "direction": direction,
                 "target": target,
                 "yellow_floor": yellow,
+                "green_low": green_low,
+                "yellow_ceiling": yellow_ceiling,
                 "cadence": cadence,
                 "sort_order": sort_order,
                 "definition": r.get("definition", ""),
                 "row": rn,
             })
     active_ids = {x["metric_id"]: x for x in m.metrics}
+    inactive_ids = seen - set(active_ids)
 
     # ---- targets -----------------------------------------------------------
     header, rows = _rows(csvs.get("targets", ""))
     if rows and _require(m, "targets", header, ("metric_id", "effective_date", "target")):
         for rn, r in rows:
             mid = r.get("metric_id", "")
+            if mid in inactive_ids:
+                continue  # retired metric: history kept in the Sheet, nothing to report
             if mid not in active_ids:
-                m.error("targets", rn, f"unknown or inactive metric_id '{mid}'")
+                m.error("targets", rn, f"unknown metric_id '{mid}'")
                 continue
             unit = active_ids[mid]["unit"]
             try:
@@ -225,8 +251,10 @@ def parse_sheet(csvs: dict[str, str]) -> Model:
             raw_val = r.get("value", "")
             if not raw_val.strip():
                 continue  # placeholder row with no number yet: not an error
+            if mid in inactive_ids:
+                continue  # retired metric: history kept in the Sheet, nothing to report
             if mid not in active_ids:
-                m.error("actuals", rn, f"unknown or inactive metric_id '{mid}'")
+                m.error("actuals", rn, f"unknown metric_id '{mid}'")
                 continue
             try:
                 wk = parse_date(r.get("week_of", ""))

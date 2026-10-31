@@ -5,6 +5,9 @@ Rules (spec section 5.1, as amended 9/25/2026):
 - higher_better                  -> GREEN >= target; YELLOW >= yellow_floor; else RED
 - lower_better                   -> GREEN <= target; YELLOW <= yellow_floor; else RED
 - binary                         -> GREEN if 1 else RED
+- range (10/31/2026)             -> GREEN in [green_low, target]; YELLOW in
+                                    [yellow_floor, green_low) or (target, yellow_ceiling];
+                                    else RED. Missing edges -> GREY
 - blank yellow_floor             -> no yellow band (green or red)
 - no target at all               -> GREY, "no target set" (never red)
 - monthly_reported_weekly        -> last value carried forward (greyed, "as of"),
@@ -56,11 +59,20 @@ def resolve_target(metric: dict[str, Any], rows: list[dict[str, Any]] | None,
 
 
 def color_for(direction: str, value: float, target: float | None,
-              yellow: float | None) -> str:
+              yellow: float | None, green_low: float | None = None,
+              yellow_ceiling: float | None = None) -> str:
     if direction == "binary":
         return GREEN if value == 1 else RED
     if target is None:
         return GREY
+    if direction == "range":
+        if green_low is None or yellow is None or yellow_ceiling is None:
+            return GREY
+        if green_low <= value <= target:
+            return GREEN
+        if yellow <= value < green_low or target < value <= yellow_ceiling:
+            return YELLOW
+        return RED
     if direction == "higher_better":
         if value >= target:
             return GREEN
@@ -101,6 +113,10 @@ def fmt_target(metric: dict[str, Any], target: float | None, glide: bool) -> str
         return "Yes"
     if target is None:
         return "no target set"
+    if metric["direction"] == "range":
+        if metric.get("green_low") is None:
+            return "no target set"
+        return f"{fmt_value(metric['green_low'], metric['unit']).rstrip('%')}–{fmt_value(target, metric['unit'])}"
     sym = "≥" if metric["direction"] == "higher_better" else "≤"
     shown = target
     if glide and metric["unit"] == "count":
@@ -135,7 +151,8 @@ def _cell(metric: dict[str, Any], model: Model, week: date, start_week: date) ->
                 "display": fmt_value(value, metric["unit"]), "as_of": actual["week_of"],
                 "label": f"stale (as of {actual['week_of'].month}/{actual['week_of'].day})"}
     return {**base, "state": "carried" if carried else "reported",
-            "color": color_for(metric["direction"], value, target, yellow),
+            "color": color_for(metric["direction"], value, target, yellow,
+                               metric.get("green_low"), metric.get("yellow_ceiling")),
             "value": value, "display": fmt_value(value, metric["unit"]),
             "as_of": actual["week_of"], "note": actual.get("note", ""),
             "entered_at": actual.get("entered_at", ""), "entered_by": actual.get("entered_by", "")}
@@ -153,6 +170,9 @@ def _trend_down(metric: dict[str, Any], cells: list[dict[str, Any]]) -> bool:
         return c < b < a
     if metric["direction"] == "lower_better":
         return c > b > a
+    if metric["direction"] == "range" and metric.get("green_low") is not None:
+        mid = (metric["green_low"] + (metric.get("target") or 0)) / 2
+        return abs(c - mid) > abs(b - mid) > abs(a - mid)
     return False
 
 

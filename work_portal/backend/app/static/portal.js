@@ -457,8 +457,140 @@
         });
     }
 
+
+    // ---- Construction inputs (contract dates, cause codes, utilization hours) ----
+    function ciBand(pct) {
+        if (pct === null || isNaN(pct)) return "";
+        if (pct >= 80 && pct <= 100) return "u-green";
+        if ((pct >= 70 && pct < 80) || (pct > 100 && pct <= 110)) return "u-yellow";
+        return "u-red";
+    }
+    function ciRecalc() {
+        const req = document.getElementById("ci-required");
+        const av = document.getElementById("ci-available");
+        if (!req || !av) return;
+        const reqTot = {};
+        req.querySelectorAll("tbody tr").forEach(function (tr) {
+            let rowTot = 0;
+            tr.querySelectorAll("input.ci-h").forEach(function (inp) {
+                const v = parseFloat(inp.value) || 0;
+                rowTot += v;
+                reqTot[inp.dataset.role] = (reqTot[inp.dataset.role] || 0) + v;
+            });
+            const cell = tr.querySelector(".ci-rowtot");
+            if (cell) cell.textContent = rowTot ? rowTot.toFixed(1).replace(/\.0$/, "") : "0";
+        });
+        const avTot = {};
+        av.querySelectorAll("tbody tr").forEach(function (tr) {
+            const role = tr.querySelector("select[name=role]").value;
+            avTot[role] = (avTot[role] || 0) + (parseFloat(tr.querySelector("input[name=hours]").value) || 0);
+        });
+        req.querySelectorAll(".ci-req-tot").forEach(function (td) {
+            const v = reqTot[td.dataset.role] || 0;
+            td.textContent = v ? v.toFixed(1).replace(/\.0$/, "") : "0";
+        });
+        document.querySelectorAll("#ci-util-preview .ci-util").forEach(function (td) {
+            const r = reqTot[td.dataset.role] || 0, a = avTot[td.dataset.role] || 0;
+            td.className = "num ci-util";
+            if (!a) { td.textContent = r ? "no hours available" : "—"; return; }
+            const pct = Math.round(100 * r / a);
+            td.textContent = pct + "%";
+            td.classList.add(ciBand(pct));
+        });
+    }
+    function ciRowDelete(scope) {
+        scope.querySelectorAll(".ci-row-del").forEach(function (btn) {
+            if (btn.dataset.wired) return;
+            btn.dataset.wired = "1";
+            btn.addEventListener("click", function () { btn.closest("tr").remove(); ciRecalc(); });
+        });
+    }
+    function wireConstruction() {
+        const jobs = document.getElementById("ci-jobs");
+        if (!jobs) return;
+        ciRowDelete(document);
+        document.querySelectorAll("#ci-required input, #ci-available input, #ci-available select").forEach(function (el) {
+            el.addEventListener("input", ciRecalc);
+            el.addEventListener("change", ciRecalc);
+        });
+        ciRecalc();
+
+        const addJob = document.getElementById("ci-job-add");
+        if (addJob) addJob.addEventListener("click", function () {
+            const tpl = jobs.querySelector("tbody tr");
+            const tr = tpl ? tpl.cloneNode(true) : null;
+            if (!tr) { window.location.reload(); return; }
+            tr.querySelectorAll("input").forEach(function (i) { if (i.type === "checkbox") i.checked = true; else i.value = ""; });
+            tr.querySelectorAll("select").forEach(function (sel) { sel.value = ""; });
+            tr.querySelectorAll(".ci-row-del").forEach(function (b) { delete b.dataset.wired; });
+            jobs.querySelector("tbody").appendChild(tr);
+            ciRowDelete(tr);
+            tr.querySelector("input[name=job]").focus();
+        });
+
+        const saveJobs = document.getElementById("ci-jobs-save");
+        if (saveJobs) saveJobs.addEventListener("click", function () {
+            const rows = [];
+            jobs.querySelectorAll("tbody tr").forEach(function (tr) {
+                const g = function (n) { const el = tr.querySelector("[name=" + n + "]"); return el ? el.value.trim() : ""; };
+                if (!g("job")) return;
+                rows.push({ job: g("job"), active: tr.querySelector("[name=active]").checked,
+                    contract_completion: g("contract_completion"), contract_source: g("contract_source"),
+                    pay_app_through: g("pay_app_through"), cause_code: g("cause_code"),
+                    contingency_note: g("contingency_note"), notes: g("notes") });
+            });
+            const roles = (document.getElementById("ci-roles").value || "").split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+            handleAction(saveJobs, () => apiRequest("/api/construction_inputs/jobs", { method: "PUT", body: JSON.stringify({ jobs: rows, roles: roles }) }));
+        });
+
+        const addAvail = document.getElementById("ci-avail-add");
+        const avail = document.getElementById("ci-available");
+        if (addAvail && avail) addAvail.addEventListener("click", function () {
+            const tbody = avail.querySelector("tbody");
+            const roles = Array.from(document.querySelectorAll("#ci-required thead th")).slice(1, -1).map(function (th) { return th.textContent.trim(); });
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-avail-row", "");
+            tr.innerHTML = '<td><input class="ci-in" name="person" size="18"></td><td><select class="ci-in" name="role">' +
+                roles.map(function (r) { return '<option value="' + r.replace(/"/g, "&quot;") + '">' + r + '</option>'; }).join("") +
+                '</select></td><td class="num"><input class="ci-in ci-h" type="number" name="hours" min="0" step="0.5"></td><td><button type="button" class="link-btn ci-row-del" title="Remove">×</button></td>';
+            tbody.appendChild(tr);
+            tr.querySelectorAll("input, select").forEach(function (el) { el.addEventListener("input", ciRecalc); el.addEventListener("change", ciRecalc); });
+            ciRowDelete(tr);
+            tr.querySelector("input[name=person]").focus();
+        });
+
+        const saveUtil = document.getElementById("ci-util-save");
+        if (saveUtil) saveUtil.addEventListener("click", function () {
+            const req = document.getElementById("ci-required");
+            const month = req.dataset.month;
+            const required = {};
+            req.querySelectorAll("tbody tr").forEach(function (tr) {
+                const job = tr.dataset.job, byRole = {};
+                tr.querySelectorAll("input.ci-h").forEach(function (inp) { if (inp.value !== "") byRole[inp.dataset.role] = parseFloat(inp.value); });
+                if (Object.keys(byRole).length) required[job] = byRole;
+            });
+            const available = [];
+            avail.querySelectorAll("tbody tr").forEach(function (tr) {
+                const person = tr.querySelector("input[name=person]").value.trim();
+                if (!person) return;
+                available.push({ person: person, role: tr.querySelector("select[name=role]").value,
+                    hours: parseFloat(tr.querySelector("input[name=hours]").value) || 0 });
+            });
+            const note = (document.getElementById("ci-util-note") || {}).value || "";
+            handleAction(saveUtil, () => apiRequest("/api/construction_inputs/utilization/" + encodeURIComponent(month),
+                { method: "PUT", body: JSON.stringify({ required: required, available: available, note: note }) }));
+        });
+
+        const clearNotice = document.getElementById("ci-notice-clear");
+        if (clearNotice) clearNotice.addEventListener("click", function () {
+            if (!confirm("Remove the note for everyone?")) return;
+            handleAction(clearNotice, () => apiRequest("/api/construction_inputs/notice", { method: "PUT", body: JSON.stringify({ text: "" }) }));
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         wireActorPicker();
+        wireConstruction();
         wireScorecardRefresh();
         wireToggleRock();
         wireMoveRock();
