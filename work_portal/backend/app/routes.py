@@ -460,6 +460,14 @@ def register_routes(app: Flask) -> None:
         return jsonify(_jsonable({"month": month,
                                   "summary": construction_lib.utilization_summary(doc, month)}))
 
+    @app.route("/api/construction_inputs/notices/<note_id>", methods=["DELETE"])
+    def api_construction_notice_delete(note_id: str) -> Any:
+        def fn(data: dict[str, Any]) -> bool:
+            return construction_lib.remove_notice(construction_lib.get_doc(data), note_id)
+        if not _get_storage().edit_rocks(fn):
+            abort(404, description="note not found")
+        return jsonify({"status": "removed", "id": note_id})
+
     @app.route("/api/construction_inputs/notice", methods=["PUT"])
     def api_construction_notice() -> Any:
         body = request.get_json(silent=True) or {}

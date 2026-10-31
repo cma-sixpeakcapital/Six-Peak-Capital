@@ -19,7 +19,19 @@ def test_default_doc_seeds_jobs_with_benchmark_standins():
     assert jobs["Whipple"]["contract_source"] == SEED_SOURCE
     assert jobs["Acama"]["contract_completion"] == "" and jobs["Acama"]["contract_source"] == ""
     assert doc["roles"] == DEFAULT_ROLES
-    assert "Bob" in doc["notice"] and "Grady" in doc["notice"]
+    assert [n["to"] for n in doc["notices"]] == ["Bob", "Chris Andresen", "Grady"]
+    assert doc["notice"] == ""
+
+
+def test_old_single_notice_migrates_to_per_person_notes():
+    from app.construction import remove_notice
+    data = {"construction_inputs": {"jobs": [], "roles": DEFAULT_ROLES, "utilization": {}, "notice": "old combined note"}}
+    doc = get_doc(data)
+    assert [n["id"] for n in doc["notices"]] == ["bob", "chris-andresen", "grady"] and doc["notice"] == ""
+    assert remove_notice(doc, "bob") and [n["id"] for n in doc["notices"]] == ["chris-andresen", "grady"]
+    assert not remove_notice(doc, "bob")
+    # a doc whose note was already cleared gets no notes back
+    assert get_doc({"construction_inputs": {"jobs": [], "roles": [], "utilization": {}, "notice": ""}})["notices"] == []
 
 
 def test_set_jobs_validates():
@@ -80,7 +92,7 @@ def test_page_shows_construction_section_and_nav(ci_app):
     assert 'id="construction"' in html
     assert "#construction" in html
     assert "benchmark (pending pay app)" in html
-    assert "Temporary note" in html
+    assert "Note for Bob" in html and "Note for Chris Andresen" in html and "Note for Grady" in html
 
 
 def test_api_roundtrip_and_audit(ci_app):
@@ -111,8 +123,11 @@ def test_api_roundtrip_and_audit(ci_app):
         assert feed["jobs"][0]["contract_completion"] == "2027-09-15"
         assert feed["utilization"]["2026-11"]["highest"]["pct"] == 83
         assert feed["notice"] == ""
+        r = c.delete("/api/construction_inputs/notices/grady", headers={"X-Actor": "Grady Lakamp"})
+        assert r.status_code == 200
+        assert c.delete("/api/construction_inputs/notices/grady").status_code == 404
         html = c.get("/").get_data(as_text=True)
-        assert "Temporary note" not in html
+        assert "Note for Grady" not in html and "Note for Bob" in html
     storage = ci_app.config["STORAGE"]
     audit = storage.list_audit(limit=10)
     actions = {a["action"] for a in audit}
