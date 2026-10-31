@@ -16,6 +16,7 @@ from . import todos as todo_lib
 from .scoring import ROSTER
 from .todo_metrics import build as build_todo_metrics
 from .summarizer import Summarizer, clean_topics
+from . import construction as construction_lib
 from .scorecard.service import ET, ScorecardService
 from .scorecard.sheet import SheetFetchError, make_fetcher, parse_gids
 
@@ -256,6 +257,28 @@ def _dropped_this_quarter(rocks_data: dict[str, Any], cur_q: dict[str, Any] | No
     return sorted(out, key=lambda t: t.get("dropped_at") or "", reverse=True)
 
 
+def _construction_view(rocks_data: dict[str, Any]) -> dict[str, Any]:
+    """Construction inputs for the page: the doc plus the month to show."""
+    doc = construction_lib.get_doc(rocks_data)
+    today = _today_et()
+    months = sorted((doc.get("utilization") or {}).keys())
+    cur = f"{today.year:04d}-{today.month:02d}"
+    nxt_y, nxt_m = (today.year + 1, 1) if today.month == 12 else (today.year, today.month + 1)
+    nxt = f"{nxt_y:04d}-{nxt_m:02d}"
+    show = request.args.get("util_month") or (cur if cur in months else (months[-1] if months else nxt))
+    if not construction_lib.MONTH_RE.match(show):
+        show = nxt
+    choices = sorted(set(months) | {cur, nxt, show})
+    return {
+        "doc": doc,
+        "month": show,
+        "month_choices": choices,
+        "entry": (doc.get("utilization") or {}).get(show) or {"required": {}, "available": [], "note": ""},
+        "summary": construction_lib.utilization_summary(doc, show),
+        "cause_codes": sorted(c for c in construction_lib.CAUSE_CODES if c),
+    }
+
+
 def _scorecard_or_error() -> dict[str, Any]:
     """The Scorecard must never take the page down."""
     try:
@@ -359,6 +382,7 @@ def register_routes(app: Flask) -> None:
             parked_issues=rocks_data.get("parked_issues") or [],
             ids=ids_lib.view(rocks_data, since=str((cur_q or {}).get("start") or "")[:10] or None),
             scorecard=scorecard,
+            construction=_construction_view(rocks_data),
             sheet_edit_url=current_app.config["APP_CONFIG"].sheet_edit_url,
             actor_names=_actor_names(rocks_data, scorecard),
         )
@@ -391,6 +415,60 @@ def register_routes(app: Flask) -> None:
         except SheetFetchError as exc:
             abort(502, description=f"Could not read the Sheet: {exc}")
         return jsonify(result)
+
+    # ---- Construction inputs (Chris Andresen / Grady; read by the Monday feed) ----
+    @app.route("/api/construction_inputs")
+    def api_construction_inputs() -> Any:
+        doc = construction_lib.get_doc(_get_storage().load_rocks())
+        return jsonify(_jsonable(construction_lib.feed_view(doc)))
+
+    @app.route("/api/construction_inputs/jobs", methods=["PUT"])
+    def api_construction_jobs() -> Any:
+        body = request.get_json(silent=True) or {}
+        jobs = body.get("jobs")
+        if not isinstance(jobs, list):
+            abort(400, description="body must include 'jobs' as a list")
+        roles = body.get("roles")
+        if roles is not None and not isinstance(roles, list):
+            abort(400, description="'roles' must be a list")
+
+        def fn(data: dict[str, Any]) -> dict[str, Any]:
+            doc = construction_lib.get_doc(data)
+            construction_lib.set_jobs(doc, jobs, roles)
+            doc["updated_at"] = datetime.now(ET).isoformat(timespec="seconds")
+            return doc
+        try:
+            doc = _get_storage().edit_rocks(fn)
+        except ValueError as exc:
+            abort(400, description=str(exc))
+        return jsonify(_jsonable(construction_lib.feed_view(doc)))
+
+    @app.route("/api/construction_inputs/utilization/<month>", methods=["PUT"])
+    def api_construction_utilization(month: str) -> Any:
+        body = request.get_json(silent=True) or {}
+
+        def fn(data: dict[str, Any]) -> dict[str, Any]:
+            doc = construction_lib.get_doc(data)
+            construction_lib.set_utilization(doc, month, body.get("required") or {},
+                                             body.get("available") or [], body.get("note") or "")
+            doc["updated_at"] = datetime.now(ET).isoformat(timespec="seconds")
+            return doc
+        try:
+            doc = _get_storage().edit_rocks(fn)
+        except ValueError as exc:
+            abort(400, description=str(exc))
+        return jsonify(_jsonable({"month": month,
+                                  "summary": construction_lib.utilization_summary(doc, month)}))
+
+    @app.route("/api/construction_inputs/notice", methods=["PUT"])
+    def api_construction_notice() -> Any:
+        body = request.get_json(silent=True) or {}
+
+        def fn(data: dict[str, Any]) -> str:
+            doc = construction_lib.get_doc(data)
+            doc["notice"] = str(body.get("text") or "").strip()[:2000]
+            return doc["notice"]
+        return jsonify({"notice": _get_storage().edit_rocks(fn)})
 
     @app.route("/changes")
     def changes_page() -> Any:
