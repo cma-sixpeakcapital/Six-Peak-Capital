@@ -1011,6 +1011,130 @@
 </section>
 {% endif %}
 
+
+{% set v = vto.vto %}{% set ch = vto.chart %}
+<section class="rocks-section" id="vto">
+    <div class="section-heading row-between">
+        <div>
+            <span class="section-label">Vision / Traction Organizer</span>
+            <h2>Core values, focus, targets</h2>
+        </div>
+        <div class="sc-actions">
+            {% if v.doc_url %}<a class="pill-btn" href="{{ v.doc_url }}" target="_blank" rel="noopener">Full VTO + redline ↗</a>{% endif %}
+            <button type="button" class="pill-btn" id="vto-edit-toggle">Edit</button>
+        </div>
+    </div>
+    <p class="sc-meta muted">Basis: {{ v.as_of }}. Items marked <i>Proposed</i> are still open on the off-site Issues List and are not adopted.</p>
+
+    <div class="vto-grid">
+        <div class="card vto-card vto-values">
+            <div class="card-head"><span class="section-label">Core values</span></div>
+            <ol class="vto-list vto-list-num">{% for cv in v.core_values %}<li>{{ cv }}</li>{% endfor %}</ol>
+        </div>
+        <div class="card vto-card">
+            <div class="card-head"><span class="section-label">Core focus</span></div>
+            <p class="vto-label">Purpose</p><p>{{ v.purpose }}</p>
+            <p class="vto-label">Niche</p><p>{{ v.niche }}</p>
+            <p class="vto-label">What we say no to</p>
+            <ul class="vto-list">{% for x in v.say_no_to %}<li{% if x.startswith('Proposed') %} class="vto-proposed"{% endif %}>{{ x }}</li>{% endfor %}</ul>
+        </div>
+        <div class="card vto-card">
+            <div class="card-head"><span class="section-label">10-year target</span></div>
+            <p class="vto-big">{{ v.ten_year_target }}</p>
+            <p class="muted">{{ v.ten_year_date }}</p>
+        </div>
+        <div class="card vto-card">
+            <div class="card-head"><span class="section-label">3-year picture · {{ v.three_year.date }}</span></div>
+            <ul class="vto-list">{% for x in v.three_year['items'] %}<li>{{ x }}</li>{% endfor %}</ul>
+        </div>
+        <div class="card vto-card vto-wide">
+            <div class="card-head"><span class="section-label">Marketing strategy</span></div>
+            <dl class="vto-dl">{% for m in v.marketing %}<dt>{{ m.label }}</dt><dd{% if m.text.startswith('Proposed') or m.text.startswith('Left open') %} class="vto-proposed"{% endif %}>{{ m.text }}</dd>{% endfor %}</dl>
+        </div>
+    </div>
+
+    <div class="card vto-edit" id="vto-edit" hidden>
+        <div class="card-head"><span class="section-label">Edit V/TO</span><h3>One item per line where it says so. Saving records your name in the change log.</h3></div>
+        <label>Basis / as of <input id="vto-as-of" value="{{ v.as_of }}"></label>
+        <label>Full VTO link <input id="vto-doc-url" value="{{ v.doc_url }}"></label>
+        <label>Core values (one per line)<textarea id="vto-core-values" rows="6">{{ v.core_values|join('\n') }}</textarea></label>
+        <label>Purpose<textarea id="vto-purpose" rows="3">{{ v.purpose }}</textarea></label>
+        <label>Niche<textarea id="vto-niche" rows="3">{{ v.niche }}</textarea></label>
+        <label>What we say no to (one per line; start a line with "Proposed:" to show it as proposed)<textarea id="vto-say-no" rows="5">{{ v.say_no_to|join('\n') }}</textarea></label>
+        <label>10-year target<textarea id="vto-ten" rows="2">{{ v.ten_year_target }}</textarea></label>
+        <label>10-year target date<input id="vto-ten-date" value="{{ v.ten_year_date }}"></label>
+        <label>3-year picture date<input id="vto-three-date" value="{{ v.three_year.date }}"></label>
+        <label>3-year picture (one per line)<textarea id="vto-three-items" rows="8">{{ v.three_year['items']|join('\n') }}</textarea></label>
+        <label>Marketing strategy (one per line as "Label: text")<textarea id="vto-marketing" rows="6">{% for m in v.marketing %}{{ m.label }}: {{ m.text }}
+{% endfor %}</textarea></label>
+        <div class="row-between ci-foot"><span></span><button type="button" class="pill-btn pill-btn-primary" id="vto-save">Save V/TO</button></div>
+    </div>
+</section>
+
+<section class="rocks-section" id="chart">
+    <div class="section-heading row-between">
+        <div>
+            <span class="section-label">Accountability Chart</span>
+            <h2>Seats, roles, and who sits in them</h2>
+        </div>
+        <div class="sc-actions">
+            <button type="button" class="pill-btn" id="chart-reviewed-btn" title="Stamp this quarter's review at the rocks session">✓ Reviewed this quarter</button>
+            <button type="button" class="pill-btn" id="chart-edit-toggle">Edit</button>
+        </div>
+    </div>
+    <p class="sc-meta muted">Basis: {{ ch.as_of }}. Reviewed at every quarterly rock session (Checkup #9).
+        {% if ch.reviews %}Last reviewed <b>{{ ch.reviews[-1].quarter }}</b> on {{ ch.reviews[-1].at[:10] }}{% if ch.reviews[-1].by %} by {{ ch.reviews[-1].by }}{% endif %}.{% else %}<span class="sc-warn">Not yet reviewed on the portal.</span>{% endif %}
+    </p>
+    <div class="card">
+        <div class="tbl-wrap">
+        <table class="tbl chart-tbl">
+            <thead><tr><th>Seat</th><th>Person</th><th>Roles</th><th class="num" title="Gets it / Wants it / Capacity">GWC</th><th>Flag</th></tr></thead>
+            <tbody>
+            {% for st in ch.seats %}
+            <tr>
+                <td class="strong chart-seat">{{ st.seat }}</td>
+                <td>{{ st.person }}</td>
+                <td><ol class="vto-list vto-list-num chart-roles">{% for r in st.roles %}<li>{{ r }}</li>{% endfor %}</ol></td>
+                <td class="num">{{ st.gwc }}</td>
+                <td class="muted chart-flag">{{ st.flag }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% if ch.proposed_changes %}
+        <p class="vto-label">Proposed 2027 changes (structure first, people second)</p>
+        <ul class="vto-list">{% for x in ch.proposed_changes %}<li>{{ x }}</li>{% endfor %}</ul>
+        {% endif %}
+    </div>
+    <div class="card vto-edit" id="chart-edit" hidden>
+        <div class="card-head"><span class="section-label">Edit chart</span><h3>Roles one per line. Saving records your name in the change log.</h3></div>
+        <label>Basis / as of <input id="chart-as-of" value="{{ ch.as_of }}"></label>
+        <div class="tbl-wrap">
+        <table class="tbl ci-tbl" id="chart-seats">
+            <thead><tr><th>Seat</th><th>Person</th><th>Roles (one per line)</th><th>GWC</th><th>Flag</th><th></th></tr></thead>
+            <tbody>
+            {% for st in ch.seats %}
+            <tr data-seat-row>
+                <td><input class="ci-in" name="seat" value="{{ st.seat }}" size="22"></td>
+                <td><input class="ci-in" name="person" value="{{ st.person }}" size="16"></td>
+                <td><textarea class="ci-in" name="roles" rows="5" cols="44">{{ st.roles|join('\n') }}</textarea></td>
+                <td><input class="ci-in" name="gwc" value="{{ st.gwc }}" size="8"></td>
+                <td><textarea class="ci-in" name="flag" rows="3" cols="28">{{ st.flag }}</textarea></td>
+                <td><button type="button" class="link-btn ci-row-del" title="Remove seat">×</button></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <label>Proposed changes (one per line)<textarea id="chart-proposed" rows="5">{{ ch.proposed_changes|join('\n') }}</textarea></label>
+        <div class="row-between ci-foot">
+            <button type="button" class="pill-btn" id="chart-seat-add">+ Add seat</button>
+            <button type="button" class="pill-btn pill-btn-primary" id="chart-save">Save chart</button>
+        </div>
+    </div>
+</section>
+
 <section class="card" id="history">
     <div class="card-head">
         <span class="section-label">Recent Meetings</span>

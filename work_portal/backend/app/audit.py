@@ -64,6 +64,9 @@ ACTION_LABELS = {
     "api_construction_notice": "Edit construction inputs notice",
     "api_construction_notice_delete": "Remove a construction inputs note",
     "api_construction_awards": "Edit third-party awards (backlog)",
+    "api_vto_update": "Edit V/TO",
+    "api_vto_chart_update": "Edit Accountability Chart",
+    "api_vto_chart_reviewed": "Mark Accountability Chart reviewed",
 }
 
 
@@ -100,8 +103,14 @@ def index_doc(doc: dict[str, Any]) -> dict[str, tuple[str, dict[str, Any]]]:
             out[f"caward:{a.get('project')}"] = ("construction_award", {**a, "title": a.get("project")})
         for n in ci.get("notices") or []:
             out[f"cnote:{n.get('id')}"] = ("construction_note", {**n, "title": f"Note for {n.get('to')}"})
+    vt = doc.get("vto") or {}
+    if isinstance(vt, dict):
+        out["doc:vto"] = ("document", {"value": vt.get("vto"), "title": "V/TO"})
+        for st in ((vt.get("chart") or {}).get("seats") or []):
+            out[f"seat:{st.get('seat')}"] = ("accountability_seat", {**st, "title": st.get("seat")})
+        out["doc:chart_meta"] = ("document", {"value": {k: v for k, v in (vt.get("chart") or {}).items() if k != "seats"}})
     for k, v in doc.items():
-        if k not in {"rocks", "company_rocks", "todos", "construction_inputs"}:
+        if k not in {"rocks", "company_rocks", "todos", "construction_inputs", "vto"}:
             out[f"doc:{k}"] = ("document", {"value": v})
     return out
 

@@ -721,3 +721,28 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .link-btn:hover { color:#991B1B; }
 .ci-notice-stamp { font-size:0.74rem; margin-top:0.35rem; }
 .ci-money { width:8.5rem; text-align:right; }
+
+/* V/TO + Accountability Chart (11/1/2026) */
+.vto-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:1rem; }
+.vto-wide { grid-column:1 / -1; }
+@media (max-width: 860px) { .vto-grid { grid-template-columns:1fr; } }
+.vto-card p { margin:0 0 0.5rem; font-size:0.9rem; line-height:1.45; }
+.vto-label { font-size:0.66rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:0.8rem 0 0.2rem !important; }
+.vto-big { font-size:1.05rem; font-weight:600; line-height:1.4; }
+.vto-list { margin:0.2rem 0 0; padding-left:1.2rem; font-size:0.9rem; line-height:1.45; }
+.vto-list li { margin-bottom:0.3rem; }
+.vto-values .vto-list-num li { font-size:1rem; font-weight:600; margin-bottom:0.5rem; }
+.vto-proposed { color:#9A3412; }
+.vto-proposed::before { content:""; }
+.vto-dl { margin:0; font-size:0.9rem; line-height:1.45; }
+.vto-dl dt { font-weight:600; margin-top:0.6rem; }
+.vto-dl dd { margin:0.1rem 0 0; }
+.vto-edit { margin-top:1rem; }
+.vto-edit label { display:block; font-size:0.84rem; font-weight:600; margin:0.7rem 0 0; }
+.vto-edit input, .vto-edit textarea { display:block; width:100%; box-sizing:border-box; font:inherit; font-size:0.86rem; font-weight:400; padding:0.35rem 0.5rem; margin-top:0.25rem; border:1px solid var(--border, #d7dbe0); border-radius:6px; background:var(--surface, #fff); color:inherit; }
+.vto-edit .ci-tbl input, .vto-edit .ci-tbl textarea { width:auto; display:inline-block; margin:0; }
+.chart-tbl td { vertical-align:top; font-size:0.88rem; }
+.chart-roles { font-size:0.84rem; }
+.chart-roles li { margin-bottom:0.15rem; }
+.chart-seat { min-width:150px; }
+.chart-flag { max-width:260px; font-size:0.8rem; }
