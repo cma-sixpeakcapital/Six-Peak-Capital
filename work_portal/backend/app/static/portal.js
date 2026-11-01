@@ -534,7 +534,7 @@
             jobs.querySelectorAll("tbody tr").forEach(function (tr) {
                 const g = function (n) { const el = tr.querySelector("[name=" + n + "]"); return el ? el.value.trim() : ""; };
                 if (!g("job")) return;
-                rows.push({ job: g("job"), active: tr.querySelector("[name=active]").checked,
+                rows.push({ job: g("job"), active: tr.querySelector("[name=active]").checked, client: g("client"),
                     contract_completion: g("contract_completion"), contract_source: g("contract_source"),
                     pay_app_through: g("pay_app_through"), cause_code: g("cause_code"),
                     contingency_note: g("contingency_note"), notes: g("notes") });
@@ -587,6 +587,49 @@
                 handleAction(btn, () => apiRequest("/api/construction_inputs/notices/" + encodeURIComponent(btn.dataset.noteId), { method: "DELETE" }));
             });
         });
+        // ---- Third-party awards (Tom) ----
+        const awards = document.getElementById("ci-awards");
+        function awardsTotal() {
+            if (!awards) return;
+            let t = 0;
+            awards.querySelectorAll("tbody tr").forEach(function (tr) {
+                if (tr.querySelector("select[name=status]").value !== "awarded") return;
+                t += parseFloat(tr.querySelector("input[name=expected_value]").value) || 0;
+            });
+            const el = document.getElementById("ci-awards-total");
+            if (el) el.textContent = "$" + Math.round(t).toLocaleString();
+        }
+        if (awards) {
+            awards.querySelectorAll("input, select").forEach(function (el) { el.addEventListener("input", awardsTotal); el.addEventListener("change", awardsTotal); });
+            awardsTotal();
+            const addAward = document.getElementById("ci-award-add");
+            if (addAward) addAward.addEventListener("click", function () {
+                const tr = document.createElement("tr");
+                tr.setAttribute("data-award-row", "");
+                tr.innerHTML = '<td><input class="ci-in" name="project" size="16"></td><td><input class="ci-in" name="client" size="14"></td>' +
+                    '<td><input class="ci-in" type="date" name="award_date"></td><td class="num"><input class="ci-in ci-money" type="number" min="0" step="1000" name="expected_value"></td>' +
+                    '<td><input class="ci-in" type="date" name="expected_signing"></td><td><input class="ci-in" name="kpi_job" size="10" placeholder="as in KPI workbook"></td>' +
+                    '<td><select class="ci-in" name="status"><option value="awarded">awarded</option><option value="signed">signed</option><option value="lost">lost</option></select></td>' +
+                    '<td><input class="ci-in" name="notes" size="18"></td><td><button type="button" class="link-btn ci-row-del" title="Remove">×</button></td>';
+                awards.querySelector("tbody").appendChild(tr);
+                tr.querySelectorAll("input, select").forEach(function (el) { el.addEventListener("input", awardsTotal); el.addEventListener("change", awardsTotal); });
+                ciRowDelete(tr);
+                tr.querySelector("input[name=project]").focus();
+            });
+            const saveAwards = document.getElementById("ci-awards-save");
+            if (saveAwards) saveAwards.addEventListener("click", function () {
+                const rows = [];
+                awards.querySelectorAll("tbody tr").forEach(function (tr) {
+                    const g = function (n) { const el = tr.querySelector("[name=" + n + "]"); return el ? el.value.trim() : ""; };
+                    if (!g("project")) return;
+                    rows.push({ project: g("project"), client: g("client"), award_date: g("award_date"),
+                        expected_value: g("expected_value"), expected_signing: g("expected_signing"),
+                        kpi_job: g("kpi_job"), status: g("status"), notes: g("notes") });
+                });
+                handleAction(saveAwards, () => apiRequest("/api/construction_inputs/awards", { method: "PUT", body: JSON.stringify({ awards: rows }) }));
+            });
+        }
+
         const clearNotice = document.getElementById("ci-notice-clear");
         if (clearNotice) clearNotice.addEventListener("click", function () {
             if (!confirm("Remove the note for everyone?")) return;
