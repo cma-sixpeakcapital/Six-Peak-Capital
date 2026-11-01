@@ -691,8 +691,21 @@
         });
     }
 
+    function wireNavMenus() {
+        const menus = document.querySelectorAll("details.nav-menu");
+        if (!menus.length) return;
+        document.addEventListener("click", function (e) {
+            menus.forEach(function (m) { if (m.open && !m.contains(e.target)) m.open = false; });
+        });
+        menus.forEach(function (m) {
+            m.addEventListener("toggle", function () { if (m.open) menus.forEach(function (o) { if (o !== m) o.open = false; }); });
+            m.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { m.open = false; }); });
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         wireActorPicker();
+        wireNavMenus();
         wireConstruction();
         wireVto();
         wireScorecardRefresh();
