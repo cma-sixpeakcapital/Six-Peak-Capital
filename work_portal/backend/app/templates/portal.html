@@ -448,8 +448,8 @@
     {% for n in ci.notices %}
     <div class="card sc-note ci-notice" data-note-id="{{ n.id }}">
         <div class="row-between"><b>Note for {{ n.to }}</b> <button type="button" class="pill-btn pill-btn-sm ci-notice-remove" data-note-id="{{ n.id }}" title="Remove this note for everyone">Remove</button></div>
-        <p>{{ n.text }}</p>
-        <p class="muted ci-notice-stamp">Temporary note (Chris Aiello, 10/31/2026). It goes away once you have read it; click Remove.</p>
+        {% for para in n.text.split("\n\n") %}<p>{{ para }}</p>{% endfor %}
+        <p class="muted ci-notice-stamp">Temporary note (Chris Aiello, 10/31/2026; Grady's updated 11/1). It goes away once you have read it; click Remove.</p>
     </div>
     {% endfor %}
     {% if ci.notice %}

@@ -156,6 +156,16 @@ def test_api_roundtrip_and_audit(ci_app):
         assert r.status_code == 200 and r.get_json()["awards"][0]["expected_value"] == 18500000
         assert c.put("/api/construction_inputs/awards", json={"awards": "x"}).status_code == 400
         assert c.get("/api/construction_inputs").get_json()["awards"][0]["project"] == "Moorpark"
+        # per-person note: rewrite Grady's, add one for Kim, paragraphs render separately
+        r = c.put("/api/construction_inputs/notices/grady", json={"text": "First para.\n\nSecond para."},
+                  headers={"X-Actor": "Chris Aiello"})
+        assert r.status_code == 200 and r.get_json() == {"id": "grady", "to": "Grady", "text": "First para.\n\nSecond para."}
+        r = c.put("/api/construction_inputs/notices/kim", json={"to": "Kim", "text": "Contract dates please."})
+        assert r.status_code == 200 and r.get_json()["to"] == "Kim"
+        assert c.put("/api/construction_inputs/notices/kim", json={"text": ""}).status_code == 400
+        html = c.get("/").get_data(as_text=True)
+        assert "<p>First para.</p><p>Second para.</p>" in html and "Note for Kim" in html
+        assert [n["id"] for n in c.get("/api/construction_inputs").get_json()["notices"]][-2:] == ["grady", "kim"]
         r = c.delete("/api/construction_inputs/notices/grady", headers={"X-Actor": "Grady Lakamp"})
         assert r.status_code == 200
         assert c.delete("/api/construction_inputs/notices/grady").status_code == 404

@@ -83,12 +83,26 @@ SEED_NOTICES: list[dict[str, str]] = [
              "KPI workbook, when it rolls into the books automatically, or until you mark it lost. The old weekly "
              "signed-backlog row you typed into the Sheet is retired."},
     {"id": "grady", "to": "Grady",
-     "text": "Please confirm the utilization role list below (Superintendent, Project Manager, Assistant PM, "
-             "Project Coordinator; edit the box and save if it needs changing) and send Chris Andresen "
-             "November's hours by role for each active job by Fri 11/6. Keep sending your schedule forecasts; "
-             "four of the current files are more than 45 days old and read as stale on the scorecard. "
-             "Subcontractors in default (out of money, off site 2+ weeks, supplier lien) are picked up from "
-             "what you report at the L10 or by email / Slack."},
+     "text":
+             "The construction scorecard changes on a trial basis starting Monday 11/2. Four numbers now come "
+             "from your files with nothing to send: jobs behind contract date and % milestones on time (from "
+             "the newest dated .mpp in each job's Box \"5. SCHEDULE\" folder; Califa from \"GRADYS SCHEDULES "
+             "-\"), and contingency flags and the two backlog numbers (from Chris Andresen's monthly KPI "
+             "workbook). Retired from the board: the old jobs-behind, contingency burn, buyout savings, jobs "
+             "per PM, sub score and signed backlog. Buyout by job still goes to Chris Andresen monthly.\n\n"
+             "You report two numbers each week: safety recordables, and subcontractors in default (out of "
+             "money or not performing, off site 2+ weeks, or a supplier lien because the sub did not pay). "
+             "One Slack line to Chris Aiello by Monday 8 a.m. ET is enough: \"Safety 0, subs in default 0\", "
+             "with sub, job and issue for anything that is not zero. If nothing comes in, 0 goes on the "
+             "board.\n\n"
+             "Three things to settle: (1) Contract completion dates: 7 of the 9 jobs show the benchmark date "
+             "as a stand-in and are flagged on the scorecard until the contract date from the signed schedule "
+             "exhibit is entered in the jobs table below (you or Kim, about ten minutes). (2) Schedule files: "
+             "keep saving dated .mpp files in the usual folder; look-aheads, templates and OLD folders are "
+             "skipped, and a stale file repeats last month's answer (four files are more than 45 days old "
+             "today). (3) Utilization: confirm the role list below (Superintendent, Project Manager, "
+             "Assistant PM, Project Coordinator; edit the box and save if it needs changing) and send Chris "
+             "Andresen November's required hours by role for each active job by Friday 11/6."},
 ]
 _STAMP = "Temporary note (Chris Aiello, 10/31/2026). This box goes away once you have read it; click Remove."
 
@@ -132,6 +146,25 @@ def get_doc(data: dict[str, Any]) -> dict[str, Any]:
         doc["notices"] = [dict(n) for n in SEED_NOTICES] if doc.get("notice") else []
         doc["notice"] = ""
     return doc
+
+
+def set_notice(doc: dict[str, Any], note_id: str, to: str, text: str) -> dict[str, str]:
+    """Create or replace one person's temporary note (Chris 11/1/2026: Grady's walkthrough goes in his note)."""
+    nid = "".join(ch for ch in str(note_id or "").strip().lower() if ch.isalnum() or ch == "-")[:40]
+    text = str(text or "").strip()[:4000]
+    to = str(to or "").strip()[:60]
+    if not nid or not text:
+        raise ValueError("note id and text are required")
+    notices = doc.setdefault("notices", [])
+    for n in notices:
+        if n.get("id") == nid:
+            n["text"] = text
+            if to:
+                n["to"] = to
+            return n
+    entry = {"id": nid, "to": to or nid.title(), "text": text}
+    notices.append(entry)
+    return entry
 
 
 def remove_notice(doc: dict[str, Any], note_id: str) -> bool:
