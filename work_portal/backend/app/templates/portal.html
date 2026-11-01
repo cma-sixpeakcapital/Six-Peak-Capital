@@ -54,13 +54,16 @@
 <svg class="file-ic" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
 {%- endmacro %}
 
-{% macro file_chip(f, rock_id, readonly=False) -%}
+{# base = the item's files endpoint ("/api/rocks/<id>/files" or "/api/todos/<id>/files");
+   the JS reads it from data-files-base so rocks and to-dos share one code path. #}
+{% macro file_chip(f, rock_id, readonly=False, base=None) -%}
+{% set base = base or ('/api/rocks/' ~ rock_id ~ '/files') %}
 <li class="file-chip" data-file-id="{{ f.id }}">
     <a class="file-chip-link" href="{{ f.url }}" target="_blank" rel="noopener noreferrer" title="{{ f.url }}">{{ file_icon() }}<span class="file-label" title="{{ f.label }}">{{ f.label }}</span></a>
     {% if not readonly %}
-    <button type="button" class="file-edit-btn" data-rock-id="{{ rock_id }}" data-file-id="{{ f.id }}" title="Edit link" aria-label="Edit link">✎</button>
-    <button type="button" class="file-remove-btn" data-rock-id="{{ rock_id }}" data-file-id="{{ f.id }}" title="Remove link" aria-label="Remove link">×</button>
-    <form class="add-form edit-file-form hidden" data-rock-id="{{ rock_id }}" data-file-id="{{ f.id }}" autocomplete="off">
+    <button type="button" class="file-edit-btn" data-rock-id="{{ rock_id }}" data-files-base="{{ base }}" data-file-id="{{ f.id }}" title="Edit link" aria-label="Edit link">✎</button>
+    <button type="button" class="file-remove-btn" data-rock-id="{{ rock_id }}" data-files-base="{{ base }}" data-file-id="{{ f.id }}" title="Remove link" aria-label="Remove link">×</button>
+    <form class="add-form edit-file-form hidden" data-rock-id="{{ rock_id }}" data-files-base="{{ base }}" data-file-id="{{ f.id }}" autocomplete="off">
         <input type="url" name="url" placeholder="URL (https://…)" value="{{ f.url }}" required />
         <input type="text" name="label" placeholder="Label" value="{{ f.label }}" maxlength="60" />
         <div class="form-actions">
@@ -114,7 +117,7 @@
             {% endif %}
             {% if not readonly %}
             <button type="button" class="file-add-btn" data-rock-id="{{ rock.id }}">+ File</button>
-            <form class="add-form add-file-form hidden" data-rock-id="{{ rock.id }}" autocomplete="off">
+            <form class="add-form add-file-form hidden" data-rock-id="{{ rock.id }}" data-files-base="/api/rocks/{{ rock.id }}/files" autocomplete="off">
                 <input type="url" name="url" placeholder="URL (https://…)" required />
                 <input type="text" name="label" placeholder="Label (optional)" maxlength="60" />
                 <div class="form-actions">
@@ -799,6 +802,23 @@
                     <span class="source-tag" title="{{ t.source.type }}">{{ t.source.label or ('from ' ~ t.source.type.replace('_', ' ')) }}</span>
                     {% endif %}
                     {% if t.detail %}<div class="todo-detail">{{ t.detail }}</div>{% endif %}
+                    {% set fbase = '/api/todos/' ~ t.id ~ '/files' %}
+                    <div class="rock-files todo-files" data-todo-id="{{ t.id }}">
+                        {% if t.files %}
+                        <ul class="file-chips">
+                            {% for f in t.files %}{{ file_chip(f, t.id, False, fbase) }}{% endfor %}
+                        </ul>
+                        {% endif %}
+                        <button type="button" class="file-add-btn" data-todo-id="{{ t.id }}">+ File</button>
+                        <form class="add-form add-file-form hidden" data-todo-id="{{ t.id }}" data-files-base="{{ fbase }}" autocomplete="off">
+                            <input type="url" name="url" placeholder="URL (https://…)" required />
+                            <input type="text" name="label" placeholder="Label (optional)" maxlength="60" />
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary small">Save</button>
+                                <button type="button" class="pill-btn cancel-add-file">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
                     <form class="add-form todo-form edit-todo-form hidden" data-todo-id="{{ t.id }}" autocomplete="off">
                         {{ owner_picker(t.owners or []) }}
                         <input type="text" name="task" placeholder="Task" value="{{ t.task or '' }}" required />

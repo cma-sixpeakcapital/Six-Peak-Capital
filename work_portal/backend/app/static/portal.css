@@ -387,6 +387,8 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .file-add-btn:hover, .file-add-btn:focus { color:var(--rust); border-color:rgba(196,88,26,.35); }
 .file-chips .add-form, .file-chips .edit-file-form { flex-basis:100%; }
 .edit-file-form { width:100%; }
+/* To-do cards: tighter gap under the task/dates line. */
+.todo-files { margin-top:0.35rem; }
 /* Archived rocks: chips render read-only, inline with the row. */
 .archive-file-chips { width:auto; margin-left:0.3rem; }
 

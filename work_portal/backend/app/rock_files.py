@@ -167,7 +167,7 @@ def apply_add_file(
     files = rock.get("files") or []
     if len(files) >= MAX_FILES_PER_ROCK:
         raise FileValidationError(
-            f"a rock can hold at most {MAX_FILES_PER_ROCK} file links"
+            f"at most {MAX_FILES_PER_ROCK} file links per item"
         )
     entry = build_file_entry(url, label, added_by, **build_kwargs)
     files.append(entry)

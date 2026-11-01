@@ -375,6 +375,48 @@ class PostgresStorage:
     def restore_todo(self, todo_id: str) -> dict[str, Any] | None:
         return self._edit_todo(todo_id, _todos.restore)
 
+    # --- per-to-do file links (same rules as rock files) -----------------------
+
+    def _find_todo(self, data: dict[str, Any], todo_id: str) -> dict[str, Any] | None:
+        for t in data.get("todos") or []:
+            if t.get("id") == todo_id:
+                return t
+        return None
+
+    def add_todo_file(
+        self, todo_id: str, url: str, label: str | None = None,
+        added_by: str | None = None,
+    ) -> dict[str, Any] | None:
+        data = self.load_rocks()
+        todo = self._find_todo(data, todo_id)
+        if todo is None:
+            return None
+        entry = apply_add_file(todo, url, label, added_by)
+        self.save_rocks(data)
+        return entry
+
+    def update_todo_file(
+        self, todo_id: str, file_id: str, url: str | None = None,
+        label: str | None = None,
+    ) -> dict[str, Any] | None:
+        data = self.load_rocks()
+        todo = self._find_todo(data, todo_id)
+        if todo is None:
+            return None
+        entry = apply_update_file(todo, file_id, url, label)
+        if entry is None:
+            return None
+        self.save_rocks(data)
+        return entry
+
+    def remove_todo_file(self, todo_id: str, file_id: str) -> bool:
+        data = self.load_rocks()
+        todo = self._find_todo(data, todo_id)
+        if todo is None or not apply_remove_file(todo, file_id):
+            return False
+        self.save_rocks(data)
+        return True
+
     def delete_todo(self, todo_id: str) -> bool:
         """Hard delete - for to-dos entered by mistake. Use drop_todo otherwise."""
         data = self.load_rocks()

@@ -791,6 +791,38 @@ def register_routes(app: Flask) -> None:
             abort(404, description="rock or file not found")
         return jsonify({"status": "deleted", "id": file_id})
 
+    @app.route("/api/todos/<todo_id>/files", methods=["POST"])
+    def api_todo_file_add(todo_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        try:
+            entry = _get_storage().add_todo_file(
+                todo_id, body.get("url", ""), body.get("label"), body.get("added_by"),
+            )
+        except FileValidationError as exc:
+            abort(400, description=str(exc))
+        if entry is None:
+            abort(404, description="to-do not found")
+        return jsonify(entry)
+
+    @app.route("/api/todos/<todo_id>/files/<file_id>", methods=["PATCH"])
+    def api_todo_file_update(todo_id: str, file_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+        try:
+            entry = _get_storage().update_todo_file(
+                todo_id, file_id, body.get("url"), body.get("label"),
+            )
+        except FileValidationError as exc:
+            abort(400, description=str(exc))
+        if entry is None:
+            abort(404, description="to-do or file not found")
+        return jsonify(entry)
+
+    @app.route("/api/todos/<todo_id>/files/<file_id>", methods=["DELETE"])
+    def api_todo_file_delete(todo_id: str, file_id: str) -> Any:
+        if not _get_storage().remove_todo_file(todo_id, file_id):
+            abort(404, description="to-do or file not found")
+        return jsonify({"status": "deleted", "id": file_id})
+
     @app.route("/api/rocks/<person>/add", methods=["POST"])
     def api_rock_add(person: str) -> Any:
         body = request.get_json(silent=True) or {}
