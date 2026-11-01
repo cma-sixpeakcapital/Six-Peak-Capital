@@ -274,3 +274,16 @@ def test_completed_before_tracking_has_no_verdict():
     t["completed"], t["completed_at"] = True, None  # done before completion times were kept
     assert on_time([t], date(2026, 9, 1), TODAY)["d"] == 0
     assert seven_day([t], date(2026, 9, 1), TODAY)["d"] == 0
+
+
+def test_on_time_skips_todo_created_after_its_original_due():
+    # Off-site to-dos loaded 10/31 with original dues of 10/23 and 10/27.
+    late = todo(date(2026, 10, 31), orig=date(2026, 10, 23), done=date(2026, 11, 1), id="born-overdue")
+    fair = todo(date(2026, 10, 1), orig=date(2026, 10, 8), done=date(2026, 10, 7), id="fair")
+    f = on_time([late, fair], date(2026, 9, 1), TODAY)
+    assert (f["n"], f["d"]) == (1, 1)
+
+
+def test_owner_list_strips_leading_and_on_stored_owners():
+    t = {"owners": ["Bob Kennedy", "Tom Taggart", "and Chris Aiello"]}
+    assert T.owner_list(t) == ["Bob Kennedy", "Tom Taggart", "Chris Aiello"]

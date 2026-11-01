@@ -107,7 +107,9 @@ def resolve_owners(raw: Any, people: Iterable[str]) -> list[str]:
 
 def owner_list(todo: dict[str, Any], people: Iterable[str] = ()) -> list[str]:
     if todo.get("owners"):
-        return list(todo["owners"])
+        # Records saved before LEADING_CONJ existed can hold "and Derek Sanders";
+        # strip it on read so they still credit the right person.
+        return [LEADING_CONJ.sub("", str(o)).strip() for o in todo["owners"]]
     return resolve_owners(todo.get("owner"), people)
 
 
