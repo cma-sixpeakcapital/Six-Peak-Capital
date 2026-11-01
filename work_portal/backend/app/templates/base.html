@@ -22,17 +22,27 @@
             <nav class="top-nav">
                 <a href="{{ url_for('portal') }}#summary">Summary</a>
                 <a href="{{ url_for('portal') }}#scorecard">Scorecard</a>
-                <a href="{{ url_for('portal') }}#construction" title="Contract dates, cause codes, contingency notes and utilization hours behind the GC scorecard">Construction</a>
                 <a href="{{ url_for('portal') }}#rocks">Rocks</a>
                 <a href="{{ url_for('portal') }}#todos">To-Dos</a>
                 <a href="{{ url_for('portal') }}#ids">IDS</a>
-                <a href="{{ url_for('portal') }}#scoreboard">Hit Rate</a>
-                <a href="{{ url_for('portal') }}#past-quarters">Results</a>
-                <a href="{{ url_for('portal') }}#issues">Parked</a>
-                <a href="{{ url_for('portal') }}#vto" title="Core values, core focus, 10-year target, 3-year picture, marketing strategy">V/TO</a>
-                <a href="{{ url_for('portal') }}#chart" title="Accountability Chart: seats, roles, who sits in them">Chart</a>
-                <a href="{{ url_for('portal') }}#history">History</a>
-                <a href="{{ url_for('changes_page') }}" class="nav-changes" title="Change log: every edit made in the portal">Changes</a>
+                <details class="nav-menu">
+                    <summary>Quarterly</summary>
+                    <div class="nav-menu-list">
+                        <a href="{{ url_for('portal') }}#vto"><b>V/TO</b><small>Core values, focus, 10-year and 3-year targets</small></a>
+                        <a href="{{ url_for('portal') }}#chart"><b>Accountability Chart</b><small>Seats, roles, quarterly review</small></a>
+                        <a href="{{ url_for('portal') }}#scoreboard"><b>Hit Rate</b><small>Rock completion by person and quarter</small></a>
+                        <a href="{{ url_for('portal') }}#past-quarters"><b>Results</b><small>Closed quarters and what each rock became</small></a>
+                    </div>
+                </details>
+                <details class="nav-menu">
+                    <summary>More</summary>
+                    <div class="nav-menu-list">
+                        <a href="{{ url_for('portal') }}#construction"><b>Construction inputs</b><small>Contract dates, awards, utilization hours behind the GC scorecard</small></a>
+                        <a href="{{ url_for('portal') }}#issues"><b>Parked issues</b><small>IDS themes not taken as rocks</small></a>
+                        <a href="{{ url_for('portal') }}#history"><b>History</b><small>Past meeting summaries</small></a>
+                        <a href="{{ url_for('changes_page') }}"><b>Changes</b><small>Every edit made in the portal</small></a>
+                    </div>
+                </details>
             </nav>
             {% if actor_names %}
             <label class="actor-pick" title="Recorded with each edit you make in the change log. Self-reported, not verified.">

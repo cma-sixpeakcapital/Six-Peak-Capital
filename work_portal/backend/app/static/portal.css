@@ -746,3 +746,16 @@ button.is-loading { opacity:.6; pointer-events:none; }
 .chart-roles li { margin-bottom:0.15rem; }
 .chart-seat { min-width:150px; }
 .chart-flag { max-width:260px; font-size:0.8rem; }
+
+/* Grouped nav (11/1/2026): five weekly links + two menus */
+.nav-menu { position:relative; }
+.nav-menu summary { list-style:none; cursor:pointer; color:var(--steel); font-size:0.84rem; font-weight:500; padding:0.45rem 0.6rem; border-radius:8px; white-space:nowrap; }
+.nav-menu summary::-webkit-details-marker { display:none; }
+.nav-menu summary::after { content:" \25BE"; font-size:0.7rem; opacity:.7; }
+.nav-menu summary:hover, .nav-menu[open] summary { color:#fff; background:rgba(255,255,255,0.06); }
+.nav-menu-list { position:absolute; top:calc(100% + 6px); left:0; min-width:280px; background:#fff; color:var(--text, #1b2230); border-radius:12px; box-shadow:0 12px 36px rgba(0,0,0,0.22); padding:0.4rem; z-index:60; display:flex; flex-direction:column; gap:0.1rem; }
+.nav-menu-list a { display:flex; flex-direction:column; gap:0.1rem; padding:0.5rem 0.7rem; border-radius:8px; color:inherit; text-decoration:none; font-size:0.86rem; }
+.nav-menu-list a:hover { background:var(--surface-alt, #f2f4f7); color:inherit; }
+.nav-menu-list a b { font-weight:600; }
+.nav-menu-list a small { font-size:0.74rem; color:var(--muted); line-height:1.3; }
+@media (max-width:1400px) { .nav-menu summary { padding:0.45rem 0.45rem; font-size:0.78rem; } }
