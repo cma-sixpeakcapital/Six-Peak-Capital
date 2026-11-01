@@ -8,6 +8,8 @@ Definitions (every percentage is shown with its fraction):
   On-time         to-dos whose ORIGINAL due date fell in the quarter to date and
                   has passed (or that are already done); share completed on or
                   before the original due. Pushing the due date doesn't help.
+                  A to-do created after its original due date (e.g. loaded late
+                  with a past due) has no fair verdict and is left out.
   Open / overdue  open = on the list and not done; overdue = open and past the
                   CURRENT due date.
   Age             days since creation, for open to-dos; buckets 0-7, 8-14,
@@ -78,6 +80,9 @@ def on_time(todos: Iterable[dict[str, Any]], q_start: date, today: date) -> dict
         orig = T.parse_due(t.get("original_due"))
         if orig is None or orig < lo:
             continue
+        created = T.et_date(t.get("created_at"))
+        if created is not None and created > orig:
+            continue  # born overdue: could never be on time, so no verdict
         done = _done_date(t)
         if t.get("completed") and done is None:
             continue  # checked off before completion times were kept: no verdict
