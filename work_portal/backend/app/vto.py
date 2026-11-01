@@ -51,6 +51,9 @@ SEED_VTO: dict[str, Any] = {
         "items": [
             "Revenue: ~$166MM annual construction billings (working target from Day 1; straw man was ~$147MM) and the matching GC revenue, to confirm",
             "Profit: ~$8.5MM consolidated net income; ~$9.2MM ending cash net of tax distributions (aspirational)",
+            "Headcount: about 43 at 11/30/2029 (LV 36: field crew 27 = 12 supers, 8 asst supers, 4 APMs, 3 PMs, plus 9 office/operations; "
+            "Six Peak 7); FY 2029 average ~46, peak 47 (field peaks at 31, 15 jobs). From the Target Business Plan, Sept close; "
+            "office and HoldCo seats held flat (CMA 11/1)",
             "Measurables: signed backlog, qualified pipeline, months of runway, active-job gross margin; 2029 targets to be calculated offline (Issues List #22)",
             "LV backlog: signed backlog at or above trailing-12-month GC revenue",
             "LIHTC pipeline: GC-only at full fee; no unpaid developer scope",
