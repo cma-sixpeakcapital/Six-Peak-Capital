@@ -17,6 +17,7 @@ from .scoring import ROSTER
 from .todo_metrics import build as build_todo_metrics
 from .summarizer import Summarizer, clean_topics
 from . import construction as construction_lib
+from . import vto as vto_lib
 from .scorecard.service import ET, ScorecardService
 from .scorecard.sheet import SheetFetchError, make_fetcher, parse_gids
 
@@ -385,6 +386,7 @@ def register_routes(app: Flask) -> None:
             ids=ids_lib.view(rocks_data, since=str((cur_q or {}).get("start") or "")[:10] or None),
             scorecard=scorecard,
             construction=_construction_view(rocks_data),
+            vto=vto_lib.get_doc(rocks_data),
             sheet_edit_url=current_app.config["APP_CONFIG"].sheet_edit_url,
             actor_names=_actor_names(rocks_data, scorecard),
         )
@@ -479,6 +481,40 @@ def register_routes(app: Flask) -> None:
         except ValueError as exc:
             abort(400, description=str(exc))
         return jsonify(_jsonable({"awards": doc["awards"]}))
+
+    # ---- V/TO and Accountability Chart (off-site to-dos, 11/1/2026) ----
+    @app.route("/api/vto")
+    def api_vto() -> Any:
+        return jsonify(_jsonable(vto_lib.get_doc(_get_storage().load_rocks())))
+
+    @app.route("/api/vto", methods=["PUT"])
+    def api_vto_update() -> Any:
+        body = request.get_json(silent=True) or {}
+        try:
+            out = _get_storage().edit_rocks(lambda d: vto_lib.set_vto(vto_lib.get_doc(d), body))
+        except ValueError as exc:
+            abort(400, description=str(exc))
+        return jsonify(_jsonable(out))
+
+    @app.route("/api/vto/chart", methods=["PUT"])
+    def api_vto_chart_update() -> Any:
+        body = request.get_json(silent=True) or {}
+        try:
+            out = _get_storage().edit_rocks(lambda d: vto_lib.set_chart(vto_lib.get_doc(d), body))
+        except ValueError as exc:
+            abort(400, description=str(exc))
+        return jsonify(_jsonable(out))
+
+    @app.route("/api/vto/chart/reviewed", methods=["POST"])
+    def api_vto_chart_reviewed() -> Any:
+        body = request.get_json(silent=True) or {}
+        rocks_data = _get_storage().load_rocks()
+        q = (current_quarter(rocks_data) or {}).get("id") or ""
+        quarter = str(body.get("quarter") or q or "").strip()
+        if not quarter:
+            abort(400, description="quarter is required")
+        out = _get_storage().edit_rocks(lambda d: vto_lib.mark_reviewed(vto_lib.get_doc(d), actor_name() or "unknown", quarter))
+        return jsonify(_jsonable(out))
 
     @app.route("/api/construction_inputs/notices/<note_id>", methods=["DELETE"])
     def api_construction_notice_delete(note_id: str) -> Any:

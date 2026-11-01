@@ -637,9 +637,64 @@
         });
     }
 
+
+    // ---- V/TO and Accountability Chart ----
+    function wireVto() {
+        const toggle = document.getElementById("vto-edit-toggle"), panel = document.getElementById("vto-edit");
+        if (toggle && panel) toggle.addEventListener("click", function () { panel.hidden = !panel.hidden; if (!panel.hidden) panel.scrollIntoView({ behavior: "smooth", block: "start" }); });
+        const lines = function (id) { return (document.getElementById(id).value || "").split("\n").map(function (x) { return x.trim(); }).filter(Boolean); };
+        const val = function (id) { return (document.getElementById(id).value || "").trim(); };
+        const save = document.getElementById("vto-save");
+        if (save) save.addEventListener("click", function () {
+            const marketing = lines("vto-marketing").map(function (l) {
+                const i = l.indexOf(":");
+                return i > 0 ? { label: l.slice(0, i).trim(), text: l.slice(i + 1).trim() } : { label: l, text: "" };
+            });
+            const body = { as_of: val("vto-as-of"), doc_url: val("vto-doc-url"), core_values: lines("vto-core-values"),
+                purpose: val("vto-purpose"), niche: val("vto-niche"), say_no_to: lines("vto-say-no"),
+                ten_year_target: val("vto-ten"), ten_year_date: val("vto-ten-date"),
+                three_year: { date: val("vto-three-date"), items: lines("vto-three-items") }, marketing: marketing };
+            handleAction(save, () => apiRequest("/api/vto", { method: "PUT", body: JSON.stringify(body) }));
+        });
+
+        const ctoggle = document.getElementById("chart-edit-toggle"), cpanel = document.getElementById("chart-edit");
+        if (ctoggle && cpanel) ctoggle.addEventListener("click", function () { cpanel.hidden = !cpanel.hidden; if (!cpanel.hidden) cpanel.scrollIntoView({ behavior: "smooth", block: "start" }); });
+        const seats = document.getElementById("chart-seats");
+        if (seats) ciRowDelete(seats);
+        const addSeat = document.getElementById("chart-seat-add");
+        if (addSeat && seats) addSeat.addEventListener("click", function () {
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-seat-row", "");
+            tr.innerHTML = '<td><input class="ci-in" name="seat" size="22"></td><td><input class="ci-in" name="person" size="16"></td>' +
+                '<td><textarea class="ci-in" name="roles" rows="5" cols="44"></textarea></td><td><input class="ci-in" name="gwc" size="8"></td>' +
+                '<td><textarea class="ci-in" name="flag" rows="3" cols="28"></textarea></td><td><button type="button" class="link-btn ci-row-del" title="Remove seat">×</button></td>';
+            seats.querySelector("tbody").appendChild(tr);
+            ciRowDelete(tr);
+            tr.querySelector("input[name=seat]").focus();
+        });
+        const csave = document.getElementById("chart-save");
+        if (csave && seats) csave.addEventListener("click", function () {
+            const rows = [];
+            seats.querySelectorAll("tbody tr").forEach(function (tr) {
+                const g = function (n) { const el = tr.querySelector("[name=" + n + "]"); return el ? el.value : ""; };
+                if (!g("seat").trim()) return;
+                rows.push({ seat: g("seat"), person: g("person"), roles: g("roles").split("\n").map(function (x) { return x.trim(); }).filter(Boolean), gwc: g("gwc"), flag: g("flag") });
+            });
+            const body = { as_of: val("chart-as-of"), seats: rows, proposed_changes: lines("chart-proposed") };
+            handleAction(csave, () => apiRequest("/api/vto/chart", { method: "PUT", body: JSON.stringify(body) }));
+        });
+        const rev = document.getElementById("chart-reviewed-btn");
+        if (rev) rev.addEventListener("click", function () {
+            if (!getActor()) { alert("Pick your name in the \"You are\" box first so the review is recorded to you."); return; }
+            if (!confirm("Record that the Accountability Chart was reviewed this quarter?")) return;
+            handleAction(rev, () => apiRequest("/api/vto/chart/reviewed", { method: "POST", body: JSON.stringify({}) }));
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         wireActorPicker();
         wireConstruction();
+        wireVto();
         wireScorecardRefresh();
         wireToggleRock();
         wireMoveRock();
