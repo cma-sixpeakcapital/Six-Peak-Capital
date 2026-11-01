@@ -516,6 +516,18 @@ def register_routes(app: Flask) -> None:
         out = _get_storage().edit_rocks(lambda d: vto_lib.mark_reviewed(vto_lib.get_doc(d), actor_name() or "unknown", quarter))
         return jsonify(_jsonable(out))
 
+    @app.route("/api/construction_inputs/notices/<note_id>", methods=["PUT"])
+    def api_construction_notice_put(note_id: str) -> Any:
+        body = request.get_json(silent=True) or {}
+
+        def fn(data: dict[str, Any]) -> dict[str, str]:
+            return construction_lib.set_notice(construction_lib.get_doc(data), note_id, body.get("to"), body.get("text"))
+        try:
+            out = _get_storage().edit_rocks(fn)
+        except ValueError as exc:
+            abort(400, description=str(exc))
+        return jsonify(out)
+
     @app.route("/api/construction_inputs/notices/<note_id>", methods=["DELETE"])
     def api_construction_notice_delete(note_id: str) -> Any:
         def fn(data: dict[str, Any]) -> bool:
