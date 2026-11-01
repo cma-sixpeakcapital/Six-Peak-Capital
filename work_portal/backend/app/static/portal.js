@@ -110,7 +110,7 @@
         // --- add a file link ---
         document.querySelectorAll(".file-add-btn").forEach(function (btn) {
             btn.addEventListener("click", function () {
-                const wrap = btn.closest(".rock-files");
+                const wrap = btn.closest(".rock-files");  // rock or to-do files block
                 showForm(wrap && wrap.querySelector(".add-file-form"));
             });
         });
@@ -123,10 +123,11 @@
         document.querySelectorAll(".add-file-form").forEach(function (form) {
             form.addEventListener("submit", function (e) {
                 e.preventDefault();
-                const id = form.dataset.rockId;
+                const base = form.dataset.filesBase ||
+                    `/api/rocks/${encodeURIComponent(form.dataset.rockId)}/files`;
                 const data = Object.fromEntries(new FormData(form).entries());
                 const submit = form.querySelector("button[type=submit]");
-                handleAction(submit, () => apiRequest(`/api/rocks/${encodeURIComponent(id)}/files`, {
+                handleAction(submit, () => apiRequest(base, {
                     method: "POST",
                     body: JSON.stringify(data),
                 }));
@@ -136,9 +137,9 @@
         // --- edit a file link ---
         document.querySelectorAll(".file-edit-btn").forEach(function (btn) {
             btn.addEventListener("click", function () {
-                const rid = btn.dataset.rockId, fid = btn.dataset.fileId;
-                showForm(document.querySelector(
-                    `.edit-file-form[data-rock-id="${rid}"][data-file-id="${fid}"]`));
+                // Scope to this chip: a shared to-do renders once per owner.
+                const chip = btn.closest(".file-chip");
+                showForm(chip && chip.querySelector(".edit-file-form"));
             });
         });
         document.querySelectorAll(".cancel-edit-file").forEach(function (btn) {
@@ -150,11 +151,13 @@
         document.querySelectorAll(".edit-file-form").forEach(function (form) {
             form.addEventListener("submit", function (e) {
                 e.preventDefault();
-                const rid = form.dataset.rockId, fid = form.dataset.fileId;
+                const fid = form.dataset.fileId;
+                const base = form.dataset.filesBase ||
+                    `/api/rocks/${encodeURIComponent(form.dataset.rockId)}/files`;
                 const data = Object.fromEntries(new FormData(form).entries());
                 const submit = form.querySelector("button[type=submit]");
                 handleAction(submit, () => apiRequest(
-                    `/api/rocks/${encodeURIComponent(rid)}/files/${encodeURIComponent(fid)}`, {
+                    `${base}/${encodeURIComponent(fid)}`, {
                     method: "PATCH",
                     body: JSON.stringify(data),
                 }));
@@ -165,9 +168,11 @@
         document.querySelectorAll(".file-remove-btn").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 if (!confirm("Remove this file link?")) return;
-                const rid = btn.dataset.rockId, fid = btn.dataset.fileId;
+                const fid = btn.dataset.fileId;
+                const base = btn.dataset.filesBase ||
+                    `/api/rocks/${encodeURIComponent(btn.dataset.rockId)}/files`;
                 handleAction(btn, () => apiRequest(
-                    `/api/rocks/${encodeURIComponent(rid)}/files/${encodeURIComponent(fid)}`,
+                    `${base}/${encodeURIComponent(fid)}`,
                     { method: "DELETE" }));
             });
         });
