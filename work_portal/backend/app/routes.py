@@ -265,7 +265,7 @@ def _construction_view(rocks_data: dict[str, Any]) -> dict[str, Any]:
     cur = f"{today.year:04d}-{today.month:02d}"
     nxt_y, nxt_m = (today.year + 1, 1) if today.month == 12 else (today.year, today.month + 1)
     nxt = f"{nxt_y:04d}-{nxt_m:02d}"
-    show = request.args.get("util_month") or (cur if cur in months else (months[-1] if months else nxt))
+    show = request.args.get("util_month") or (cur if (cur in months or not months) else months[-1])
     if not construction_lib.MONTH_RE.match(show):
         show = nxt
     choices = sorted(set(months) | {cur, nxt, show})
@@ -276,6 +276,8 @@ def _construction_view(rocks_data: dict[str, Any]) -> dict[str, Any]:
         "entry": (doc.get("utilization") or {}).get(show) or {"required": {}, "available": [], "note": ""},
         "summary": construction_lib.utilization_summary(doc, show),
         "cause_codes": sorted(c for c in construction_lib.CAUSE_CODES if c),
+        "clients": [c for c in ("HVN", "Six Peak affiliate", "Third party")],
+        "award_statuses": ["awarded", "signed", "lost"],
     }
 
 
@@ -459,6 +461,24 @@ def register_routes(app: Flask) -> None:
             abort(400, description=str(exc))
         return jsonify(_jsonable({"month": month,
                                   "summary": construction_lib.utilization_summary(doc, month)}))
+
+    @app.route("/api/construction_inputs/awards", methods=["PUT"])
+    def api_construction_awards() -> Any:
+        body = request.get_json(silent=True) or {}
+        awards = body.get("awards")
+        if not isinstance(awards, list):
+            abort(400, description="body must include 'awards' as a list")
+
+        def fn(data: dict[str, Any]) -> dict[str, Any]:
+            doc = construction_lib.get_doc(data)
+            construction_lib.set_awards(doc, awards)
+            doc["updated_at"] = datetime.now(ET).isoformat(timespec="seconds")
+            return doc
+        try:
+            doc = _get_storage().edit_rocks(fn)
+        except ValueError as exc:
+            abort(400, description=str(exc))
+        return jsonify(_jsonable({"awards": doc["awards"]}))
 
     @app.route("/api/construction_inputs/notices/<note_id>", methods=["DELETE"])
     def api_construction_notice_delete(note_id: str) -> Any:

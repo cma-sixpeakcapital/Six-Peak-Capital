@@ -19,7 +19,10 @@ def test_default_doc_seeds_jobs_with_benchmark_standins():
     assert jobs["Whipple"]["contract_source"] == SEED_SOURCE
     assert jobs["Acama"]["contract_completion"] == "" and jobs["Acama"]["contract_source"] == ""
     assert doc["roles"] == DEFAULT_ROLES
-    assert [n["to"] for n in doc["notices"]] == ["Bob", "Chris Andresen", "Grady"]
+    assert [n["to"] for n in doc["notices"]] == ["Bob", "Chris Andresen", "Tom", "Grady"]
+    assert jobs["Whipple"]["client"] == "HVN" and jobs["Francis"]["client"] == "Six Peak affiliate"
+    assert jobs["Riverton"]["client"] == "" and doc["clients_pending"]["Klump"] == "Third party"
+    assert doc["awards"] == []
     assert doc["notice"] == ""
 
 
@@ -27,11 +30,36 @@ def test_old_single_notice_migrates_to_per_person_notes():
     from app.construction import remove_notice
     data = {"construction_inputs": {"jobs": [], "roles": DEFAULT_ROLES, "utilization": {}, "notice": "old combined note"}}
     doc = get_doc(data)
-    assert [n["id"] for n in doc["notices"]] == ["bob", "chris-andresen", "grady"] and doc["notice"] == ""
-    assert remove_notice(doc, "bob") and [n["id"] for n in doc["notices"]] == ["chris-andresen", "grady"]
+    assert [n["id"] for n in doc["notices"]] == ["bob", "chris-andresen", "tom", "grady"] and doc["notice"] == ""
+    assert remove_notice(doc, "bob") and [n["id"] for n in doc["notices"]] == ["chris-andresen", "tom", "grady"]
     assert not remove_notice(doc, "bob")
     # a doc whose note was already cleared gets no notes back
     assert get_doc({"construction_inputs": {"jobs": [], "roles": [], "utilization": {}, "notice": ""}})["notices"] == []
+
+
+def test_backlog_migration_and_awards():
+    from app.construction import set_awards
+    # a live doc from the 10/31 deploy: no client flags, no awards, three notes
+    data = {"construction_inputs": {"jobs": [{"job": "Whipple", "active": True}, {"job": "NewJob", "active": True}],
+                                    "roles": DEFAULT_ROLES, "utilization": {}, "notice": "",
+                                    "notices": [{"id": "bob", "to": "Bob", "text": "x"}]}}
+    doc = get_doc(data)
+    assert doc["jobs"][0]["client"] == "HVN" and doc["jobs"][1]["client"] == ""
+    assert doc["clients_pending"]["Troost"] == "HVN"
+    assert [n["id"] for n in doc["notices"]] == ["bob", "tom"]   # Tom's note added once
+    assert [n["id"] for n in get_doc(data)["notices"]] == ["bob", "tom"]
+    set_awards(doc, [{"project": "Moorpark", "client": "Kinfolk", "award_date": "2026-10-28",
+                      "expected_value": "18,500,000", "expected_signing": "2027-01-15", "status": "awarded"},
+                     {"project": "", "expected_value": 5}])
+    assert doc["awards"] == [{"project": "Moorpark", "client": "Kinfolk", "award_date": "2026-10-28",
+                              "expected_value": 18500000.0, "expected_signing": "2027-01-15", "kpi_job": "",
+                              "status": "awarded", "notes": ""}]
+    with pytest.raises(ValueError):
+        set_awards(doc, [{"project": "X", "status": "maybe"}])
+    with pytest.raises(ValueError):
+        set_awards(doc, [{"project": "X", "expected_value": "lots"}])
+    with pytest.raises(ValueError):
+        set_jobs(doc, [{"job": "Whipple", "client": "Owner"}])
 
 
 def test_set_jobs_validates():
@@ -123,6 +151,11 @@ def test_api_roundtrip_and_audit(ci_app):
         assert feed["jobs"][0]["contract_completion"] == "2027-09-15"
         assert feed["utilization"]["2026-11"]["highest"]["pct"] == 83
         assert feed["notice"] == ""
+        r = c.put("/api/construction_inputs/awards", json={"awards": [
+            {"project": "Moorpark", "expected_value": 18500000, "status": "awarded"}]}, headers={"X-Actor": "Tom Taggart"})
+        assert r.status_code == 200 and r.get_json()["awards"][0]["expected_value"] == 18500000
+        assert c.put("/api/construction_inputs/awards", json={"awards": "x"}).status_code == 400
+        assert c.get("/api/construction_inputs").get_json()["awards"][0]["project"] == "Moorpark"
         r = c.delete("/api/construction_inputs/notices/grady", headers={"X-Actor": "Grady Lakamp"})
         assert r.status_code == 200
         assert c.delete("/api/construction_inputs/notices/grady").status_code == 404

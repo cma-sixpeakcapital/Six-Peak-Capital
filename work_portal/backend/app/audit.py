@@ -63,6 +63,7 @@ ACTION_LABELS = {
     "api_construction_utilization": "Edit construction utilization hours",
     "api_construction_notice": "Edit construction inputs notice",
     "api_construction_notice_delete": "Remove a construction inputs note",
+    "api_construction_awards": "Edit third-party awards (backlog)",
 }
 
 
@@ -95,6 +96,8 @@ def index_doc(doc: dict[str, Any]) -> dict[str, tuple[str, dict[str, Any]]]:
             out[f"cutil:{month}"] = ("construction_utilization", {**(entry or {}), "title": f"Utilization {month}"})
         out["doc:construction_roles"] = ("document", {"value": ci.get("roles")})
         out["doc:construction_notice"] = ("document", {"value": ci.get("notice")})
+        for a in ci.get("awards") or []:
+            out[f"caward:{a.get('project')}"] = ("construction_award", {**a, "title": a.get("project")})
         for n in ci.get("notices") or []:
             out[f"cnote:{n.get('id')}"] = ("construction_note", {**n, "title": f"Note for {n.get('to')}"})
     for k, v in doc.items():

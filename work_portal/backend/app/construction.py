@@ -21,7 +21,12 @@ history, restore and the change log come for free):
     required   {job: {role: hours}}   Grady's monthly staffing plan
     available  [{person, role, hours}] Chris Andresen, net of PTO and holidays
   -> gc_utilization_role = most stretched role's required / available.
-- ``notice``: a temporary note shown on the page (to be deleted later).
+- ``jobs[].client``: HVN | Six Peak affiliate | Third party | "" (unclassified). Drives the
+  third-party backlog split (Chris, 11/1/2026).
+- ``awards``: Tom Taggart's awarded-but-not-yet-signed third-party projects. Each counts toward
+  gc_backlog_third_party at its expected value until the job appears signed in the KPI workbook
+  (then the feed reports it as rolled into the books) or Tom marks it lost.
+- ``notices``: temporary notes shown on the page (to be deleted later).
 
 Editing is open, like everything else on the portal; every save is audited.
 """
@@ -33,22 +38,27 @@ from typing import Any
 
 DEFAULT_ROLES = ["Superintendent", "Project Manager", "Assistant PM", "Project Coordinator"]
 CAUSE_CODES = {"", "owner", "weather", "LV", "sub"}
+CLIENTS = {"", "HVN", "Six Peak affiliate", "Third party"}
+AWARD_STATUSES = {"awarded", "signed", "lost"}
 MONTH_RE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 
 # Jobs in the GC Scorecard feed (04 Automation/GC Scorecard/RUNBOOK.md), with the
 # frozen benchmark final-completion dates used as the stand-in until pay-app
 # contract dates are entered (Chris, decision 1, 10/31/2026).
 SEED_JOBS: list[dict[str, Any]] = [
-    {"job": "Whipple",   "contract_completion": "2027-08-30"},
-    {"job": "Califa",    "contract_completion": "2027-08-04"},
-    {"job": "Nelrose",   "contract_completion": "2027-06-17"},
-    {"job": "Ramsgate",  "contract_completion": "2027-09-13"},
-    {"job": "Crenshaw",  "contract_completion": "2026-10-29"},
-    {"job": "Riverton",  "contract_completion": "2028-02-18"},
-    {"job": "Lexington", "contract_completion": "2028-02-25"},
-    {"job": "Francis",   "contract_completion": "2029-03-05"},
-    {"job": "Acama",     "contract_completion": ""},
+    {"job": "Whipple",   "contract_completion": "2027-08-30", "client": "HVN"},
+    {"job": "Califa",    "contract_completion": "2027-08-04", "client": "HVN"},
+    {"job": "Nelrose",   "contract_completion": "2027-06-17", "client": "HVN"},
+    {"job": "Ramsgate",  "contract_completion": "2027-09-13", "client": "Six Peak affiliate"},
+    {"job": "Crenshaw",  "contract_completion": "2026-10-29", "client": "Six Peak affiliate"},
+    {"job": "Riverton",  "contract_completion": "2028-02-18", "client": ""},
+    {"job": "Lexington", "contract_completion": "2028-02-25", "client": ""},
+    {"job": "Francis",   "contract_completion": "2029-03-05", "client": "Six Peak affiliate"},
+    {"job": "Acama",     "contract_completion": "",           "client": "HVN"},
 ]
+# Jobs on the KPI workbook's Contract & Backlog tab that are not yet signed (n/a rows), so the
+# backlog feed can classify them the day they sign. Client per Chris 11/1/2026.
+SEED_CLIENTS_PENDING: dict[str, str] = {"Troost": "HVN", "Klump": "Third party", "Scott": "Third party"}
 SEED_SOURCE = "benchmark (pending pay app)"
 
 SEED_NOTICES: list[dict[str, str]] = [
@@ -65,6 +75,13 @@ SEED_NOTICES: list[dict[str, str]] = [
              "stand-in, flagged as such on the scorecard until you replace them with pay-app dates. For "
              "utilization, pick the month, enter Grady's required hours by job and role, and each person's "
              "available hours net of PTO and holidays; the preview row shows the result before you save."},
+    {"id": "tom", "to": "Tom",
+     "text": "Signed backlog is now split in two on the scorecard. Total LV backlog comes straight from the monthly "
+             "KPI workbook. Third-party backlog is the signed third-party jobs from that workbook plus whatever you "
+             "log in the Awards table below: a project awarded to LV (verbally or in writing) that has not signed "
+             "yet, with its expected contract value. It counts at that value until the job shows up signed in the "
+             "KPI workbook, when it rolls into the books automatically, or until you mark it lost. The old weekly "
+             "signed-backlog row you typed into the Sheet is retired."},
     {"id": "grady", "to": "Grady",
      "text": "Please confirm the utilization role list below (Superintendent, Project Manager, Assistant PM, "
              "Project Coordinator; edit the box and save if it needs changing) and send Chris Andresen "
@@ -81,6 +98,8 @@ def default_doc() -> dict[str, Any]:
         "roles": list(DEFAULT_ROLES),
         "jobs": [_job_row({**j, "active": True, "contract_source": SEED_SOURCE if j["contract_completion"] else ""})
                  for j in SEED_JOBS],
+        "clients_pending": dict(SEED_CLIENTS_PENDING),
+        "awards": [],
         "utilization": {},
         "notices": [dict(n) for n in SEED_NOTICES],
         "notice": "",
@@ -98,6 +117,16 @@ def get_doc(data: dict[str, Any]) -> dict[str, Any]:
     doc.setdefault("jobs", [])
     doc.setdefault("utilization", {})
     doc.setdefault("notice", "")
+    if "awards" not in doc:
+        # Migration 11/1/2026 (backlog split): client flags on the seeded jobs, pending-job clients, awards.
+        seed_clients = {j["job"]: j.get("client", "") for j in SEED_JOBS}
+        for j in doc["jobs"]:
+            j.setdefault("client", seed_clients.get(j.get("job"), ""))
+        doc["clients_pending"] = dict(SEED_CLIENTS_PENDING)
+        doc["awards"] = []
+        tom = next((n for n in SEED_NOTICES if n["id"] == "tom"), None)
+        if tom and doc.get("notices") and not any(n.get("id") == "tom" for n in doc["notices"]):
+            doc["notices"].append(dict(tom))
     if "notices" not in doc:
         # Migration 10/31/2026: the first deploy seeded one combined note; Chris asked for one per person.
         doc["notices"] = [dict(n) for n in SEED_NOTICES] if doc.get("notice") else []
@@ -145,9 +174,13 @@ def _job_row(r: dict[str, Any]) -> dict[str, Any]:
     cause = _str(r.get("cause_code"), 10)
     if cause not in CAUSE_CODES:
         raise ValueError(f"{job}: cause_code must be one of owner, weather, LV, sub (or blank)")
+    client = _str(r.get("client"), 30)
+    if client not in CLIENTS:
+        raise ValueError(f"{job}: client must be HVN, Six Peak affiliate, Third party (or blank)")
     return {
         "job": job,
         "active": bool(r.get("active", True)),
+        "client": client,
         "contract_completion": _iso_date(r.get("contract_completion"), f"{job}: contract_completion"),
         "contract_source": _str(r.get("contract_source"), 120),
         "pay_app_through": _iso_date(r.get("pay_app_through"), f"{job}: pay_app_through"),
@@ -210,6 +243,44 @@ def set_utilization(doc: dict[str, Any], month: str, required: dict[str, Any],
     return entry
 
 
+def _money(v: Any, field: str) -> float:
+    if v in ("", None):
+        return 0.0
+    try:
+        x = float(str(v).replace(",", "").replace("$", ""))
+    except (TypeError, ValueError):
+        raise ValueError(f"{field} must be a dollar amount")
+    if x < 0 or x > 1e9:
+        raise ValueError(f"{field} must be between 0 and $1B")
+    return round(x, 2)
+
+
+def set_awards(doc: dict[str, Any], awards: list[dict[str, Any]]) -> None:
+    """Tom's awarded-not-yet-signed third-party projects."""
+    rows = []
+    for r in awards or []:
+        project = _str(r.get("project"), 80)
+        if not project:
+            continue
+        status = _str(r.get("status"), 10).lower() or "awarded"
+        if status not in AWARD_STATUSES:
+            raise ValueError(f"{project}: status must be awarded, signed or lost")
+        rows.append({
+            "project": project,
+            "client": _str(r.get("client"), 80),
+            "award_date": _iso_date(r.get("award_date"), f"{project}: award_date"),
+            "expected_value": _money(r.get("expected_value"), f"{project}: expected value"),
+            "expected_signing": _iso_date(r.get("expected_signing"), f"{project}: expected_signing"),
+            "kpi_job": _str(r.get("kpi_job"), 60),
+            "status": status,
+            "notes": _str(r.get("notes"), 300),
+        })
+    names = [r["project"].lower() for r in rows]
+    if len(names) != len(set(names)):
+        raise ValueError("project names must be unique")
+    doc["awards"] = rows
+
+
 # ------------------------------------------------------------------ compute
 def utilization_summary(doc: dict[str, Any], month: str) -> dict[str, Any] | None:
     """The same arithmetic the Monday feed uses, so the page can preview it.
@@ -254,4 +325,6 @@ def feed_view(doc: dict[str, Any]) -> dict[str, Any]:
         "utilization_raw": doc.get("utilization") or {},
         "notice": doc.get("notice", ""),
         "notices": list(doc.get("notices") or []),
+        "clients_pending": dict(doc.get("clients_pending") or {}),
+        "awards": list(doc.get("awards") or []),
     }

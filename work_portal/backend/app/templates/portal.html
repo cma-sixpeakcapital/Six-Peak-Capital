@@ -461,15 +461,16 @@
 
     <div class="card">
         <div class="card-head"><span class="section-label">Jobs</span><h3>Contract completion dates, cause codes, contingency notes</h3></div>
-        <p class="muted ci-help">Contract completion = the contract end date on the most recent pay application, including approved extensions (feeds <i>Jobs behind contract schedule</i>). Cause code is for a job forecasting later than that date. Contingency note is the one-line explanation for a job whose burn rate is at or above 1.0. Rows marked "benchmark (pending pay app)" are stand-ins until a pay-app date replaces them.</p>
+        <p class="muted ci-help">Client splits the backlog: <i>Third party</i> jobs count toward third-party backlog; HVN and Six Peak affiliate jobs count toward total LV backlog only. A blank client is listed as unclassified on the scorecard until set. Contract completion = the contract end date on the most recent pay application, including approved extensions (feeds <i>Jobs behind contract schedule</i>). Cause code is for a job forecasting later than that date. Contingency note is the one-line explanation for a job whose burn rate is at or above 1.0. Rows marked "benchmark (pending pay app)" are stand-ins until a pay-app date replaces them.</p>
         <div class="tbl-wrap">
         <table class="tbl ci-tbl" id="ci-jobs">
-            <thead><tr><th>Job</th><th>Active</th><th>Contract completion</th><th>Source</th><th>Pay app through</th><th>Cause code</th><th>Contingency note</th><th>Notes</th><th></th></tr></thead>
+            <thead><tr><th>Job</th><th>Active</th><th>Client</th><th>Contract completion</th><th>Source</th><th>Pay app through</th><th>Cause code</th><th>Contingency note</th><th>Notes</th><th></th></tr></thead>
             <tbody>
             {% for j in ci.jobs %}
             <tr data-job-row>
                 <td><input class="ci-in" name="job" value="{{ j.job }}" size="10"></td>
                 <td class="num"><input type="checkbox" name="active" {% if j.active %}checked{% endif %}></td>
+                <td><select class="ci-in" name="client"><option value="">—</option>{% for cl in construction.clients %}<option value="{{ cl }}" {% if j.client == cl %}selected{% endif %}>{{ cl }}</option>{% endfor %}</select></td>
                 <td><input class="ci-in" type="date" name="contract_completion" value="{{ j.contract_completion }}"></td>
                 <td><input class="ci-in" name="contract_source" value="{{ j.contract_source }}" size="16" placeholder="Pay app #12"></td>
                 <td><input class="ci-in" type="date" name="pay_app_through" value="{{ j.pay_app_through }}"></td>
@@ -487,6 +488,38 @@
             <div>
                 <button type="button" class="pill-btn" id="ci-job-add">+ Add job</button>
                 <button type="button" class="pill-btn pill-btn-primary" id="ci-jobs-save">Save jobs &amp; roles</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-head"><span class="section-label">Third-party awards</span><h3>Awarded to LV, not yet signed</h3></div>
+        <p class="muted ci-help">Tom's list. A third-party project LV has been awarded (verbally or in writing) counts toward <i>Third-party backlog</i> at its expected contract value until the job appears signed in the KPI workbook, when it rolls into the books automatically. Set the KPI job name once known so the feed can match it; mark <i>lost</i> if it falls through. HVN and affiliate work does not go here.</p>
+        <div class="tbl-wrap">
+        <table class="tbl ci-tbl" id="ci-awards">
+            <thead><tr><th>Project</th><th>Client</th><th>Award date</th><th class="num">Expected contract $</th><th>Expected signing</th><th>KPI job name</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+            <tbody>
+            {% for a in ci.awards %}
+            <tr data-award-row>
+                <td><input class="ci-in" name="project" value="{{ a.project }}" size="16"></td>
+                <td><input class="ci-in" name="client" value="{{ a.client }}" size="14"></td>
+                <td><input class="ci-in" type="date" name="award_date" value="{{ a.award_date }}"></td>
+                <td class="num"><input class="ci-in ci-money" type="number" min="0" step="1000" name="expected_value" value="{{ a.expected_value|int }}"></td>
+                <td><input class="ci-in" type="date" name="expected_signing" value="{{ a.expected_signing }}"></td>
+                <td><input class="ci-in" name="kpi_job" value="{{ a.kpi_job }}" size="10" placeholder="as in KPI workbook"></td>
+                <td><select class="ci-in" name="status">{% for st in construction.award_statuses %}<option value="{{ st }}" {% if a.status == st %}selected{% endif %}>{{ st }}</option>{% endfor %}</select></td>
+                <td><input class="ci-in" name="notes" value="{{ a.notes }}" size="18"></td>
+                <td><button type="button" class="link-btn ci-row-del" title="Remove">×</button></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="row-between ci-foot">
+            <span class="muted ci-help">Awarded total: <b id="ci-awards-total">$0</b></span>
+            <div>
+                <button type="button" class="pill-btn" id="ci-award-add">+ Add award</button>
+                <button type="button" class="pill-btn pill-btn-primary" id="ci-awards-save">Save awards</button>
             </div>
         </div>
     </div>
